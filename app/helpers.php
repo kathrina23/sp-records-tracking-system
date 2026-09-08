@@ -32,9 +32,14 @@ function record_title_for_current_user(array $record): string
     return (string) ($record['title'] ?? '');
 }
 
+function url(string $path): string
+{
+    return BASE_PATH . $path;
+}
+
 function redirect(string $path): never
 {
-    header('Location: ' . $path);
+    header('Location: ' . url($path));
     exit;
 }
 
@@ -1670,7 +1675,7 @@ function action_required_count_for_type(string $documentType): int
 
 function control_number_link(array $record, ?string $url = null): string
 {
-    $url ??= '/record_view.php?id=' . (int) $record['id'];
+    $url ??= url('/record_view.php?id=' . (int) $record['id']);
     $dot = record_needs_user_action($record)
         ? '<span class="action-dot" title="Needs your action" aria-label="Needs your action"></span>'
         : '';
@@ -1691,7 +1696,7 @@ function public_record_status_url(int $recordId): string
         $host = 'localhost';
     }
 
-    return $scheme . '://' . $host . '/public_status.php?record_id=' . $recordId;
+    return $scheme . '://' . $host . url('/public_status.php?record_id=' . $recordId);
 }
 
 function audit_log(string $action, string $description, ?string $entityType = null, ?int $entityId = null): void

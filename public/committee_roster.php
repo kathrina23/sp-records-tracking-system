@@ -190,7 +190,7 @@ function official_select(string $name, string $currentValue, array $officials, s
         <h1><?= e($committee['name']) ?> Roster</h1>
         <p class="muted"><?= e($term['name']) ?> committee membership.</p>
     </div>
-    <a class="btn secondary" href="/committees.php">Back to Committees</a>
+    <a class="btn secondary" href="<?= url('/committees.php') ?>">Back to Committees</a>
 </div>
 
 <section class="panel" style="margin-bottom:16px;">

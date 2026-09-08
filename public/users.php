@@ -113,14 +113,14 @@ require __DIR__ . '/../app/partials/header.php';
         <h1>User Creation</h1>
         <p class="muted">For Administrator and City Secretary accounts only. Create users and set their assigned Division.</p>
     </div>
-    <a class="btn secondary" href="/secretariat_assignments.php">Assign Secretariats</a>
+    <a class="btn secondary" href="<?= url('/secretariat_assignments.php') ?>">Assign Secretariats</a>
 </div>
 
 <?php if ($edit): ?><div class="modal-backdrop" role="presentation"><?php endif; ?>
 <section class="panel <?= $edit ? 'user-edit-modal' : '' ?>" style="margin-bottom:16px;" <?= $edit ? 'role="dialog" aria-modal="true" aria-labelledby="user_form_title"' : '' ?>>
     <div class="<?= $edit ? 'modal-title-row' : '' ?>">
         <h2 id="user_form_title"><?= $edit ? 'Edit User' : 'Add User' ?></h2>
-        <?php if ($edit): ?><a class="modal-close" href="/users.php" aria-label="Close edit window">X</a><?php endif; ?>
+        <?php if ($edit): ?><a class="modal-close" href="<?= url('/users.php') ?>" aria-label="Close edit window">X</a><?php endif; ?>
     </div>
     <form method="post" class="form-grid">
         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
@@ -161,7 +161,7 @@ require __DIR__ . '/../app/partials/header.php';
                 <input type="checkbox" name="is_active" value="1" <?= (int) ($edit['is_active'] ?? 1) === 1 ? 'checked' : '' ?>>
                 <span>Check to Activate Account</span>
             </label>
-            <?php if ($edit): ?><a class="btn secondary" href="/users.php">Cancel</a><?php endif; ?>
+            <?php if ($edit): ?><a class="btn secondary" href="<?= url('/users.php') ?>">Cancel</a><?php endif; ?>
         </div>
     </form>
 </section>
@@ -179,9 +179,9 @@ require __DIR__ . '/../app/partials/header.php';
                     <td><?= e($item['nickname'] ?? '') ?></td>
                     <td><?= e(role_label($item['role'])) ?></td>
                     <td><?= e($item['email']) ?></td>
-                    <td><span class="muted">Protected</span><br><a href="/users.php?edit=<?= (int) $item['id'] ?>">Reset password</a></td>
+                    <td><span class="muted">Protected</span><br><a href="<?= url('/users.php?edit=') ?><?= (int) $item['id'] ?>">Reset password</a></td>
                     <td><?= $item['is_active'] ? 'Active' : 'Inactive' ?></td>
-                    <td><a href="/users.php?edit=<?= (int) $item['id'] ?>">Edit</a></td>
+                    <td><a href="<?= url('/users.php?edit=') ?><?= (int) $item['id'] ?>">Edit</a></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

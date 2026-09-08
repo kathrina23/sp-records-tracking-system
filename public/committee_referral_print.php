@@ -259,13 +259,13 @@ $publicStatusUrl = public_record_status_url((int) $record['id']);
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Committee Referral <?= e($record['control_number']) ?></title>
-    <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="stylesheet" href="<?= url('/assets/styles.css') ?>">
 </head>
 <body class="print-body">
     <main class="print-page">
         <div class="print-actions actions">
             <button class="btn" onclick="window.print()">Print Committee Referral</button>
-            <a class="btn danger" href="/record_view.php?id=<?= (int) $record['id'] ?>">X Close</a>
+            <a class="btn danger" href="<?= url('/record_view.php?id=') ?><?= (int) $record['id'] ?>">X Close</a>
             <span class="muted">If the print dialog does not open here, press Ctrl+P or open this page in Chrome/Edge.</span>
         </div>
 
@@ -280,7 +280,7 @@ $publicStatusUrl = public_record_status_url((int) $record['id']);
         <section class="<?= e(implode(' ', $documentClasses)) ?>">
             <div class="referral-details-section">
             <header class="referral-header">
-                <img class="referral-logo" src="/assets/splogo.jpg" alt="Sangguniang Panlungsod logo">
+                <img class="referral-logo" src="<?= url('/assets/splogo.jpg') ?>" alt="Sangguniang Panlungsod logo">
                 <div class="referral-header-copy">
                     <p class="referral-republic">Republic of the Philippines</p>
                     <p class="referral-city">Cagayan de Oro City</p>
@@ -323,7 +323,7 @@ $publicStatusUrl = public_record_status_url((int) $record['id']);
                 <p>FOR THE CITY VICE MAYOR &amp; PRESIDING OFFICER:</p>
                 <div class="signature-line">
                     <?php if (!$hideCitySecretarySignatureImage): ?>
-                        <img class="city-secretary-signature" src="/assets/city-secretary-signature.png" alt="">
+                        <img class="city-secretary-signature" src="<?= url('/assets/city-secretary-signature.png') ?>" alt="">
                     <?php endif; ?>
                     <span><?= e(strtoupper($citySecretaryName)) ?></span>
                     <small>City Secretary</small>
@@ -428,8 +428,8 @@ $publicStatusUrl = public_record_status_url((int) $record['id']);
         </section>
         <?php endforeach; ?>
     </main>
-    <script src="/assets/vendor/qrcode-generator.js"></script>
-    <script src="/assets/communication-qr.js"></script>
+    <script src="<?= url('/assets/vendor/qrcode-generator.js') ?>"></script>
+    <script src="<?= url('/assets/communication-qr.js') ?>"></script>
     <script>
     (() => {
         const toNumber = (value) => Number.parseFloat(value || '0') || 0;

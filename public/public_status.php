@@ -45,7 +45,7 @@ require __DIR__ . '/../app/partials/header.php';
 ?>
 <section class="landing-window public-status-window">
     <div class="landing-head">
-        <img src="/assets/splogo.jpg" alt="Sangguniang Panlungsod logo">
+        <img src="<?= url('/assets/splogo.jpg') ?>" alt="Sangguniang Panlungsod logo">
         <div>
             <h1>Request Status</h1>
             <p class="muted">Search the latest status using your request communication number.</p>
@@ -58,7 +58,7 @@ require __DIR__ . '/../app/partials/header.php';
                 <input name="control_number" placeholder="Example: L-00001-2026" value="<?= e($controlNumber) ?>" required autofocus>
             </label>
             <button class="btn" type="submit">Search</button>
-            <a class="btn secondary" href="/">Back</a>
+            <a class="btn secondary" href="<?= url('/') ?>">Back</a>
         </form>
     </section>
 

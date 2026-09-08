@@ -54,7 +54,7 @@ $sql .= ' ORDER BY a.created_at DESC LIMIT 300';
 $stmt = db()->prepare($sql);
 $stmt->execute($params);
 $logs = $stmt->fetchAll();
-$auditLogsReturnUrl = '/audit_logs.php' . (!empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '');
+$auditLogsReturnUrl = url('/audit_logs.php') . (!empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '');
 
 $users = db()->query('SELECT id, name, email FROM users ORDER BY name')->fetchAll();
 $actions = db()->query('SELECT DISTINCT action FROM audit_logs ORDER BY action')->fetchAll();

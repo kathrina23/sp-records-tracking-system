@@ -86,7 +86,7 @@ if ($isPopup) {
     $recordFormQuery['return'] = $popupReturnTarget;
     $recordFormQuery['return_url'] = $popupCloseUrl;
 }
-$recordFormUrl = '/record_form.php' . ($recordFormQuery ? '?' . http_build_query($recordFormQuery) : '');
+$recordFormUrl = url('/record_form.php') . ($recordFormQuery ? '?' . http_build_query($recordFormQuery) : '');
 $recordFormSubmissionToken = trim((string) ($_POST['record_form_submission_token'] ?? ''));
 if (!$id) {
     if (!isset($_SESSION['record_form_submission_tokens']) || !is_array($_SESSION['record_form_submission_tokens'])) {
@@ -119,12 +119,12 @@ if (!$id) {
     }
 }
 $attachmentCloseUrl = $recordFormUrl;
-$attachmentViewUrl = '/record_attachments_view.php?' . http_build_query([
+$attachmentViewUrl = url('/record_attachments_view.php?' . http_build_query([
     'record_id' => $id,
     'popup' => 1,
     'return' => 'review',
     'return_url' => $attachmentCloseUrl,
-]);
+]));
 $nextControlNumbers = [];
 foreach ($documentTypes as $typeOption) {
     $nextControlNumbers[$typeOption] = next_control_number($typeOption);

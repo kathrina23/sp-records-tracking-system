@@ -237,34 +237,34 @@ require __DIR__ . '/../app/partials/header.php';
     </div>
     <div class="actions">
         <?php if ($activeTab === 'committee' && $committeeId !== '' && $sort === 'updated'): ?>
-            <a class="btn secondary" href="/dashboard.php?division_tab=committees">Back to Committee Tab</a>
+            <a class="btn secondary" href="<?= url('/dashboard.php?division_tab=committees') ?>">Back to Committee Tab</a>
         <?php endif; ?>
         <?php if ($activeTab === 'committee' && $staffUserId > 0 && $returnTab === 'staff'): ?>
-            <a class="btn secondary" href="/dashboard.php?division_tab=staff">Back to Staff Tab</a>
+            <a class="btn secondary" href="<?= url('/dashboard.php?division_tab=staff') ?>">Back to Staff Tab</a>
         <?php endif; ?>
-        <a class="btn secondary back-dashboard-action" href="/dashboard.php">Back to Dashboard</a>
+        <a class="btn secondary back-dashboard-action" href="<?= url('/dashboard.php') ?>">Back to Dashboard</a>
     </div>
 </div>
 
 <nav class="dashboard-tabs" aria-label="Records type tabs">
     <?php if ($canUseAllRecordsTab): ?>
-        <a class="<?= $activeTab === 'all' ? 'active' : '' ?>" href="/records.php?tab=all">
+        <a class="<?= $activeTab === 'all' ? 'active' : '' ?>" href="<?= url('/records.php?tab=all') ?>">
             <span>All Records</span>
         </a>
     <?php endif; ?>
-    <a class="<?= $activeTab === 'committee' ? 'active' : '' ?>" href="/records.php?tab=committee">
+    <a class="<?= $activeTab === 'committee' ? 'active' : '' ?>" href="<?= url('/records.php?tab=committee') ?>">
         <span>Committee Referrals</span>
         <?php if ($committeeActionCount > 0): ?>
             <span class="tab-action-badge"><?= (int) $committeeActionCount ?></span>
         <?php endif; ?>
     </a>
     <?php if ($canUseCertifiedUrgentTab): ?>
-        <a class="<?= $activeTab === 'certified' ? 'active' : '' ?>" href="/records.php?tab=certified">
+        <a class="<?= $activeTab === 'certified' ? 'active' : '' ?>" href="<?= url('/records.php?tab=certified') ?>">
             <span>Certified Urgent</span>
         </a>
     <?php endif; ?>
     <?php if ($canUseAdministrativeDocumentsTab && !$isOthersUser): ?>
-        <a class="<?= $activeTab === 'documents' ? 'active' : '' ?>" href="/records.php?tab=documents">
+        <a class="<?= $activeTab === 'documents' ? 'active' : '' ?>" href="<?= url('/records.php?tab=documents') ?>">
             <span>Transmittals, Letters and Endorsements</span>
             <?php if ($administrativeDocumentsActionCount > 0): ?>
                 <span class="tab-action-badge"><?= (int) $administrativeDocumentsActionCount ?></span>
@@ -272,10 +272,10 @@ require __DIR__ . '/../app/partials/header.php';
         </a>
     <?php endif; ?>
     <?php if ($isOthersUser): ?>
-        <a class="<?= $activeTab === 'transmittals' ? 'active' : '' ?>" href="/records.php?tab=transmittals">
+        <a class="<?= $activeTab === 'transmittals' ? 'active' : '' ?>" href="<?= url('/records.php?tab=transmittals') ?>">
             <span>Transmittals, Letters and Endorsements</span>
         </a>
-        <a class="<?= $activeTab === 'memoranda' ? 'active' : '' ?>" href="/records.php?tab=memoranda">
+        <a class="<?= $activeTab === 'memoranda' ? 'active' : '' ?>" href="<?= url('/records.php?tab=memoranda') ?>">
             <span>Memo and EO's</span>
         </a>
     <?php endif; ?>
@@ -304,7 +304,7 @@ require __DIR__ . '/../app/partials/header.php';
     <input type="date" name="date_from" value="<?= e($dateFrom) ?>" aria-label="Date received from">
     <input type="date" name="date_to" value="<?= e($dateTo) ?>" aria-label="Date received to">
     <button class="btn secondary records-filter-action" type="submit">Filter</button>
-    <a class="btn secondary records-filter-action" href="/records.php?<?= e(http_build_query(['tab' => $activeTab])) ?>">Clear</a>
+    <a class="btn secondary records-filter-action" href="<?= url('/records.php?') ?><?= e(http_build_query(['tab' => $activeTab])) ?>">Clear</a>
 </form>
 
 <section class="record-list">
@@ -321,24 +321,24 @@ require __DIR__ . '/../app/partials/header.php';
                 ? 'approved-plenary-card'
                 : '';
             $recordAnchor = 'record-' . (int) $record['id'];
-            $recordPopupUrl = '/record_view.php?' . http_build_query([
+            $recordPopupUrl = url('/record_view.php?' . http_build_query([
                 'id' => (int) $record['id'],
                 'popup' => 1,
                 'return' => 'records',
                 'return_url' => $recordsReturnPath . '#' . $recordAnchor,
-            ]);
-            $recordEditPopupUrl = '/record_form.php?' . http_build_query([
+            ]));
+            $recordEditPopupUrl = url('/record_form.php?' . http_build_query([
                 'id' => (int) $record['id'],
                 'popup' => 1,
                 'return' => 'records',
                 'return_url' => $recordsReturnPath . '#' . $recordAnchor,
-            ]);
-            $recordAttachmentPopupUrl = '/record_attachments_view.php?' . http_build_query([
+            ]));
+            $recordAttachmentPopupUrl = url('/record_attachments_view.php?' . http_build_query([
                 'record_id' => (int) $record['id'],
                 'popup' => 1,
                 'return' => 'records',
                 'return_url' => $recordsReturnPath . '#' . $recordAnchor,
-            ]);
+            ]));
         ?>
         <article id="<?= e($recordAnchor) ?>" class="record-card <?= e(trim($actionClass . ' ' . $approvedPlenaryClass)) ?>">
             <?php if ($needsAction || $needsDivisionChiefAction || current_secretariat_is_lead_committee($record)): ?>
@@ -419,7 +419,7 @@ require __DIR__ . '/../app/partials/header.php';
                             <?php endif; ?>
                         </span>
                     <?php else: ?>
-                        <form method="post" action="/record_division_receipt.php" class="division-receipt-form">
+                        <form method="post" action="<?= url('/record_division_receipt.php') ?>" class="division-receipt-form">
                             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                             <input type="hidden" name="record_id" value="<?= (int) $record['id'] ?>">
                             <input type="hidden" name="return_path" value="<?= e($recordsReturnPath) ?>">
@@ -438,17 +438,17 @@ require __DIR__ . '/../app/partials/header.php';
                             <a class="record-edit-action" href="<?= e($recordEditPopupUrl) ?>">Edit</a>
                         <?php endif; ?>
                         <?php if (($record['document_type'] ?? '') === 'Committee Referrals' && !empty($record['committee_id']) && ($record['status'] ?? '') !== 'Received'): ?>
-                            <a href="/committee_referral_print.php?id=<?= (int) $record['id'] ?>" target="_blank" rel="noopener">Print</a>
+                            <a href="<?= url('/committee_referral_print.php?id=') ?><?= (int) $record['id'] ?>" target="_blank" rel="noopener">Print</a>
                         <?php endif; ?>
                         <?php if (can_manage_transmittal_recipients($record)): ?>
-                            <a href="/record_recipients.php?record_id=<?= (int) $record['id'] ?>">Add Recipients</a>
+                            <a href="<?= url('/record_recipients.php?record_id=') ?><?= (int) $record['id'] ?>">Add Recipients</a>
                         <?php endif; ?>
                         <span class="record-view-qr-actions">
                             <a class="record-view-action" href="<?= e($recordPopupUrl) ?>">View Record</a>
-                            <a class="record-qr-print-action" href="/communication_qr_print.php?id=<?= (int) $record['id'] ?>" target="communication_qr_print" rel="noopener" onclick="window.open(this.href, 'communication_qr_print', 'width=1020,height=820,scrollbars=yes,resizable=yes'); return false;">Print QR</a>
+                            <a class="record-qr-print-action" href="<?= url('/communication_qr_print.php?id=') ?><?= (int) $record['id'] ?>" target="communication_qr_print" rel="noopener" onclick="window.open(this.href, 'communication_qr_print', 'width=1020,height=820,scrollbars=yes,resizable=yes'); return false;">Print QR</a>
                         </span>
                         <?php if (can_delete_record($record)): ?>
-                            <form method="post" action="/record_delete.php" class="inline-form" onsubmit="return confirm('Delete this record and its tracking history?');">
+                            <form method="post" action="<?= url('/record_delete.php') ?>" class="inline-form" onsubmit="return confirm('Delete this record and its tracking history?');">
                                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                                 <input type="hidden" name="record_id" value="<?= (int) $record['id'] ?>">
                                 <button class="link-danger record-delete-action" type="submit">Delete</button>
@@ -463,17 +463,17 @@ require __DIR__ . '/../app/partials/header.php';
                             <a class="<?= (current_user()['role'] ?? '') === 'city_secretary' && ($record['status'] ?? '') === 'Received' ? 'record-review-action' : 'record-edit-action' ?>" href="<?= e($recordEditPopupUrl) ?>"><?= (current_user()['role'] ?? '') === 'city_secretary' && ($record['status'] ?? '') === 'Received' ? 'Review' : 'Edit' ?></a>
                         <?php endif; ?>
                         <?php if (can_update_record_status($record)): ?>
-                            <a class="record-update-action" href="/record_update.php?id=<?= (int) $record['id'] ?>">Update</a>
+                            <a class="record-update-action" href="<?= url('/record_update.php?id=') ?><?= (int) $record['id'] ?>">Update</a>
                         <?php endif; ?>
                         <?php if ((current_user()['role'] ?? '') === 'admin' && ($record['document_type'] ?? '') === 'Committee Referrals' && !empty($record['committee_id']) && ($record['status'] ?? '') !== 'Received'): ?>
-                            <a href="/committee_referral_print.php?id=<?= (int) $record['id'] ?>">Print</a>
+                            <a href="<?= url('/committee_referral_print.php?id=') ?><?= (int) $record['id'] ?>">Print</a>
                         <?php endif; ?>
                         <?php if (can_manage_transmittal_recipients($record)): ?>
-                            <a href="/record_recipients.php?record_id=<?= (int) $record['id'] ?>">Add Recipients</a>
+                            <a href="<?= url('/record_recipients.php?record_id=') ?><?= (int) $record['id'] ?>">Add Recipients</a>
                         <?php endif; ?>
                         <a class="record-view-action" href="<?= e($recordPopupUrl) ?>">View Record</a>
                         <?php if (can_delete_record($record)): ?>
-                            <form method="post" action="/record_delete.php" class="inline-form" onsubmit="return confirm('Delete this record and its tracking history?');">
+                            <form method="post" action="<?= url('/record_delete.php') ?>" class="inline-form" onsubmit="return confirm('Delete this record and its tracking history?');">
                                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                                 <input type="hidden" name="record_id" value="<?= (int) $record['id'] ?>">
                                 <button class="link-danger record-delete-action" type="submit">Delete</button>

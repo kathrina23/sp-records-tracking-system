@@ -61,7 +61,7 @@ function attachment_normalized_title(mixed $value): ?string
 
 function attachment_manager_return_url(int $recordId): string
 {
-    $defaultUrl = '/record_attachments_manage.php?record_id=' . $recordId;
+    $defaultUrl = url('/record_attachments_manage.php?record_id=' . $recordId);
     $returnUrl = (string) ($_POST['return_url'] ?? $defaultUrl);
     $parts = parse_url($returnUrl);
     if (
@@ -69,7 +69,7 @@ function attachment_manager_return_url(int $recordId): string
         || $parts === false
         || isset($parts['scheme'])
         || isset($parts['host'])
-        || ($parts['path'] ?? '') !== '/record_attachments_manage.php'
+        || ($parts['path'] ?? '') !== url('/record_attachments_manage.php')
     ) {
         return $defaultUrl;
     }

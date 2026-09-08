@@ -130,7 +130,7 @@ require __DIR__ . '/../app/partials/header.php';
         <p class="muted">Maintain committees and their current term rosters.</p>
     </div>
     <?php if (is_admin()): ?>
-        <a class="btn secondary" href="/terms.php">Manage Terms</a>
+        <a class="btn secondary" href="<?= url('/terms.php') ?>">Manage Terms</a>
     <?php endif; ?>
 </div>
 
@@ -159,7 +159,7 @@ require __DIR__ . '/../app/partials/header.php';
             </label>
             <div class="actions full">
                 <button class="btn" type="submit">Save Committee</button>
-                <?php if ($edit): ?><a class="btn secondary" href="/committees.php">Cancel</a><?php endif; ?>
+                <?php if ($edit): ?><a class="btn secondary" href="<?= url('/committees.php') ?>">Cancel</a><?php endif; ?>
             </div>
         </form>
     <?php else: ?>
@@ -183,10 +183,10 @@ require __DIR__ . '/../app/partials/header.php';
                 <td><?= (int) $committee['record_count'] ?></td>
                 <td class="actions">
                     <?php if ($termsReady && $currentTerm): ?>
-                        <a href="/committee_roster.php?committee_id=<?= (int) $committee['id'] ?>">Roster</a>
+                        <a href="<?= url('/committee_roster.php?committee_id=') ?><?= (int) $committee['id'] ?>">Roster</a>
                     <?php endif; ?>
                     <?php if (is_admin()): ?>
-                        <a href="/committees.php?edit=<?= (int) $committee['id'] ?>">Edit</a>
+                        <a href="<?= url('/committees.php?edit=') ?><?= (int) $committee['id'] ?>">Edit</a>
                         <form method="post" class="inline-form" onsubmit="return confirm('Delete this committee? Related records will remain but become unassigned.');">
                             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                             <input type="hidden" name="action" value="delete">

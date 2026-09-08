@@ -1280,7 +1280,7 @@ if ($isDashboardMonitor) {
     </div>
     <div class="actions">
         <?php if (can_manage_users() && !$usesCitySecretaryTabbedDashboard): ?>
-            <a class="btn secondary" href="/users.php">User Creation</a>
+            <a class="btn secondary" href="<?= url('/users.php') ?>">User Creation</a>
         <?php endif; ?>
     </div>
 </div>
@@ -1307,7 +1307,7 @@ if ($isDashboardMonitor) {
             <?php else: ?>
                 <span class="muted">No active account exists for this user level.</span>
             <?php endif; ?>
-            <a class="btn secondary" data-monitor-reset href="/dashboard.php">Back to Administrator</a>
+            <a class="btn secondary" data-monitor-reset href="<?= url('/dashboard.php') ?>">Back to Administrator</a>
         </form>
     </section>
 <?php endif; ?>
@@ -1385,7 +1385,7 @@ if ($isDashboardMonitor) {
                                         ]))) ?>"><?= $userRole === 'secretariat' ? 'Update' : 'Action' ?></a>
                                     </div>
                                 <?php else: ?>
-                                    <a class="btn secondary small-btn record-view-action" href="/record_view.php?id=<?= (int) $record['id'] ?>">View Record</a>
+                                    <a class="btn secondary small-btn record-view-action" href="<?= url('/record_view.php?id=') ?><?= (int) $record['id'] ?>">View Record</a>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -1433,7 +1433,7 @@ if ($isDashboardMonitor) {
                         <?php if (trim((string) ($record['movement_notes'] ?? '')) !== ''): ?>
                             <div class="record-line"><strong>Remarks:</strong> <?= nl2br(e($record['movement_notes'])) ?></div>
                         <?php endif; ?>
-                        <div class="record-line record-actions"><strong>Action:</strong> <span class="actions"><a class="record-view-action" href="/record_view.php?id=<?= (int) $record['id'] ?>">View Record</a></span></div>
+                        <div class="record-line record-actions"><strong>Action:</strong> <span class="actions"><a class="record-view-action" href="<?= url('/record_view.php?id=') ?><?= (int) $record['id'] ?>">View Record</a></span></div>
                     </article>
                 <?php endforeach; ?>
                 <?php if (!$divisionChiefDashboard['newly_updated_records']): ?>
@@ -1457,7 +1457,7 @@ if ($isDashboardMonitor) {
                         <input type="date" name="staff_update_date_to" value="<?= e($staffUpdateDateTo) ?>">
                     </label>
                     <button class="btn compact-filter-btn records-filter-action" type="submit">Search</button>
-                    <a class="btn secondary compact-filter-btn records-filter-action" href="/dashboard.php?division_tab=staff-updates">Clear</a>
+                    <a class="btn secondary compact-filter-btn records-filter-action" href="<?= url('/dashboard.php?division_tab=staff-updates') ?>">Clear</a>
                 </form>
             <?php endif; ?>
             <div class="table-wrap">
@@ -1490,7 +1490,7 @@ if ($isDashboardMonitor) {
                                     $staffUpdateRecordParams['staff_update_search'] = $staffUpdateSearch;
                                 }
                             ?>
-                            <td><?= control_number_link($update, '/record_view.php?' . http_build_query($staffUpdateRecordParams)) ?></td>
+                            <td><?= control_number_link($update, url('/record_view.php?' . http_build_query($staffUpdateRecordParams))) ?></td>
                             <td><?= e(display_record_title($update['title'] ?? '')) ?></td>
                             <td><?= e($update['staff_name'] ?? 'Staff') ?></td>
                             <td><?= e($update['movement_status'] ?? '') ?></td>
@@ -1507,7 +1507,7 @@ if ($isDashboardMonitor) {
                                             <?php if ($reviewNeeded): ?>
                                                 <span class="review-needed-box">Review Needed</span>
                                             <?php endif; ?>
-                                            <a class="print-link small-action-link" href="/record_update_edit.php?movement_id=<?= (int) $update['movement_id'] ?>&amp;return=dashboard&amp;staff_updates_page=<?= (int) $staffUpdatesPage ?>">
+                                            <a class="print-link small-action-link" href="<?= url('/record_update_edit.php?movement_id=') ?><?= (int) $update['movement_id'] ?>&amp;return=dashboard&amp;staff_updates_page=<?= (int) $staffUpdatesPage ?>">
                                                 <?= trim((string) ($update['chief_remarks'] ?? '')) !== '' ? 'Edit Comment' : 'Add Comment' ?>
                                             </a>
                                         </div>
@@ -1515,7 +1515,7 @@ if ($isDashboardMonitor) {
                                         <span class="muted">Closed</span>
                                     <?php endif; ?>
                                 <?php else: ?>
-                                    <a class="print-link small-action-link record-view-action" href="/record_view.php?id=<?= (int) $update['id'] ?>&amp;popup=1&amp;return=dashboard&amp;division_tab=staff-updates">View Record</a>
+                                    <a class="print-link small-action-link record-view-action" href="<?= url('/record_view.php?id=') ?><?= (int) $update['id'] ?>&amp;popup=1&amp;return=dashboard&amp;division_tab=staff-updates">View Record</a>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -1540,11 +1540,11 @@ if ($isDashboardMonitor) {
                         <tr>
                             <td><?= e($committee['name']) ?></td>
                             <td class="center-cell">
-                                <a class="print-link" href="/records.php?tab=committee&amp;committee_id=<?= (int) $committee['id'] ?>&amp;sort=updated">
+                                <a class="print-link" href="<?= url('/records.php?tab=committee&amp;committee_id=') ?><?= (int) $committee['id'] ?>&amp;sort=updated">
                                     <?= (int) ($committee['record_count'] ?? 0) ?>
                                 </a>
                             </td>
-                            <td class="center-cell"><a class="btn secondary small-btn" href="/committee_roster.php?committee_id=<?= (int) $committee['id'] ?>&amp;popup=1&amp;return=dashboard&amp;division_tab=committees">See Members</a></td>
+                            <td class="center-cell"><a class="btn secondary small-btn" href="<?= url('/committee_roster.php?committee_id=') ?><?= (int) $committee['id'] ?>&amp;popup=1&amp;return=dashboard&amp;division_tab=committees">See Members</a></td>
                         </tr>
                     <?php endforeach; ?>
                     <?php if (!$divisionChiefDashboard['committees']): ?><tr><td colspan="3">No committees assigned yet.</td></tr><?php endif; ?>
@@ -1575,7 +1575,7 @@ if ($isDashboardMonitor) {
                             <td><?= e(role_label($staff['role'])) ?></td>
                             <td class="center-cell">
                                 <?php if ((int) ($staff['committee_count'] ?? 0) > 0): ?>
-                                    <a class="print-link" href="/records.php?tab=committee&amp;staff_user_id=<?= (int) $staff['id'] ?>&amp;sort=updated&amp;return_tab=staff&amp;pending=1">
+                                    <a class="print-link" href="<?= url('/records.php?tab=committee&amp;staff_user_id=') ?><?= (int) $staff['id'] ?>&amp;sort=updated&amp;return_tab=staff&amp;pending=1">
                                         <?= (int) $staff['committee_count'] ?>
                                     </a>
                                 <?php else: ?>
@@ -1625,7 +1625,7 @@ if ($isDashboardMonitor) {
 
 <?php if ($showStats): ?>
     <section class="grid stats">
-        <a class="stat stat-link" href="/records.php?tab=all" aria-label="View all <?= $totalRecords ?> records">
+        <a class="stat stat-link" href="<?= url('/records.php?tab=all') ?>" aria-label="View all <?= $totalRecords ?> records">
             <span>Total Records</span><strong><?= $totalRecords ?></strong>
         </a>
         <?php foreach ($totals as $row): ?>
@@ -1636,7 +1636,7 @@ if ($isDashboardMonitor) {
                 $statusLabel = trim((string) ($row['status'] ?? '')) !== '' ? $row['status'] : 'No Status';
                 $statusFilter = trim((string) ($row['status'] ?? '')) !== '' ? $row['status'] : '__blank__';
             ?>
-            <a class="stat stat-link" href="/records.php?tab=all&amp;status=<?= urlencode($statusFilter) ?>" aria-label="View <?= (int) $row['total'] ?> records with status <?= e($statusLabel) ?>">
+            <a class="stat stat-link" href="<?= url('/records.php?tab=all&amp;status=') ?><?= urlencode($statusFilter) ?>" aria-label="View <?= (int) $row['total'] ?> records with status <?= e($statusLabel) ?>">
                 <span><?= e($statusLabel) ?></span><strong><?= (int) $row['total'] ?></strong>
             </a>
         <?php endforeach; ?>
@@ -1677,10 +1677,10 @@ if ($isDashboardMonitor) {
                     <?php endif; ?>
                 </button>
             <?php else: ?>
-                <a class="<?= $administrativeSupportCityTab === 'transmittals' ? 'active' : '' ?>" href="/dashboard.php?city_tab=transmittals">Transmittals</a>
+                <a class="<?= $administrativeSupportCityTab === 'transmittals' ? 'active' : '' ?>" href="<?= url('/dashboard.php?city_tab=transmittals') ?>">Transmittals</a>
             <?php endif; ?>
             <?php if ($usesAdministrativeSupportDashboard): ?>
-                <a class="<?= $administrativeSupportCityTab === 'approved-plenary' ? 'active' : '' ?>" href="/dashboard.php?city_tab=approved-plenary">Approved in the Plenary</a>
+                <a class="<?= $administrativeSupportCityTab === 'approved-plenary' ? 'active' : '' ?>" href="<?= url('/dashboard.php?city_tab=approved-plenary') ?>">Approved in the Plenary</a>
             <?php else: ?>
                 <button type="button" data-division-tab="approved-plenary">
                     Approved in the Plenary
@@ -1694,7 +1694,7 @@ if ($isDashboardMonitor) {
                 <button type="button" data-division-tab="logs">Logs</button>
             <?php endif; ?>
             <?php if ($usesAdministrativeSupportDashboard): ?>
-                <a class="<?= $administrativeSupportCityTab === 'notes' ? 'active' : '' ?>" href="/dashboard.php?city_tab=notes">
+                <a class="<?= $administrativeSupportCityTab === 'notes' ? 'active' : '' ?>" href="<?= url('/dashboard.php?city_tab=notes') ?>">
                     Notes
                     <span class="tab-action-badge" data-note-reminder-count title="Due reminders" <?= (int) $divisionChiefDashboard['due_reminder_count'] === 0 ? 'hidden' : '' ?>><?= (int) $divisionChiefDashboard['due_reminder_count'] ?></span>
                 </a>
@@ -1735,7 +1735,7 @@ if ($isDashboardMonitor) {
                             <td><span class="badge <?= e(status_class($record['status'])) ?>"><?= e($record['status']) ?></span></td>
                             <td class="center-cell">
                                 <?php if (record_has_pending_receiving_staff_comment($record)): ?>
-                                    <a class="print-link small-action-link record-view-action" href="/record_view.php?id=<?= (int) $record['id'] ?>">View Record</a>
+                                    <a class="print-link small-action-link record-view-action" href="<?= url('/record_view.php?id=') ?><?= (int) $record['id'] ?>">View Record</a>
                                 <?php else: ?>
                                     <a class="print-link small-action-link record-review-action" href="<?= e(dashboard_action_url('/record_form.php?' . http_build_query([
                                         'id' => (int) $record['id'],
@@ -1773,7 +1773,7 @@ if ($isDashboardMonitor) {
                             <td><?= e(($record['committee_names'] ?? '') !== '' ? $record['committee_names'] : 'For Committee Assignment') ?></td>
                             <td><span class="badge <?= e(status_class($record['status'])) ?>"><?= e($record['status']) ?></span></td>
                             <td><?= e(display_datetime($record['updated_at'] ?? '')) ?></td>
-                            <td class="center-cell"><a class="small-action-link record-view-action" href="/record_view.php?id=<?= (int) $record['id'] ?>">View Record</a></td>
+                            <td class="center-cell"><a class="small-action-link record-view-action" href="<?= url('/record_view.php?id=') ?><?= (int) $record['id'] ?>">View Record</a></td>
                         </tr>
                     <?php endforeach; ?>
                     <?php if (!$citySecretaryDashboard['committee_referrals']): ?><tr><td colspan="7">No Committee Referral records found.</td></tr><?php endif; ?>
@@ -1801,7 +1801,7 @@ if ($isDashboardMonitor) {
                             <td><?= e(display_date($record['received_date'] ?? '')) ?></td>
                             <td><span class="badge <?= e(status_class($record['status'])) ?>"><?= e($record['status']) ?></span></td>
                             <td><?= e(display_datetime($record['updated_at'] ?? '')) ?></td>
-                            <td class="center-cell"><a class="small-action-link record-view-action" href="/record_view.php?id=<?= (int) $record['id'] ?>">View Record</a></td>
+                            <td class="center-cell"><a class="small-action-link record-view-action" href="<?= url('/record_view.php?id=') ?><?= (int) $record['id'] ?>">View Record</a></td>
                         </tr>
                     <?php endforeach; ?>
                     <?php if (!$citySecretaryDashboard['certified_urgent']): ?><tr><td colspan="7">No Certified Urgent records found.</td></tr><?php endif; ?>
@@ -1853,7 +1853,7 @@ if ($isDashboardMonitor) {
                                             'return_url' => '/dashboard.php?city_tab=administrative-documents',
                                         ]))) ?>">Review</a>
                                     <?php endif; ?>
-                                    <a class="print-link small-action-link record-view-action" href="/record_view.php?id=<?= (int) $record['id'] ?>">View Record</a>
+                                    <a class="print-link small-action-link record-view-action" href="<?= url('/record_view.php?id=') ?><?= (int) $record['id'] ?>">View Record</a>
                                 </div>
                             </td>
                         </tr>
@@ -1907,7 +1907,7 @@ if ($isDashboardMonitor) {
                                             'return_url' => '/dashboard.php?city_tab=memoranda',
                                         ]))) ?>">Review</a>
                                     <?php endif; ?>
-                                    <a class="print-link small-action-link record-view-action" href="/record_view.php?<?= e(http_build_query([
+                                    <a class="print-link small-action-link record-view-action" href="<?= url('/record_view.php?') ?><?= e(http_build_query([
                                         'id' => (int) $record['id'],
                                         'popup' => 1,
                                         'return' => 'dashboard',
@@ -2058,7 +2058,7 @@ if ($isDashboardMonitor) {
                     </select>
                 </label>
                 <button class="btn secondary records-filter-action" type="submit">Filter</button>
-                <a class="btn secondary records-filter-action" href="/dashboard.php?city_tab=approved-plenary">Clear</a>
+                <a class="btn secondary records-filter-action" href="<?= url('/dashboard.php?city_tab=approved-plenary') ?>">Clear</a>
             </form>
             <?php if ($approvedDate !== '' || $approvedType !== ''): ?>
                 <p class="muted plenary-filter-summary">
@@ -2207,7 +2207,7 @@ if ($isDashboardMonitor) {
                         <input type="date" name="staff_log_date_to" value="<?= e($staffLogDateTo) ?>" min="<?= e($staffLogMinimumDate) ?>">
                     </label>
                     <button class="btn secondary records-filter-action" type="submit">Filter</button>
-                    <a class="btn secondary records-filter-action" href="/dashboard.php?city_tab=logs">Clear</a>
+                    <a class="btn secondary records-filter-action" href="<?= url('/dashboard.php?city_tab=logs') ?>">Clear</a>
                 </form>
                 <p class="muted"><?= (int) $citySecretaryDashboard['staff_logs_total'] ?> matching log entr<?= (int) $citySecretaryDashboard['staff_logs_total'] === 1 ? 'y' : 'ies' ?>.</p>
                 <div class="table-wrap">
@@ -2283,11 +2283,11 @@ if ($isDashboardMonitor) {
                         <tr>
                             <td><?= e($committee['name']) ?></td>
                             <td class="center-cell">
-                                <a class="print-link" href="/records.php?tab=committee&amp;committee_id=<?= (int) $committee['id'] ?>&amp;sort=updated">
+                                <a class="print-link" href="<?= url('/records.php?tab=committee&amp;committee_id=') ?><?= (int) $committee['id'] ?>&amp;sort=updated">
                                     <?= (int) ($committee['record_count'] ?? 0) ?>
                                 </a>
                             </td>
-                            <td class="center-cell"><a class="btn secondary small-btn" href="/committee_roster.php?committee_id=<?= (int) $committee['id'] ?>&amp;popup=1&amp;return=dashboard&amp;city_tab=committees">See Members</a></td>
+                            <td class="center-cell"><a class="btn secondary small-btn" href="<?= url('/committee_roster.php?committee_id=') ?><?= (int) $committee['id'] ?>&amp;popup=1&amp;return=dashboard&amp;city_tab=committees">See Members</a></td>
                         </tr>
                     <?php endforeach; ?>
                     <?php if (!$citySecretaryDashboard['committees']): ?><tr><td colspan="3">No committees found.</td></tr><?php endif; ?>
@@ -2324,23 +2324,23 @@ if ($isDashboardMonitor) {
 
 <?php if (!$usesTabbedAssignedDashboard && !$usesCitySecretaryTabbedDashboard): ?>
 <nav class="dashboard-tabs" aria-label="Dashboard record type tabs">
-    <a class="<?= $activeTab === 'committee' ? 'active' : '' ?>" href="/dashboard.php?tab=committee">Committee Referrals</a>
+    <a class="<?= $activeTab === 'committee' ? 'active' : '' ?>" href="<?= url('/dashboard.php?tab=committee') ?>">Committee Referrals</a>
     <?php if ($isReceivingClerk): ?>
-        <a class="<?= $activeTab === 'printing' ? 'active' : '' ?>" href="/dashboard.php?tab=printing">For Printing</a>
+        <a class="<?= $activeTab === 'printing' ? 'active' : '' ?>" href="<?= url('/dashboard.php?tab=printing') ?>">For Printing</a>
     <?php endif; ?>
     <?php if ($showAdministrativeDocuments): ?>
-        <a class="<?= $activeTab === 'documents' ? 'active' : '' ?>" href="/dashboard.php?tab=documents">Transmittals, Letters and Endorsements</a>
+        <a class="<?= $activeTab === 'documents' ? 'active' : '' ?>" href="<?= url('/dashboard.php?tab=documents') ?>">Transmittals, Letters and Endorsements</a>
     <?php endif; ?>
     <?php if ($showCertifiedUrgent): ?>
-        <a class="<?= $activeTab === 'certified-urgent' ? 'active' : '' ?>" href="/dashboard.php?tab=certified-urgent">Certified Urgent</a>
+        <a class="<?= $activeTab === 'certified-urgent' ? 'active' : '' ?>" href="<?= url('/dashboard.php?tab=certified-urgent') ?>">Certified Urgent</a>
     <?php endif; ?>
     <?php if ($showMemorandumDocuments): ?>
-        <a class="<?= $activeTab === 'memoranda' ? 'active' : '' ?>" href="/dashboard.php?tab=memoranda">Memo and EO's</a>
+        <a class="<?= $activeTab === 'memoranda' ? 'active' : '' ?>" href="<?= url('/dashboard.php?tab=memoranda') ?>">Memo and EO's</a>
     <?php endif; ?>
     <?php if ($showTransmittals): ?>
-        <a class="<?= $activeTab === 'transmittals' ? 'active' : '' ?>" href="/dashboard.php?tab=transmittals">Transmittals</a>
+        <a class="<?= $activeTab === 'transmittals' ? 'active' : '' ?>" href="<?= url('/dashboard.php?tab=transmittals') ?>">Transmittals</a>
     <?php endif; ?>
-    <a class="<?= $activeTab === 'notes' ? 'active' : '' ?>" href="/dashboard.php?tab=notes">
+    <a class="<?= $activeTab === 'notes' ? 'active' : '' ?>" href="<?= url('/dashboard.php?tab=notes') ?>">
         Notes
         <span class="tab-action-badge" data-note-reminder-count title="Due reminders" <?= (int) $divisionChiefDashboard['due_reminder_count'] === 0 ? 'hidden' : '' ?>><?= (int) $divisionChiefDashboard['due_reminder_count'] ?></span>
     </a>
@@ -2375,7 +2375,7 @@ if ($isDashboardMonitor) {
     <input type="date" name="date_from" value="<?= e($dateFrom) ?>" aria-label="Date received from">
     <input type="date" name="date_to" value="<?= e($dateTo) ?>" aria-label="Date received to">
     <button class="btn secondary records-filter-action" type="submit">Filter</button>
-    <a class="btn secondary records-filter-action" href="/dashboard.php?tab=<?= e($activeTab) ?>">Clear</a>
+    <a class="btn secondary records-filter-action" href="<?= url('/dashboard.php?tab=') ?><?= e($activeTab) ?>">Clear</a>
 </form>
 <?php endif; ?>
 
@@ -2445,7 +2445,7 @@ if ($isDashboardMonitor) {
                                                 <span>Received</span>
                                             </label>
                                         <?php else: ?>
-                                            <form method="post" action="/record_division_receipt.php" class="division-receipt-form">
+                                            <form method="post" action="<?= url('/record_division_receipt.php') ?>" class="division-receipt-form">
                                                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                                                 <input type="hidden" name="record_id" value="<?= (int) $record['id'] ?>">
                                                 <input type="hidden" name="return_path" value="<?= e($dashboardReturnPath) ?>">
@@ -2508,7 +2508,7 @@ if ($isDashboardMonitor) {
                         <?php if (trim((string) ($record['movement_notes'] ?? '')) !== ''): ?>
                             <div class="record-line"><strong>Remarks:</strong> <?= nl2br(e($record['movement_notes'])) ?></div>
                         <?php endif; ?>
-                        <div class="record-line record-actions"><strong>Action:</strong> <span class="actions"><a class="record-view-action" href="/record_view.php?id=<?= (int) $record['id'] ?>">View Record</a></span></div>
+                        <div class="record-line record-actions"><strong>Action:</strong> <span class="actions"><a class="record-view-action" href="<?= url('/record_view.php?id=') ?><?= (int) $record['id'] ?>">View Record</a></span></div>
                     </article>
                 <?php endforeach; ?>
                 <?php if (!$secretariatNewlyUpdatedRecords): ?>
@@ -2542,9 +2542,9 @@ if ($isDashboardMonitor) {
                                     <a class="small-action-link record-edit-action" href="<?= e(dashboard_action_url('/record_form.php?id=' . (int) $record['id'])) ?>">Edit</a>
                                 <?php else: ?>
                                     <span class="record-view-qr-actions">
-                                        <a class="small-action-link record-view-action" href="/record_view.php?id=<?= (int) $record['id'] ?>">View Record</a>
+                                        <a class="small-action-link record-view-action" href="<?= url('/record_view.php?id=') ?><?= (int) $record['id'] ?>">View Record</a>
                                         <?php if ($isReceivingClerk): ?>
-                                            <a class="small-action-link record-qr-print-action" href="/communication_qr_print.php?id=<?= (int) $record['id'] ?>" target="communication_qr_print" rel="noopener" onclick="window.open(this.href, 'communication_qr_print', 'width=1020,height=820,scrollbars=yes,resizable=yes'); return false;">Print QR</a>
+                                            <a class="small-action-link record-qr-print-action" href="<?= url('/communication_qr_print.php?id=') ?><?= (int) $record['id'] ?>" target="communication_qr_print" rel="noopener" onclick="window.open(this.href, 'communication_qr_print', 'width=1020,height=820,scrollbars=yes,resizable=yes'); return false;">Print QR</a>
                                         <?php endif; ?>
                                     </span>
                                 <?php endif; ?>
@@ -2627,9 +2627,9 @@ if ($isDashboardMonitor) {
                                     <a class="small-action-link record-edit-action" href="<?= e(dashboard_action_url('/record_form.php?id=' . (int) $record['id'])) ?>">Edit</a>
                                 <?php else: ?>
                                     <span class="record-view-qr-actions">
-                                        <a class="small-action-link record-view-action" href="/record_view.php?id=<?= (int) $record['id'] ?>">View Record</a>
+                                        <a class="small-action-link record-view-action" href="<?= url('/record_view.php?id=') ?><?= (int) $record['id'] ?>">View Record</a>
                                         <?php if ($isReceivingClerk): ?>
-                                            <a class="small-action-link record-qr-print-action" href="/communication_qr_print.php?id=<?= (int) $record['id'] ?>" target="communication_qr_print" rel="noopener" onclick="window.open(this.href, 'communication_qr_print', 'width=1020,height=820,scrollbars=yes,resizable=yes'); return false;">Print QR</a>
+                                            <a class="small-action-link record-qr-print-action" href="<?= url('/communication_qr_print.php?id=') ?><?= (int) $record['id'] ?>" target="communication_qr_print" rel="noopener" onclick="window.open(this.href, 'communication_qr_print', 'width=1020,height=820,scrollbars=yes,resizable=yes'); return false;">Print QR</a>
                                         <?php endif; ?>
                                     </span>
                                 <?php endif; ?>

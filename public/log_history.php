@@ -18,10 +18,10 @@ if ($view === '' || $entityId <= 0) {
     exit('Invalid log history request.');
 }
 
-$defaultCloseUrl = $role === 'city_secretary' ? '/dashboard.php?city_tab=logs' : '/audit_logs.php';
+$defaultCloseUrl = $role === 'city_secretary' ? url('/dashboard.php?city_tab=logs') : url('/audit_logs.php');
 $closeUrl = (string) ($_GET['return_url'] ?? $defaultCloseUrl);
 $closeParts = parse_url($closeUrl);
-$allowedClosePath = $role === 'city_secretary' ? '/dashboard.php' : '/audit_logs.php';
+$allowedClosePath = $role === 'city_secretary' ? url('/dashboard.php') : url('/audit_logs.php');
 if (
     $closeUrl === ''
     || $closeParts === false

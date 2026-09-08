@@ -130,7 +130,7 @@ require __DIR__ . '/../app/partials/header.php';
             </label>
             <div class="actions full">
                 <button class="btn" type="submit">Save Term</button>
-                <?php if ($edit): ?><a class="btn secondary" href="/terms.php">Cancel</a><?php endif; ?>
+                <?php if ($edit): ?><a class="btn secondary" href="<?= url('/terms.php') ?>">Cancel</a><?php endif; ?>
             </div>
         </form>
     <?php else: ?>
@@ -151,7 +151,7 @@ require __DIR__ . '/../app/partials/header.php';
                 <td><?= (int) $term['member_count'] ?></td>
                 <td class="actions">
                     <?php if (is_admin()): ?>
-                        <a href="/terms.php?edit=<?= (int) $term['id'] ?>">Edit</a>
+                        <a href="<?= url('/terms.php?edit=') ?><?= (int) $term['id'] ?>">Edit</a>
                         <form method="post" class="inline-form" onsubmit="return confirm('Delete this term and its committee rosters?');">
                             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                             <input type="hidden" name="action" value="delete">

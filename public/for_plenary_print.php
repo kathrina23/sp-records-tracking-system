@@ -53,13 +53,13 @@ function plenary_print_title(array $record): string
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>For Plenary Result</title>
-    <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="stylesheet" href="<?= url('/assets/styles.css') ?>">
 </head>
 <body class="plenary-print-page">
     <main class="plenary-print-sheet">
         <div class="print-actions actions">
             <button class="btn" type="button" onclick="window.print()">Print Result</button>
-            <a class="btn secondary back-dashboard-action" href="/dashboard.php?city_tab=for-plenary">Back to Dashboard</a>
+            <a class="btn secondary back-dashboard-action" href="<?= url('/dashboard.php?city_tab=for-plenary') ?>">Back to Dashboard</a>
         </div>
         <header class="plenary-print-header">
             <h1>For Plenary</h1>

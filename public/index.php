@@ -6,7 +6,7 @@ require __DIR__ . '/../app/partials/header.php';
 ?>
 <section class="landing-window">
     <div class="landing-head">
-        <img src="/assets/splogo.jpg" alt="Sangguniang Panlungsod logo">
+        <img src="<?= url('/assets/splogo.jpg') ?>" alt="Sangguniang Panlungsod logo">
         <div>
             <h1><?= e(APP_NAME) ?></h1>
             <p class="muted">Legislative Committees Division</p>
@@ -25,7 +25,7 @@ require __DIR__ . '/../app/partials/header.php';
         <article class="landing-card public-card">
             <h2>Check the Status of your Request</h2>
             <p class="muted">Search using a communication number to view the latest status of your request.</p>
-            <form method="get" action="/public_status.php" class="public-search-form">
+            <form method="get" action="<?= url('/public_status.php') ?>" class="public-search-form">
                 <label>Communication Number
                     <input name="control_number" placeholder="Example: L-00001-2026" required>
                 </label>

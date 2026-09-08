@@ -47,7 +47,7 @@ require __DIR__ . '/../app/partials/header.php';
             <a class="modal-close" href="<?= e($closeUrl) ?>" aria-label="Close proposed number window">X</a>
         <?php endif; ?>
     </div>
-    <form method="post" action="/record_workflow.php" class="form-grid">
+    <form method="post" action="<?= url('/record_workflow.php') ?>" class="form-grid">
         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
         <input type="hidden" name="record_id" value="<?= (int) $record['id'] ?>">
         <input type="hidden" name="action" value="update_plenary_numbers">

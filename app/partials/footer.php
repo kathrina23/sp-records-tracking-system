@@ -10,10 +10,11 @@ document.addEventListener('click', (event) => {
         return;
     }
 
+    const basePath = <?= json_encode(BASE_PATH) ?>;
     const returnTargets = {
-        '/records.php': 'records',
-        '/dashboard.php': 'dashboard',
-        '/record_recipients.php': 'recipients',
+        [basePath + '/records.php']: 'records',
+        [basePath + '/dashboard.php']: 'dashboard',
+        [basePath + '/record_recipients.php']: 'recipients',
     };
     const returnTarget = returnTargets[window.location.pathname];
     if (!returnTarget) {
@@ -21,7 +22,7 @@ document.addEventListener('click', (event) => {
     }
 
     const destination = new URL(link.href, window.location.origin);
-    if (destination.origin !== window.location.origin || destination.pathname !== '/record_view.php') {
+    if (destination.origin !== window.location.origin || destination.pathname !== basePath + '/record_view.php') {
         return;
     }
 
@@ -36,6 +37,6 @@ document.addEventListener('click', (event) => {
     link.href = destination.pathname + destination.search + destination.hash;
 });
 </script>
-<script src="/assets/table-pagination.js"></script>
+<script src="<?= url('/assets/table-pagination.js') ?>"></script>
 </body>
 </html>

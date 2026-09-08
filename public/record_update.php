@@ -88,7 +88,7 @@ require __DIR__ . '/../app/partials/header.php';
     <?php if ($isPopup): ?>
         <a class="modal-close" href="<?= e($closeUrl) ?>" aria-label="Close update window">X</a>
     <?php else: ?>
-        <a class="btn secondary" href="/record_view.php?id=<?= (int) $record['id'] ?>">Track</a>
+        <a class="btn secondary" href="<?= url('/record_view.php?id=') ?><?= (int) $record['id'] ?>">Track</a>
     <?php endif; ?>
 </div>
 
@@ -112,7 +112,7 @@ require __DIR__ . '/../app/partials/header.php';
 
 <section class="panel" style="margin-top:16px;">
     <h2><?= (($record['document_type'] ?? '') === 'Committee Referrals' && (current_user()['role'] ?? '') === 'division_chief' && !division_chief_first_action_done($record)) ? 'Division Chief: First Action' : 'Status Update' ?></h2>
-    <form method="post" action="/status_update.php" class="form-grid">
+    <form method="post" action="<?= url('/status_update.php') ?>" class="form-grid">
         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
         <input type="hidden" name="record_id" value="<?= (int) $record['id'] ?>">
         <input type="hidden" name="return" value="<?= e($returnTarget) ?>">

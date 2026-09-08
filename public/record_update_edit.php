@@ -101,7 +101,7 @@ require __DIR__ . '/../app/partials/header.php';
         <div class="actions full">
             <button class="btn" type="submit">Save Remarks</button>
             <?php if (!$isDashboardPopup): ?>
-            <a class="btn secondary" href="/committee_referral_print.php?id=<?= (int) $row['record_id'] ?>&movement_id=<?= (int) $movementId ?>">Print Referral</a>
+            <a class="btn secondary" href="<?= url('/committee_referral_print.php?id=') ?><?= (int) $row['record_id'] ?>&movement_id=<?= (int) $movementId ?>">Print Referral</a>
             <?php endif; ?>
         </div>
     </form>

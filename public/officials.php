@@ -163,7 +163,7 @@ require __DIR__ . '/../app/partials/header.php';
             </label>
             <div class="actions full">
                 <button class="btn" type="submit">Save Official</button>
-                <?php if ($edit): ?><a class="btn secondary" href="/officials.php?term_id=<?= (int) $selectedTermId ?>">Cancel</a><?php endif; ?>
+                <?php if ($edit): ?><a class="btn secondary" href="<?= url('/officials.php?term_id=') ?><?= (int) $selectedTermId ?>">Cancel</a><?php endif; ?>
             </div>
         </form>
     </section>
@@ -182,7 +182,7 @@ require __DIR__ . '/../app/partials/header.php';
                 <td><?= (int) $official['sort_order'] ?></td>
                 <td class="actions">
                     <?php if (is_admin()): ?>
-                        <a href="/officials.php?edit=<?= (int) $official['id'] ?>&term_id=<?= (int) $selectedTermId ?>">Edit</a>
+                        <a href="<?= url('/officials.php?edit=') ?><?= (int) $official['id'] ?>&term_id=<?= (int) $selectedTermId ?>">Edit</a>
                         <form method="post" class="inline-form" onsubmit="return confirm('Delete this official?');">
                             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                             <input type="hidden" name="action" value="delete">

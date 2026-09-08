@@ -10,7 +10,7 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
     if (attempt_login(trim($_POST['email'] ?? ''), $_POST['password'] ?? '')) {
-        redirect('/sp-records/dashboard.php');
+        redirect('/dashboard.php');
     }
     $error = 'Invalid email or password.';
 }
@@ -31,7 +31,7 @@ require __DIR__ . '/../app/partials/header.php';
             <input type="password" name="password" required value="admin123">
         </label>
         <button class="btn" type="submit">Sign in</button>
-        <a class="btn secondary" href="/">Public Main Window</a>
+        <a class="btn secondary" href="<?= url('/') ?>">Public Main Window</a>
     </form>
 </section>
 <?php require __DIR__ . '/../app/partials/footer.php'; ?>

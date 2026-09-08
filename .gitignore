@@ -1,5 +1,7 @@
 backups/
 app/db.php
 app/config.php
-.config
+web.config
+storage/
+tmp/
 storage/

@@ -9,13 +9,13 @@ $returnTarget = in_array($_GET['return'] ?? '', ['records', 'dashboard', 'record
     ? (string) $_GET['return']
     : 'record';
 $isPopup = ($_GET['popup'] ?? '') === '1';
-$defaultCloseUrl = '/record_view.php?id=' . $recordId;
+$defaultCloseUrl = url('/record_view.php?id=' . $recordId);
 $closeUrl = (string) ($_GET['return_url'] ?? $defaultCloseUrl);
 $allowedClosePath = match ($returnTarget) {
-    'records' => '/records.php',
-    'dashboard' => '/dashboard.php',
-    'review' => '/record_form.php',
-    default => '/record_view.php',
+    'records' => url('/records.php'),
+    'dashboard' => url('/dashboard.php'),
+    'review' => url('/record_form.php'),
+    default => url('/record_view.php'),
 };
 $closeParts = parse_url($closeUrl);
 if (
@@ -87,12 +87,12 @@ require __DIR__ . '/../app/partials/header.php';
                 </header>
                 <?php if ($isImage): ?>
                     <div class="combined-image-wrap">
-                        <img src="/record_attachment.php?id=<?= (int) $attachment['id'] ?>" alt="<?= e($displayTitle) ?>">
+                        <img src="<?= url('/record_attachment.php?id=') ?><?= (int) $attachment['id'] ?>" alt="<?= e($displayTitle) ?>">
                     </div>
                 <?php else: ?>
                     <iframe
                         class="combined-pdf-frame"
-                        src="/record_attachment.php?id=<?= (int) $attachment['id'] ?>#toolbar=1&navpanes=0"
+                        src="<?= url('/record_attachment.php?id=') ?><?= (int) $attachment['id'] ?>#toolbar=1&navpanes=0"
                         title="<?= e($displayTitle) ?>"
                     ></iframe>
                 <?php endif; ?>

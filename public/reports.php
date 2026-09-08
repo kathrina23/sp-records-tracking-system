@@ -77,7 +77,7 @@ require __DIR__ . '/../app/partials/header.php';
     <input type="date" name="date_to" value="<?= e($dateTo) ?>" aria-label="Date received to">
     <button class="btn secondary" type="submit">Generate Report</button>
     <?php if ($dateFrom !== '' || $dateTo !== ''): ?>
-        <a class="btn secondary" href="/reports.php">Clear</a>
+        <a class="btn secondary" href="<?= url('/reports.php') ?>">Clear</a>
     <?php endif; ?>
 </form>
 

@@ -17,8 +17,8 @@ $reportTitle = trim($_POST['report_title'] ?? '');
 $returnTarget = ($_POST['return'] ?? '') === 'dashboard' ? 'dashboard' : 'record';
 $divisionTab = trim($_POST['division_tab'] ?? '');
 $cityTab = trim($_POST['city_tab'] ?? '');
-$dashboardReturnUrl = '/dashboard.php' . ($cityTab !== '' ? '?city_tab=' . urlencode($cityTab) : ($divisionTab !== '' ? '?division_tab=' . urlencode($divisionTab) : ''));
-$updateFormUrl = '/record_update.php?id=' . $id . ($returnTarget === 'dashboard'
+$dashboardReturnUrl = url('/dashboard.php') . ($cityTab !== '' ? '?city_tab=' . urlencode($cityTab) : ($divisionTab !== '' ? '?division_tab=' . urlencode($divisionTab) : ''));
+$updateFormUrl = url('/record_update.php?id=' . $id) . ($returnTarget === 'dashboard'
     ? '&popup=1&return=dashboard' . ($cityTab !== '' ? '&city_tab=' . urlencode($cityTab) : '') . ($divisionTab !== '' ? '&division_tab=' . urlencode($divisionTab) : '')
     : '');
 

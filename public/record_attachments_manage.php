@@ -6,7 +6,7 @@ ensure_plenary_number_schema();
 
 $recordId = (int) ($_GET['record_id'] ?? 0);
 $isPopup = ($_GET['popup'] ?? '') === '1';
-$defaultCloseUrl = '/record_view.php?id=' . $recordId;
+$defaultCloseUrl = url('/record_view.php?id=' . $recordId);
 $closeUrl = (string) ($_GET['return_url'] ?? $defaultCloseUrl);
 $closeParts = parse_url($closeUrl);
 if (
@@ -14,7 +14,7 @@ if (
     || $closeParts === false
     || isset($closeParts['scheme'])
     || isset($closeParts['host'])
-    || !in_array(($closeParts['path'] ?? ''), ['/record_view.php', '/dashboard.php'], true)
+    || !in_array(($closeParts['path'] ?? ''), [url('/record_view.php'), url('/dashboard.php')], true)
 ) {
     $closeUrl = $defaultCloseUrl;
 }
@@ -46,7 +46,7 @@ if ($isPopup) {
     $managerParams['popup'] = 1;
     $managerParams['return_url'] = $closeUrl;
 }
-$managerUrl = '/record_attachments_manage.php?' . http_build_query($managerParams);
+$managerUrl = url('/record_attachments_manage.php?' . http_build_query($managerParams));
 
 require __DIR__ . '/../app/partials/header.php';
 ?>
@@ -69,7 +69,7 @@ require __DIR__ . '/../app/partials/header.php';
         <?php endif; ?>
     </div>
 
-    <form method="post" action="/record_attachment.php" enctype="multipart/form-data" class="attachment-manager-form">
+    <form method="post" action="<?= url('/record_attachment.php') ?>" enctype="multipart/form-data" class="attachment-manager-form">
         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
         <input type="hidden" name="record_id" value="<?= $recordId ?>">
         <input type="hidden" name="attachment_action" value="manage_plenary_attachments">
@@ -95,7 +95,7 @@ require __DIR__ . '/../app/partials/header.php';
                             </label>
                             <div class="attachment-manager-file-meta" id="attachment_file_<?= (int) $attachment['id'] ?>">
                                 <?php if ($hasAttachedFile): ?>
-                                    <a href="/record_attachment.php?id=<?= (int) $attachment['id'] ?>" target="_blank" rel="noopener"><?= e($attachment['original_name']) ?></a>
+                                    <a href="<?= url('/record_attachment.php?id=') ?><?= (int) $attachment['id'] ?>" target="_blank" rel="noopener"><?= e($attachment['original_name']) ?></a>
                                 <?php else: ?>
                                     <span class="attachment-manager-record-only">Record entry only · No file attached</span>
                                 <?php endif; ?>

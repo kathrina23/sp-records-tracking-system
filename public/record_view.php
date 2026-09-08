@@ -9,16 +9,16 @@ $isPopup = ($_GET['popup'] ?? '') === '1';
 $returnTarget = in_array($_GET['return'] ?? '', ['dashboard', 'records', 'recipients'], true)
     ? (string) $_GET['return']
     : 'record';
-$recordsReturnUrl = (string) ($_GET['return_url'] ?? '/records.php');
+$recordsReturnUrl = (string) ($_GET['return_url'] ?? url('/records.php'));
 $recordsReturnParts = parse_url($recordsReturnUrl);
 if (
     $recordsReturnUrl === ''
     || $recordsReturnParts === false
     || isset($recordsReturnParts['scheme'])
     || isset($recordsReturnParts['host'])
-    || ($recordsReturnParts['path'] ?? '') !== '/records.php'
+    || ($recordsReturnParts['path'] ?? '') !== url('/records.php')
 ) {
-    $recordsReturnUrl = '/records.php';
+    $recordsReturnUrl = url('/records.php');
 }
 $divisionTab = $_GET['division_tab'] ?? '';
 $staffUpdatesPage = max(1, (int) ($_GET['staff_updates_page'] ?? 1));
@@ -41,7 +41,7 @@ if ($divisionTab === 'staff-updates') {
         $dashboardReturnParams['staff_update_date_to'] = $staffUpdateDateTo;
     }
 }
-$dashboardReturnUrl = '/dashboard.php' . ($dashboardReturnParams ? '?' . http_build_query($dashboardReturnParams) : '');
+$dashboardReturnUrl = url('/dashboard.php') . ($dashboardReturnParams ? '?' . http_build_query($dashboardReturnParams) : '');
 if ($returnTarget === 'dashboard') {
     $requestedDashboardReturnUrl = (string) ($_GET['return_url'] ?? $dashboardReturnUrl);
     $requestedDashboardReturnParts = parse_url($requestedDashboardReturnUrl);
@@ -50,12 +50,12 @@ if ($returnTarget === 'dashboard') {
         && $requestedDashboardReturnParts !== false
         && !isset($requestedDashboardReturnParts['scheme'])
         && !isset($requestedDashboardReturnParts['host'])
-        && ($requestedDashboardReturnParts['path'] ?? '') === '/dashboard.php'
+        && ($requestedDashboardReturnParts['path'] ?? '') === url('/dashboard.php')
     ) {
         $dashboardReturnUrl = $requestedDashboardReturnUrl;
     }
 }
-$recipientsReturnUrl = '/record_recipients.php?record_id=' . $id;
+$recipientsReturnUrl = url('/record_recipients.php?record_id=' . $id);
 if ($returnTarget === 'recipients') {
     $requestedRecipientsReturnUrl = (string) ($_GET['return_url'] ?? $recipientsReturnUrl);
     $requestedRecipientsReturnParts = parse_url($requestedRecipientsReturnUrl);
@@ -64,7 +64,7 @@ if ($returnTarget === 'recipients') {
         && $requestedRecipientsReturnParts !== false
         && !isset($requestedRecipientsReturnParts['scheme'])
         && !isset($requestedRecipientsReturnParts['host'])
-        && ($requestedRecipientsReturnParts['path'] ?? '') === '/record_recipients.php'
+        && ($requestedRecipientsReturnParts['path'] ?? '') === url('/record_recipients.php')
     ) {
         $recipientsReturnUrl = $requestedRecipientsReturnUrl;
     }
@@ -73,7 +73,7 @@ $closeUrl = match ($returnTarget) {
     'dashboard' => $dashboardReturnUrl,
     'records' => $recordsReturnUrl,
     'recipients' => $recipientsReturnUrl,
-    default => '/records.php',
+    default => url('/records.php'),
 };
 $attachmentCloseParams = ['id' => $id];
 if ($isPopup) {
@@ -83,22 +83,22 @@ if ($isPopup) {
         $attachmentCloseParams['return_url'] = $closeUrl;
     }
 }
-$attachmentCloseUrl = '/record_view.php?' . http_build_query($attachmentCloseParams);
-$recordEditUrl = '/record_form.php?id=' . $id;
+$attachmentCloseUrl = url('/record_view.php?' . http_build_query($attachmentCloseParams));
+$recordEditUrl = url('/record_form.php?id=' . $id);
 if ($isPopup) {
-    $recordEditUrl = '/record_form.php?' . http_build_query([
+    $recordEditUrl = url('/record_form.php?' . http_build_query([
         'id' => $id,
         'popup' => 1,
         'return' => 'record',
         'return_url' => $attachmentCloseUrl,
-    ]);
+    ]));
 }
-$attachmentViewUrl = '/record_attachments_view.php?' . http_build_query([
+$attachmentViewUrl = url('/record_attachments_view.php?' . http_build_query([
     'record_id' => $id,
     'popup' => 1,
     'return' => 'record',
     'return_url' => $attachmentCloseUrl,
-]);
+]));
 $attachmentManageParams = [
     'record_id' => $id,
     'return_url' => $attachmentCloseUrl,
@@ -106,7 +106,7 @@ $attachmentManageParams = [
 if ($isPopup) {
     $attachmentManageParams['popup'] = 1;
 }
-$attachmentManageUrl = '/record_attachments_manage.php?' . http_build_query($attachmentManageParams);
+$attachmentManageUrl = url('/record_attachments_manage.php?' . http_build_query($attachmentManageParams));
 $stmt = db()->prepare("SELECT r.*, c.name committee_name, COALESCE(NULLIF(u.division_name, ''), u.name) assigned_division, creator.name created_by_name, clerk.name receiving_clerk_name
     FROM records r
     LEFT JOIN committees c ON c.id = r.committee_id
@@ -262,21 +262,21 @@ require __DIR__ . '/../app/partials/header.php';
     </div>
     <div class="actions record-view-actions">
         <?php if ($canUpdatePlenaryNumbers): ?>
-            <a class="btn secondary" href="/plenary_number_form.php?id=<?= (int) $record['id'] ?>&amp;popup=1<?= $isPopup ? '&amp;return=dashboard&amp;division_tab=' . e($divisionTab !== '' ? $divisionTab : 'staff-updates') : '' ?>">Assign Proposed No.</a>
+            <a class="btn secondary" href="<?= url('/plenary_number_form.php?id=') ?><?= (int) $record['id'] ?>&amp;popup=1<?= $isPopup ? '&amp;return=dashboard&amp;division_tab=' . e($divisionTab !== '' ? $divisionTab : 'staff-updates') : '' ?>">Assign Proposed No.</a>
         <?php elseif (can_edit_record($record)): ?>
             <a class="btn secondary<?= (current_user()['role'] ?? '') === 'city_secretary' && ($record['status'] ?? '') === 'Received' ? ' record-review-action' : ' record-edit-action' ?>" href="<?= e($recordEditUrl) ?>"><?= (current_user()['role'] ?? '') === 'city_secretary' && ($record['status'] ?? '') === 'Received' ? 'Review' : 'Edit' ?></a>
         <?php endif; ?>
         <?php if (can_update_record_status($record)): ?>
-            <a class="btn secondary record-update-action" href="/record_update.php?id=<?= (int) $record['id'] ?><?= $isPopup ? '&amp;popup=1&amp;return=dashboard&amp;division_tab=' . e($divisionTab !== '' ? $divisionTab : 'staff-updates') : '' ?>">Update Status</a>
+            <a class="btn secondary record-update-action" href="<?= url('/record_update.php?id=') ?><?= (int) $record['id'] ?><?= $isPopup ? '&amp;popup=1&amp;return=dashboard&amp;division_tab=' . e($divisionTab !== '' ? $divisionTab : 'staff-updates') : '' ?>">Update Status</a>
         <?php endif; ?>
         <?php if (can_manage_transmittal_recipients($record)): ?>
-            <a class="btn secondary" href="/record_recipients.php?record_id=<?= (int) $record['id'] ?>">Add Recipients</a>
+            <a class="btn secondary" href="<?= url('/record_recipients.php?record_id=') ?><?= (int) $record['id'] ?>">Add Recipients</a>
         <?php endif; ?>
         <?php if ($isPopup && !in_array(current_user()['role'] ?? '', ['administrative_support', 'others'], true) && $record['document_type'] === 'Committee Referrals' && !empty($record['committee_id']) && ($record['status'] ?? '') !== 'Received'): ?>
-            <a class="btn apple-green<?= (current_user()['role'] ?? '') === 'receiving_clerk' ? '' : ' record-document-action' ?>" href="/committee_referral_print.php?id=<?= (int) $record['id'] ?>"<?= (current_user()['role'] ?? '') === 'receiving_clerk' ? ' target="_blank" rel="noopener"' : '' ?>><?= (current_user()['role'] ?? '') === 'receiving_clerk' ? 'View Referral' : 'Committee Referral' ?></a>
+            <a class="btn apple-green<?= (current_user()['role'] ?? '') === 'receiving_clerk' ? '' : ' record-document-action' ?>" href="<?= url('/committee_referral_print.php?id=') ?><?= (int) $record['id'] ?>"<?= (current_user()['role'] ?? '') === 'receiving_clerk' ? ' target="_blank" rel="noopener"' : '' ?>><?= (current_user()['role'] ?? '') === 'receiving_clerk' ? 'View Referral' : 'Committee Referral' ?></a>
         <?php endif; ?>
         <?php if (can_delete_record($record)): ?>
-            <form method="post" action="/record_delete.php" onsubmit="return confirm('Delete this record and its tracking history?');">
+            <form method="post" action="<?= url('/record_delete.php') ?>" onsubmit="return confirm('Delete this record and its tracking history?');">
                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                 <input type="hidden" name="record_id" value="<?= (int) $record['id'] ?>">
                 <button class="btn danger record-delete-action" type="submit">Delete</button>
@@ -289,7 +289,7 @@ require __DIR__ . '/../app/partials/header.php';
     <div class="panel-title-row">
         <h2>Record Details</h2>
         <?php if (!$isPopup && !in_array(current_user()['role'] ?? '', ['administrative_support', 'others'], true) && $record['document_type'] === 'Committee Referrals' && !empty($record['committee_id']) && ($record['status'] ?? '') !== 'Received'): ?>
-            <a class="btn apple-green<?= (current_user()['role'] ?? '') === 'receiving_clerk' ? '' : ' record-document-action' ?>" href="/committee_referral_print.php?id=<?= (int) $record['id'] ?>"<?= (current_user()['role'] ?? '') === 'receiving_clerk' ? ' target="_blank" rel="noopener"' : '' ?>><?= (current_user()['role'] ?? '') === 'receiving_clerk' ? 'View Referral' : 'Committee Referral' ?></a>
+            <a class="btn apple-green<?= (current_user()['role'] ?? '') === 'receiving_clerk' ? '' : ' record-document-action' ?>" href="<?= url('/committee_referral_print.php?id=') ?><?= (int) $record['id'] ?>"<?= (current_user()['role'] ?? '') === 'receiving_clerk' ? ' target="_blank" rel="noopener"' : '' ?>><?= (current_user()['role'] ?? '') === 'receiving_clerk' ? 'View Referral' : 'Committee Referral' ?></a>
         <?php endif; ?>
     </div>
     <div class="detail-list">
@@ -322,7 +322,7 @@ require __DIR__ . '/../app/partials/header.php';
                             <?php if (!empty($divisionReceipt['received_by_name'])): ?>by <?= e($divisionReceipt['received_by_name']) ?><?php endif; ?>
                         </span>
                     <?php else: ?>
-                        <form method="post" action="/record_division_receipt.php" class="division-receipt-form">
+                        <form method="post" action="<?= url('/record_division_receipt.php') ?>" class="division-receipt-form">
                             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                             <input type="hidden" name="record_id" value="<?= (int) $record['id'] ?>">
                             <input type="hidden" name="return_path" value="<?= e($recordViewReturnPath) ?>">
@@ -394,7 +394,7 @@ require __DIR__ . '/../app/partials/header.php';
             <?php endif; ?>
         </div>
         <?php if (can_upload_record_attachment($record) && !can_manage_plenary_record_attachments($record)): ?>
-            <form method="post" action="/record_attachment.php" enctype="multipart/form-data" class="attachment-form">
+            <form method="post" action="<?= url('/record_attachment.php') ?>" enctype="multipart/form-data" class="attachment-form">
                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                 <input type="hidden" name="record_id" value="<?= (int) $record['id'] ?>">
                 <label>Attach PDF / Images
@@ -417,7 +417,7 @@ require __DIR__ . '/../app/partials/header.php';
 <?php if (can_assign_referral_committee($record) && ($record['document_type'] ?? '') === 'Committee Referrals' && ($record['status'] ?? '') === 'Received'): ?>
     <section class="panel" style="margin-top:16px;">
         <h2>City Secretary: Review Record</h2>
-        <form method="post" action="/record_workflow.php" class="form-grid">
+        <form method="post" action="<?= url('/record_workflow.php') ?>" class="form-grid">
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
             <input type="hidden" name="record_id" value="<?= (int) $record['id'] ?>">
             <input type="hidden" name="action" value="assign_committee">
@@ -502,9 +502,9 @@ require __DIR__ . '/../app/partials/header.php';
             <p class="muted">This Committee Referral was already marked printed and forwarded. You may print another copy if needed.</p>
         <?php endif; ?>
         <div class="actions">
-            <a class="btn" href="/committee_referral_print.php?id=<?= (int) $record['id'] ?>"<?= (current_user()['role'] ?? '') === 'receiving_clerk' ? ' target="_blank" rel="noopener"' : '' ?>><?= $committeeReferralPrinted ? 'Print Again' : 'Open Committee Referral' ?></a>
+            <a class="btn" href="<?= url('/committee_referral_print.php?id=') ?><?= (int) $record['id'] ?>"<?= (current_user()['role'] ?? '') === 'receiving_clerk' ? ' target="_blank" rel="noopener"' : '' ?>><?= $committeeReferralPrinted ? 'Print Again' : 'Open Committee Referral' ?></a>
             <?php if (!$committeeReferralPrinted): ?>
-                <form method="post" action="/record_workflow.php">
+                <form method="post" action="<?= url('/record_workflow.php') ?>">
                     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                     <input type="hidden" name="record_id" value="<?= (int) $record['id'] ?>">
                     <input type="hidden" name="action" value="mark_referral_printed">
@@ -518,7 +518,7 @@ require __DIR__ . '/../app/partials/header.php';
 <?php if (can_act_on_administrative_document($record) && $record['status'] !== 'Completed'): ?>
     <section class="panel" style="margin-top:16px;">
         <h2>City Secretary: Act on Document</h2>
-        <form method="post" action="/record_workflow.php" class="form-grid">
+        <form method="post" action="<?= url('/record_workflow.php') ?>" class="form-grid">
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
             <input type="hidden" name="record_id" value="<?= (int) $record['id'] ?>">
             <input type="hidden" name="action" value="act_administrative_document">
@@ -597,10 +597,10 @@ require __DIR__ . '/../app/partials/header.php';
                     <?php endif; ?>
                     <?php if (can_print_record_update($record, $movement)): ?>
                         <p>
-                            <a class="print-link" href="/committee_referral_print.php?id=<?= (int) $record['id'] ?>&movement_id=<?= (int) $movement['id'] ?>">Print Referral</a>
+                            <a class="print-link" href="<?= url('/committee_referral_print.php?id=') ?><?= (int) $record['id'] ?>&movement_id=<?= (int) $movement['id'] ?>">Print Referral</a>
                             <?php if (can_edit_secretariat_update($record, $movement)): ?>
                                 <span class="muted"> | </span>
-                                <a class="print-link" href="/record_update_edit.php?movement_id=<?= (int) $movement['id'] ?>">Add Chief Remarks</a>
+                                <a class="print-link" href="<?= url('/record_update_edit.php?movement_id=') ?><?= (int) $movement['id'] ?>">Add Chief Remarks</a>
                             <?php endif; ?>
                         </p>
                     <?php endif; ?>
@@ -626,6 +626,6 @@ require __DIR__ . '/../app/partials/header.php';
 <?php endif; ?>
 </div>
 <?php if ($isPopup): ?></div><?php endif; ?>
-<script src="/assets/vendor/qrcode-generator.js"></script>
-<script src="/assets/communication-qr.js"></script>
+<script src="<?= url('/assets/vendor/qrcode-generator.js') ?>"></script>
+<script src="<?= url('/assets/communication-qr.js') ?>"></script>
 <?php require __DIR__ . '/../app/partials/footer.php'; ?>

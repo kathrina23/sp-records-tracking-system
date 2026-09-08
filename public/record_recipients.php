@@ -64,8 +64,8 @@ require __DIR__ . '/../app/partials/header.php';
         <p class="muted">Communication Number: <?= e($record['control_number']) ?></p>
     </div>
     <div class="actions">
-        <a class="btn secondary" href="/records.php?tab=transmittals">Back to Transmittals Tab</a>
-        <a class="btn secondary record-view-action" href="/record_view.php?id=<?= (int) $record['id'] ?>">View Record</a>
+        <a class="btn secondary" href="<?= url('/records.php?tab=transmittals') ?>">Back to Transmittals Tab</a>
+        <a class="btn secondary record-view-action" href="<?= url('/record_view.php?id=') ?><?= (int) $record['id'] ?>">View Record</a>
     </div>
 </div>
 

@@ -27,7 +27,7 @@
         </div>
 
         <?php if (!$isDashboardMonitor): ?>
-        <form class="division-note-composer" method="post" action="/division_chief_note.php">
+        <form class="division-note-composer" method="post" action="<?= url('/division_chief_note.php') ?>">
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
             <input type="hidden" name="action" value="create">
             <label class="division-note-message">Note
@@ -90,7 +90,7 @@
                     $noteReminderIsDue = $noteHasReminder && $noteReminderTimestamp <= time();
                 ?>
                 <article class="division-sticky-note<?= $noteReminderIsDue ? ' reminder-due' : '' ?>"<?= $noteHasReminder ? ' data-reminder-at="' . e(date('c', $noteReminderTimestamp)) . '"' : '' ?>>
-                    <a class="division-note-record-tag record-view-action" href="/record_view.php?id=<?= (int) $note['record_id'] ?>">
+                    <a class="division-note-record-tag record-view-action" href="<?= url('/record_view.php?id=') ?><?= (int) $note['record_id'] ?>">
                         <span>Tagged Record</span>
                         <strong><?= e($note['control_number']) ?></strong>
                     </a>
@@ -114,7 +114,7 @@
                             <div class="division-note-actions">
                                 <details class="division-note-editor">
                                     <summary>Edit</summary>
-                                    <form method="post" action="/division_chief_note.php">
+                                    <form method="post" action="<?= url('/division_chief_note.php') ?>">
                                         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                                         <input type="hidden" name="action" value="update">
                                         <input type="hidden" name="note_id" value="<?= (int) $note['id'] ?>">
@@ -127,7 +127,7 @@
                                         <button class="btn small-btn" type="submit">Save</button>
                                     </form>
                                 </details>
-                                <form method="post" action="/division_chief_note.php" onsubmit="return confirm('Delete this personal note?');">
+                                <form method="post" action="<?= url('/division_chief_note.php') ?>" onsubmit="return confirm('Delete this personal note?');">
                                     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="note_id" value="<?= (int) $note['id'] ?>">

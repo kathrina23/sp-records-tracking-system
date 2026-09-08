@@ -76,7 +76,7 @@ $copies = $isACommunication
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Print QR - <?= e($record['control_number']) ?></title>
-    <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="stylesheet" href="<?= url('/assets/styles.css') ?>">
 </head>
 <body class="communication-qr-print-page" data-print-copy="both">
     <div class="qr-print-toolbar actions">
@@ -116,7 +116,7 @@ $copies = $isACommunication
                         <div class="qr-print-secretary">
                             <div class="qr-print-signature">
                                 <?php if ($hasCitySecretarySignature): ?>
-                                    <img src="/assets/city-secretary-signature.png" alt="">
+                                    <img src="<?= url('/assets/city-secretary-signature.png') ?>" alt="">
                                 <?php endif; ?>
                                 <strong><?= e(strtoupper($citySecretaryName)) ?></strong>
                                 <small>City Secretary</small>
@@ -154,8 +154,8 @@ $copies = $isACommunication
         <?php endforeach; ?>
     </main>
 
-    <script src="/assets/vendor/qrcode-generator.js"></script>
-    <script src="/assets/communication-qr.js"></script>
+    <script src="<?= url('/assets/vendor/qrcode-generator.js') ?>"></script>
+    <script src="<?= url('/assets/communication-qr.js') ?>"></script>
     <script>
     const printQrCopy = (copy) => {
         document.body.dataset.printCopy = copy;
