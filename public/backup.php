@@ -5,7 +5,7 @@ require_login();
 
 if (!can_backup_system()) {
     http_response_code(403);
-    exit('Only the Administrator can back up the system.');
+    exit('Your account is not allowed to back up the system.');
 }
 
 function sql_value(PDO $pdo, mixed $value): string
@@ -57,7 +57,7 @@ function generate_database_backup(): string
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
-    audit_log('backup_download', 'Administrator downloaded a database backup.', 'database', null);
+    audit_log('backup_download', role_label((string) current_user()['role']) . ' downloaded a database backup.', 'database', null);
 
     $filename = 'lcd_records_backup_' . date('Ymd_His') . '.sql';
     header('Content-Type: application/sql');

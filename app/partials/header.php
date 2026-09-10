@@ -43,6 +43,7 @@ $activeMonitorRole = trim((string) ($_GET['monitor_role'] ?? ''));
                     'division_staff',
                     'administrative_support',
                     'others',
+                    'server_maintenance_staff',
                     'records_officer',
                     'staff',
                 ];

@@ -13,6 +13,7 @@ $monitorableDashboardRoles = [
     'division_staff',
     'administrative_support',
     'others',
+    'server_maintenance_staff',
     'records_officer',
     'staff',
 ];
@@ -86,7 +87,7 @@ $isLawsAndRulesSecretariat = $userRole === 'secretariat' && is_laws_and_rules_se
 $isFullDashboard = in_array($userRole, ['admin', 'city_secretary'], true);
 $isAdministrator = $userRole === 'admin';
 $isReceivingClerk = $userRole === 'receiving_clerk';
-$isOthersUser = $userRole === 'others';
+$isOthersUser = in_array($userRole, ['others', 'server_maintenance_staff'], true);
 $isAssignedDashboard = in_array($userRole, ['division_chief', 'secretariat', 'division_staff'], true);
 $usesAdministrativeSupportDashboard = $userRole === 'administrative_support';
 $showStats = $isFullDashboard;
@@ -103,6 +104,7 @@ $administrativeSupportCityTab = in_array($_GET['city_tab'] ?? '', ['transmittals
 $activeTab = $_GET['tab'] ?? 'committee';
 if (
     !in_array($activeTab, ['committee', 'printing', 'documents', 'certified-urgent', 'memoranda', 'transmittals', 'notes'], true)
+    || (is_server_maintenance_staff() && $activeTab === 'notes')
     || (!$isReceivingClerk && $activeTab === 'printing')
     || (!$showAdministrativeDocuments && $activeTab === 'documents')
     || (!$showCertifiedUrgent && $activeTab === 'certified-urgent')
@@ -639,7 +641,7 @@ $divisionChiefDashboard = [
 
 $personalNotesUserId = (int) (current_user()['id'] ?? 0);
 $divisionChiefDashboard['notes_available'] = ensure_division_chief_notes_schema();
-if ($personalNotesUserId > 0 && $divisionChiefDashboard['notes_available']) {
+if (!is_server_maintenance_staff() && $personalNotesUserId > 0 && $divisionChiefDashboard['notes_available']) {
     try {
         $notesStmt = db()->prepare("SELECT n.*, r.control_number, r.title record_title,
                 r.status record_status, c.name committee_name
@@ -2340,10 +2342,12 @@ if ($isDashboardMonitor) {
     <?php if ($showTransmittals): ?>
         <a class="<?= $activeTab === 'transmittals' ? 'active' : '' ?>" href="<?= url('/dashboard.php?tab=transmittals') ?>">Transmittals</a>
     <?php endif; ?>
+    <?php if (!is_server_maintenance_staff()): ?>
     <a class="<?= $activeTab === 'notes' ? 'active' : '' ?>" href="<?= url('/dashboard.php?tab=notes') ?>">
         Notes
         <span class="tab-action-badge" data-note-reminder-count title="Due reminders" <?= (int) $divisionChiefDashboard['due_reminder_count'] === 0 ? 'hidden' : '' ?>><?= (int) $divisionChiefDashboard['due_reminder_count'] ?></span>
     </a>
+    <?php endif; ?>
 </nav>
 <?php endif; ?>
 

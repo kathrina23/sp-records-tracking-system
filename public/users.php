@@ -13,6 +13,7 @@ $roles = [
     'division_staff' => 'Division Staff',
     'administrative_support' => 'LMIS & Records Staff',
     'others' => 'Others',
+    'server_maintenance_staff' => 'Server Maintenance Staff',
 ];
 
 $defaultDivisionOptions = [
@@ -43,11 +44,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!array_key_exists($role, $roles)) {
         $role = 'secretariat';
     }
-    if ($role === 'others') {
+    $managementEditingUser = $id > 0 && in_array(current_user()['role'] ?? '', ['admin', 'city_secretary'], true);
+    if (!$managementEditingUser && $role === 'others') {
         $divisionName = 'Others';
     }
+    if (!$managementEditingUser && $role === 'server_maintenance_staff') {
+        $divisionName = 'Administrative Support Division';
+    }
     $requiresDivision = !in_array($role, ['admin', 'city_secretary'], true);
-    $divisionValue = $requiresDivision && $divisionName !== '' ? $divisionName : null;
+    $divisionValue = ($managementEditingUser || $requiresDivision) && $divisionName !== '' ? $divisionName : null;
 
     if ($requiresDivision && $divisionName === '') {
         flash('Please choose a Division for this user role.', 'error');
@@ -72,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('User added.');
         }
     } catch (Throwable $error) {
-        flash('Unable to save user. If this is a role error, import database/migration_division_staff_role.sql first.', 'error');
+        flash('Unable to save user. If this is a role error, apply the database migration for the selected user role first.', 'error');
     }
 
     redirect('/users.php');
@@ -204,12 +209,19 @@ if (passwordInput && togglePasswordButton) {
     });
 }
 if (userRoleSelect && divisionSelect) {
+    const managementEditingUser = <?= json_encode(!empty($edit) && in_array(current_user()['role'] ?? '', ['admin', 'city_secretary'], true)) ?>;
     const syncDivisionField = () => {
+        if (managementEditingUser) {
+            divisionSelect.disabled = false;
+            divisionSelect.required = !['admin', 'city_secretary'].includes(userRoleSelect.value);
+            return;
+        }
         const requiresDivision = !['admin', 'city_secretary'].includes(userRoleSelect.value);
         const usesOthersDivision = userRoleSelect.value === 'others';
-        divisionSelect.disabled = !requiresDivision || usesOthersDivision;
-        divisionSelect.required = requiresDivision && !usesOthersDivision;
-        if (userRoleSelect.value === 'administrative_support') {
+        const usesMaintenanceDivision = userRoleSelect.value === 'server_maintenance_staff';
+        divisionSelect.disabled = !requiresDivision || usesOthersDivision || usesMaintenanceDivision;
+        divisionSelect.required = requiresDivision && !usesOthersDivision && !usesMaintenanceDivision;
+        if (userRoleSelect.value === 'administrative_support' || usesMaintenanceDivision) {
             divisionSelect.value = 'Administrative Support Division';
         }
         if (usesOthersDivision) {

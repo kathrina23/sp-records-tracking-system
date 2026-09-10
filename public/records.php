@@ -5,9 +5,9 @@ require_login();
 ensure_plenary_number_schema();
 
 $userRole = current_user()['role'] ?? '';
-$isOthersUser = $userRole === 'others';
+$isOthersUser = in_array($userRole, ['others', 'server_maintenance_staff'], true);
 $canUseAllRecordsTab = in_array($userRole, ['admin', 'city_secretary'], true);
-$canUseAdministrativeDocumentsTab = in_array($userRole, ['admin', 'city_secretary', 'receiving_clerk', 'others'], true);
+$canUseAdministrativeDocumentsTab = in_array($userRole, ['admin', 'city_secretary', 'receiving_clerk', 'others', 'server_maintenance_staff'], true);
 $canUseCertifiedUrgentTab = !$isOthersUser;
 $activeTab = $_GET['tab'] ?? 'committee';
 if (

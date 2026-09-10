@@ -272,7 +272,7 @@ require __DIR__ . '/../app/partials/header.php';
         <?php if (can_manage_transmittal_recipients($record)): ?>
             <a class="btn secondary" href="<?= url('/record_recipients.php?record_id=') ?><?= (int) $record['id'] ?>">Add Recipients</a>
         <?php endif; ?>
-        <?php if ($isPopup && !in_array(current_user()['role'] ?? '', ['administrative_support', 'others'], true) && $record['document_type'] === 'Committee Referrals' && !empty($record['committee_id']) && ($record['status'] ?? '') !== 'Received'): ?>
+        <?php if ($isPopup && !in_array(current_user()['role'] ?? '', ['administrative_support', 'others', 'server_maintenance_staff'], true) && $record['document_type'] === 'Committee Referrals' && !empty($record['committee_id']) && ($record['status'] ?? '') !== 'Received'): ?>
             <a class="btn apple-green<?= (current_user()['role'] ?? '') === 'receiving_clerk' ? '' : ' record-document-action' ?>" href="<?= url('/committee_referral_print.php?id=') ?><?= (int) $record['id'] ?>"<?= (current_user()['role'] ?? '') === 'receiving_clerk' ? ' target="_blank" rel="noopener"' : '' ?>><?= (current_user()['role'] ?? '') === 'receiving_clerk' ? 'View Referral' : 'Committee Referral' ?></a>
         <?php endif; ?>
         <?php if (can_delete_record($record)): ?>
@@ -288,7 +288,7 @@ require __DIR__ . '/../app/partials/header.php';
 <section class="panel">
     <div class="panel-title-row">
         <h2>Record Details</h2>
-        <?php if (!$isPopup && !in_array(current_user()['role'] ?? '', ['administrative_support', 'others'], true) && $record['document_type'] === 'Committee Referrals' && !empty($record['committee_id']) && ($record['status'] ?? '') !== 'Received'): ?>
+        <?php if (!$isPopup && !in_array(current_user()['role'] ?? '', ['administrative_support', 'others', 'server_maintenance_staff'], true) && $record['document_type'] === 'Committee Referrals' && !empty($record['committee_id']) && ($record['status'] ?? '') !== 'Received'): ?>
             <a class="btn apple-green<?= (current_user()['role'] ?? '') === 'receiving_clerk' ? '' : ' record-document-action' ?>" href="<?= url('/committee_referral_print.php?id=') ?><?= (int) $record['id'] ?>"<?= (current_user()['role'] ?? '') === 'receiving_clerk' ? ' target="_blank" rel="noopener"' : '' ?>><?= (current_user()['role'] ?? '') === 'receiving_clerk' ? 'View Referral' : 'Committee Referral' ?></a>
         <?php endif; ?>
     </div>

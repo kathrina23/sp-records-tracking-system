@@ -24,6 +24,11 @@ function require_login(): void
     if (!current_user()) {
         redirect('/login.php');
     }
+    if (is_server_maintenance_staff()
+        && !maintenance_request_is_allowed($_SERVER['REQUEST_METHOD'] ?? 'GET', $_SERVER['SCRIPT_FILENAME'] ?? '')) {
+        http_response_code(403);
+        exit('Server Maintenance Staff can only view information and download database backups.');
+    }
 }
 
 function require_admin(): void

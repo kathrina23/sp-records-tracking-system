@@ -32,3 +32,15 @@ Sangguniang Panlungsod Records Tracking System - Server Deployment Guide
 Local quick-run command for testing:
 php -S 0.0.0.0:8000 -t public
 
+
+Server Maintenance Staff role (2026-09-10):
+- Upload the updated application files. The role is added automatically when
+  User Creation or Dashboard opens if the database account can alter tables.
+- If schema updates are managed manually, import:
+  database/migration_server_maintenance_staff_20260910.sql
+- In User Creation, select Server Maintenance Staff. Its division is fixed to
+  Administrative Support Division on creation. The Administrator or City Secretary can change
+  the division when editing a user. Supply the staff member's login details.
+- This role can download database backups, view audit logs and detailed logs,
+  and view/search the same record types as Others. It cannot change records
+  or manage users, assignments, or personal notes.

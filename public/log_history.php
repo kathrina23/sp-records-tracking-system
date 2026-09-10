@@ -6,9 +6,9 @@ require_once __DIR__ . '/../app/auth.php';
 require_login();
 
 $role = current_user()['role'] ?? '';
-if (!in_array($role, ['admin', 'city_secretary'], true)) {
+if (!in_array($role, ['admin', 'city_secretary', 'server_maintenance_staff'], true)) {
     http_response_code(403);
-    exit('Only the Administrator or City Secretary can view detailed logs.');
+    exit('Your account is not allowed to view detailed logs.');
 }
 
 $view = in_array($_GET['view'] ?? '', ['user', 'record'], true) ? (string) $_GET['view'] : '';

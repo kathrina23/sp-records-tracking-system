@@ -5,7 +5,7 @@ require_login();
 
 if (!can_view_audit_logs()) {
     http_response_code(403);
-    exit('Only the Administrator can view audit logs.');
+    exit('Your account is not allowed to view audit logs.');
 }
 
 try {

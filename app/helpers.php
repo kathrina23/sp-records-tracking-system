@@ -89,6 +89,7 @@ function role_label(string $role): string
         'division_staff' => 'Division Staff',
         'administrative_support' => 'LMIS & Records Staff',
         'others' => 'Others',
+        'server_maintenance_staff' => 'Server Maintenance Staff',
         'records_officer' => 'Records Officer',
         'staff' => 'Staff',
     ];
@@ -671,6 +672,17 @@ function normalize_proposed_number_input(string $number, ?string $year = null): 
     return preg_replace('/^(\d{4})\s*-\s*/', '$1-', $number) ?: $number;
 }
 
+function is_server_maintenance_staff(): bool
+{
+    return ($_SESSION['user']['role'] ?? '') === 'server_maintenance_staff';
+}
+
+function maintenance_request_is_allowed(string $method, string $script): bool
+{
+    return in_array($method, ['GET', 'HEAD'], true)
+        || ($method === 'POST' && basename($script) === 'backup.php');
+}
+
 function can_create_records(): bool
 {
     return in_array($_SESSION['user']['role'] ?? '', ['admin', 'city_secretary', 'receiving_clerk'], true);
@@ -688,7 +700,7 @@ function others_user_document_types(): array
 function can_view_record(array $record): bool
 {
     $role = $_SESSION['user']['role'] ?? '';
-    if ($role === 'others') {
+    if (in_array($role, ['others', 'server_maintenance_staff'], true)) {
         return in_array($record['document_type'] ?? '', others_user_document_types(), true);
     }
 
@@ -754,7 +766,7 @@ function personal_note_record_suggestions(string $query, int $limit = 10): array
                 AND r.status IN ('For Plenary Session', 'Scheduled for Plenary'))";
         }
         $where[] = '(' . implode(' OR ', $recordScopes) . ')';
-    } elseif ($role === 'others') {
+    } elseif (in_array($role, ['others', 'server_maintenance_staff'], true)) {
         $documentTypes = others_user_document_types();
         $placeholders = implode(',', array_fill(0, count($documentTypes), '?'));
         $where[] = "r.document_type IN ($placeholders)";
@@ -1029,7 +1041,7 @@ function can_view_record_history(array $record): bool
 function can_view_record_materials(array $record): bool
 {
     $role = $_SESSION['user']['role'] ?? '';
-    if ($role === 'others') {
+    if (in_array($role, ['others', 'server_maintenance_staff'], true)) {
         return can_view_record($record);
     }
 
@@ -1152,17 +1164,17 @@ function can_act_on_administrative_document(array $record): bool
 
 function can_view_audit_logs(): bool
 {
-    return ($_SESSION['user']['role'] ?? '') === 'admin';
+    return in_array($_SESSION['user']['role'] ?? '', ['admin', 'server_maintenance_staff'], true);
 }
 
 function can_backup_system(): bool
 {
-    return ($_SESSION['user']['role'] ?? '') === 'admin';
+    return in_array($_SESSION['user']['role'] ?? '', ['admin', 'server_maintenance_staff'], true);
 }
 
 function can_view_reports(): bool
 {
-    return ($_SESSION['user']['role'] ?? '') !== 'others';
+    return !in_array($_SESSION['user']['role'] ?? '', ['others', 'server_maintenance_staff'], true);
 }
 
 function can_delete_records(): bool
@@ -1877,7 +1889,7 @@ function ensure_division_chief_notes_schema(): bool
 function ensure_plenary_number_schema(): void
 {
     try {
-        db()->exec("ALTER TABLE users MODIFY role ENUM('admin', 'city_secretary', 'division_chief', 'receiving_clerk', 'secretariat', 'division_staff', 'administrative_support', 'others', 'records_officer', 'staff') NOT NULL DEFAULT 'secretariat'");
+        db()->exec("ALTER TABLE users MODIFY role ENUM('admin', 'city_secretary', 'division_chief', 'receiving_clerk', 'secretariat', 'division_staff', 'administrative_support', 'others', 'records_officer', 'staff', 'server_maintenance_staff') NOT NULL DEFAULT 'secretariat'");
     } catch (Throwable $error) {
         // Existing databases may already have this role list, or the user may apply SQL manually.
     }
