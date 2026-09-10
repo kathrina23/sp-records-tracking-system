@@ -1,0 +1,17 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const message = require('../public/assets/attachment-validation.js');
+const php = fs.readFileSync('app/attachment_limits.php', 'utf8');
+const value = name => Number(php.match(new RegExp('const ' + name + ' = (\\d+);'))[1]);
+const limits = { maxBytes: value('ATTACHMENT_MAX_BYTES'), maxFiles: value('ATTACHMENT_MAX_FILES'), maxTotalBytes: value('ATTACHMENT_MAX_TOTAL_BYTES') };
+const file = size => ({name: 'attachment.pdf', size});
+assert.equal(message([], limits), '');
+assert.equal(message([file(limits.maxBytes)], limits), '');
+assert.match(message([file(limits.maxBytes + 1)], limits), /larger than.*10 MB/);
+assert.equal(message([file(10*1048576), file(10*1048576), file(10*1048576), file(5*1048576)], limits), '');
+assert.match(message([file(10*1048576), file(10*1048576), file(10*1048576), file(5*1048576+1)], limits), /combined size of 35 MB/);
+assert.equal(message(Array.from({length: 10}, () => file(1)), limits), '');
+assert.match(message(Array.from({length: 11}, () => file(1)), limits), /up to 10 files/);
+assert.match(message([file(0)], limits), /empty/);
+assert.equal(message([file(1)], limits), '');
+console.log('PASS: optional uploads, exact size boundaries, oversized files, combined limits, file count, empty files, and corrected selection.');

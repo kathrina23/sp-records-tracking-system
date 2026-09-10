@@ -2,11 +2,9 @@
 
 require_once __DIR__ . '/../app/auth.php';
 require_login();
+reject_oversized_attachment_request();
 ensure_plenary_number_schema();
 
-const NEW_RECORD_ATTACHMENT_MAX_BYTES = 10485760;
-const NEW_RECORD_ATTACHMENT_MAX_FILES = 10;
-const NEW_RECORD_ATTACHMENT_MAX_TOTAL_BYTES = 36700160;
 const NEW_RECORD_ATTACHMENT_ALLOWED_MIME_TYPES = [
     'application/pdf' => 'pdf',
     'image/jpeg' => 'jpg',
@@ -699,7 +697,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect($recordFormUrl);
         }
 
-        if (count($attachmentFiles) > NEW_RECORD_ATTACHMENT_MAX_FILES) {
+        if (count($attachmentFiles) > ATTACHMENT_MAX_FILES) {
             flash('You may attach up to 10 files while creating a record.', 'error');
             redirect($recordFormUrl);
         }
@@ -707,18 +705,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $totalAttachmentBytes = 0;
         foreach ($attachmentFiles as $attachmentFile) {
+            if (in_array((int) ($attachmentFile['error'] ?? 0), [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)) {
+                flash('The selected file is larger than the allowed upload size. Maximum 10 MB per file; the server may allow less.', 'error');
+                redirect($recordFormUrl);
+            }
             if (($attachmentFile['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
                 flash('One of the selected files could not be read. Please select the files again.', 'error');
                 redirect($recordFormUrl);
             }
 
             $fileSize = (int) ($attachmentFile['size'] ?? 0);
-            if ($fileSize <= 0 || $fileSize > NEW_RECORD_ATTACHMENT_MAX_BYTES) {
+            if ($fileSize <= 0 || $fileSize > ATTACHMENT_MAX_BYTES) {
                 flash('Each attachment must be 10 MB or smaller.', 'error');
                 redirect($recordFormUrl);
             }
             $totalAttachmentBytes += $fileSize;
-            if ($totalAttachmentBytes > NEW_RECORD_ATTACHMENT_MAX_TOTAL_BYTES) {
+            if ($totalAttachmentBytes > ATTACHMENT_MAX_TOTAL_BYTES) {
                 flash('The combined size of the selected files must be 35 MB or smaller.', 'error');
                 redirect($recordFormUrl);
             }

@@ -2,11 +2,9 @@
 
 require_once __DIR__ . '/../app/auth.php';
 require_login();
+reject_oversized_attachment_request();
 ensure_plenary_number_schema();
 
-const ATTACHMENT_MAX_BYTES = 10485760;
-const ATTACHMENT_MAX_FILES = 10;
-const ATTACHMENT_MAX_TOTAL_BYTES = 36700160;
 const ATTACHMENT_ALLOWED_MIME_TYPES = [
     'application/pdf' => 'pdf',
     'image/jpeg' => 'jpg',
@@ -168,6 +166,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 continue;
             }
 
+            if (in_array($uploadError, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)) {
+                flash('The selected file is larger than the allowed upload size. Maximum 10 MB per file; the server may allow less.', 'error');
+                redirect($returnUrl);
+            }
             if ($uploadError !== UPLOAD_ERR_OK) {
                 flash('One of the selected files could not be read. Please select the file again.', 'error');
                 redirect($returnUrl);
@@ -335,6 +337,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $preparedFiles = [];
     $totalBytes = 0;
     foreach ($files as $file) {
+        if (in_array((int) ($file['error'] ?? 0), [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)) {
+            flash('The selected file is larger than the allowed upload size. Maximum 10 MB per file; the server may allow less.', 'error');
+            redirect('/record_view.php?id=' . $recordId);
+        }
         if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
             flash('One of the selected files could not be read. Please select the files again.', 'error');
             redirect('/record_view.php?id=' . $recordId);

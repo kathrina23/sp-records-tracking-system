@@ -7050,3 +7050,5 @@ body.dashboard-page .for-plenary-actions > .small-action-link::after {
     white-space: normal;
     overflow-wrap: anywhere;
 }
+
+.attachment-size-error { display: block; color: #b42318; font-size: 13px; margin-top: 6px; white-space: normal; }

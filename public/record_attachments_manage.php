@@ -117,7 +117,7 @@ require __DIR__ . '/../app/partials/header.php';
             <div class="attachment-manager-section-head">
                 <div>
                     <h2 id="new_attachment_title">Add attachment or record title</h2>
-                    <p class="muted">Enter the title for record purposes. Attaching a PDF or image is optional.</p>
+                    <p class="muted">Enter the title for record purposes. Attaching a PDF or image is optional. Maximum 10 MB per file and 35 MB combined.</p>
                 </div>
                 <button class="btn secondary attachment-row-add" type="submit" aria-label="Add attachment or record title">
                     <span aria-hidden="true">+</span> Add
