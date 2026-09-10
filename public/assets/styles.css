@@ -6897,6 +6897,7 @@ body.dashboard-page .for-plenary-actions > .small-action-link::after {
 }
 
 .division-note-editor summary,
+.division-note-state-action,
 .division-note-delete {
     background: transparent;
     border: 0;
@@ -7006,4 +7007,46 @@ body.dashboard-page .for-plenary-actions > .small-action-link::after {
     .division-note-add {
         width: 100%;
     }
+}
+
+/* Reminder state takes precedence over the alternating note colors. */
+.division-sticky-note.reminder-due {
+    background: #ffd6d6;
+    border-color: #c62828;
+    color: #651b1b;
+}
+.division-sticky-note.reminder-due::after {
+    border-bottom-color: #eaa0a0;
+    border-right-color: #eaa0a0;
+}
+.division-sticky-note.note-done {
+    background: #d8d8d8;
+    border-color: #a2a2a2;
+    color: #414141;
+    box-shadow: 0 7px 16px rgba(50, 50, 50, .12);
+}
+.division-sticky-note.note-done::after {
+    border-bottom-color: #b8b8b8;
+    border-right-color: #b8b8b8;
+}
+.division-note-state { margin-bottom: 12px; }
+.personal-notes-archive { margin-top: 24px; }
+.personal-notes-archive > summary { cursor: pointer; font-weight: 600; padding: 10px 0; }
+
+.record-filter-search { position: relative; min-width: 0; }
+.filters > .record-filter-search { flex: 1 1 300px; }
+.filters > label:has(.record-filter-search) { flex: 1 1 300px; }
+.filters > label > .record-filter-search { flex: 1 1 auto; }
+.record-filter-search > input { width: 100%; min-width: 0; }
+/* Suggestions must escape the toolbar instead of becoming its scroll content. */
+.filters:has(.record-filter-search) {
+    flex-wrap: wrap;
+    overflow: visible;
+}
+.record-filter-search .personal-note-record-suggestions {
+    min-width: 0;
+    max-height: none;
+    overflow: visible;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }

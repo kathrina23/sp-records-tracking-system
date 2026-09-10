@@ -16,7 +16,7 @@
     </div>
 
     <?php if (!$divisionChiefDashboard['notes_available']): ?>
-        <p class="muted">Personal notes are not available yet. Import <strong>database/migration_division_chief_notes_20260904.sql</strong> to enable this tab.</p>
+        <p class="muted">Personal notes are not available yet. Import <strong>database/migration_personal_notes_states_20260910.sql</strong> to enable this tab.</p>
     <?php else: ?>
         <div class="division-reminder-alert" data-note-reminder-alert role="status" <?= (int) $divisionChiefDashboard['due_reminder_count'] === 0 ? 'hidden' : '' ?>>
             <span class="division-reminder-alert-icon" aria-hidden="true">⏰</span>
@@ -34,12 +34,12 @@
                 <textarea name="note_text" rows="4" maxlength="2000" placeholder="Write a reminder, follow-up, or important detail..." required></textarea>
             </label>
             <div class="division-note-record personal-note-record-picker" data-personal-note-record-picker>
-                <label for="personal-note-record-search">Tag a Record</label>
+                <label for="personal-note-record-search">Tag a Record <span>(Optional)</span></label>
                 <div class="personal-note-record-search-wrap">
                     <input id="personal-note-record-search" type="search" data-personal-note-record-search
                         placeholder="Type communication no., title, origin, or client" autocomplete="off"
                         role="combobox" aria-autocomplete="list" aria-controls="personal-note-record-suggestions"
-                        aria-expanded="false" required>
+                        aria-expanded="false">
                     <input type="hidden" name="record_id" data-personal-note-record-id>
                     <div id="personal-note-record-suggestions" class="personal-note-record-suggestions"
                         data-personal-note-record-suggestions role="listbox" hidden></div>
@@ -82,36 +82,53 @@
             <p class="dashboard-monitor-note">Personal Notes are visible in this complete dashboard view. Note changes remain with the signed-in user.</p>
         <?php endif; ?>
 
+        <?php foreach ([false, true] as $showArchivedNotes): ?>
+        <?php $visibleNotes = array_filter($divisionChiefDashboard['notes'], static fn ($note) => !empty($note['archived_at']) === $showArchivedNotes); ?>
+        <?php if ($showArchivedNotes): ?><details class="personal-notes-archive"><summary>Archived Notes (<?= count($visibleNotes) ?>)</summary><?php endif; ?>
         <div class="division-note-grid">
-            <?php foreach ($divisionChiefDashboard['notes'] as $note): ?>
+            <?php foreach ($visibleNotes as $note): ?>
                 <?php
                     $noteReminderTimestamp = strtotime((string) ($note['reminder_at'] ?? ''));
                     $noteHasReminder = $noteReminderTimestamp !== false;
-                    $noteReminderIsDue = $noteHasReminder && $noteReminderTimestamp <= time();
+                    $noteIsDone = !empty($note['completed_at']);
+                    $noteReminderIsDue = !$noteIsDone && $noteHasReminder && $noteReminderTimestamp <= time();
                 ?>
-                <article class="division-sticky-note<?= $noteReminderIsDue ? ' reminder-due' : '' ?>"<?= $noteHasReminder ? ' data-reminder-at="' . e(date('c', $noteReminderTimestamp)) . '"' : '' ?>>
+                <article class="division-sticky-note<?= $noteIsDone ? ' note-done' : ($noteReminderIsDue ? ' reminder-due' : '') ?>"<?= $noteHasReminder ? ' data-reminder-at="' . e(date('c', $noteReminderTimestamp)) . '"' : '' ?>>
+                    <?php if ($noteIsDone): ?><strong class="division-note-state">Done<?= $showArchivedNotes ? ' · Archived' : '' ?></strong><?php endif; ?>
+                    <?php if (!empty($note['record_id'])): ?>
                     <a class="division-note-record-tag record-view-action" href="<?= url('/record_view.php?id=') ?><?= (int) $note['record_id'] ?>">
                         <span>Tagged Record</span>
                         <strong><?= e($note['control_number']) ?></strong>
                     </a>
+                    <?php endif; ?>
                     <p class="division-note-text"><?= nl2br(e($note['note_text'])) ?></p>
                     <?php if ($noteHasReminder): ?>
                         <div class="division-note-reminder<?= $noteReminderIsDue ? ' reminder-due' : '' ?>">
                             <span aria-hidden="true">⏰</span>
                             <div>
-                                <strong data-note-reminder-state><?= $noteReminderIsDue ? 'Reminder due' : 'Reminder' ?></strong>
+                                <strong data-note-reminder-state><?= $noteIsDone ? 'Completed reminder' : ($noteReminderIsDue ? 'Reminder due' : 'Reminder') ?></strong>
                                 <time datetime="<?= e(date('c', $noteReminderTimestamp)) ?>"><?= e(display_datetime($note['reminder_at'])) ?></time>
                             </div>
                         </div>
                     <?php endif; ?>
+                    <?php if (!empty($note['record_id'])): ?>
                     <div class="division-note-record-details">
                         <strong><?= e(display_record_title($note['record_title'])) ?></strong>
                         <span><?= e($note['committee_name'] ?? '') ?><?= trim((string) ($note['committee_name'] ?? '')) !== '' ? ' · ' : '' ?><?= e($note['record_status']) ?></span>
                     </div>
+                    <?php endif; ?>
                     <footer class="division-note-footer">
                         <time datetime="<?= e($note['updated_at']) ?>">Updated <?= e(display_datetime($note['updated_at'])) ?></time>
                         <?php if (!$isDashboardMonitor): ?>
                             <div class="division-note-actions">
+                                <?php if (!$showArchivedNotes): ?>
+                                <form method="post" action="<?= url('/division_chief_note.php') ?>">
+                                    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                                    <input type="hidden" name="action" value="<?= $noteIsDone ? 'archive' : 'complete' ?>">
+                                    <input type="hidden" name="note_id" value="<?= (int) $note['id'] ?>">
+                                    <button class="division-note-state-action" type="submit"><?= $noteIsDone ? 'Archive' : 'Mark Done' ?></button>
+                                </form>
+                                <?php endif; ?>
                                 <details class="division-note-editor">
                                     <summary>Edit</summary>
                                     <form method="post" action="<?= url('/division_chief_note.php') ?>">
@@ -138,14 +155,16 @@
                     </footer>
                 </article>
             <?php endforeach; ?>
-            <?php if (!$divisionChiefDashboard['notes']): ?>
+            <?php if (!$visibleNotes): ?>
                 <div class="division-notes-empty">
                     <span aria-hidden="true">✎</span>
-                    <strong>No personal notes yet</strong>
-                    <p>Add your first note and connect it to a record above.</p>
+                    <strong><?= $showArchivedNotes ? 'No archived notes' : 'No active personal notes' ?></strong>
+                    <p><?= $showArchivedNotes ? 'Completed notes you archive will appear here.' : 'Add a note above. Tagging a record is optional.' ?></p>
                 </div>
             <?php endif; ?>
         </div>
+        <?php if ($showArchivedNotes): ?></details><?php endif; ?>
+        <?php endforeach; ?>
     <?php endif; ?>
 </div>
 <?php $personalNotesPanelActive = false; ?>

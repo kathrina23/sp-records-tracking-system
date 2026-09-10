@@ -262,7 +262,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $mergeTargetControlNumber = strtoupper(trim($_POST['merge_target_control_number'] ?? ''));
     $canTagAsNewOrExisting = $documentType !== 'Certified Urgent'
         && in_array(current_user()['role'] ?? '', ['admin', 'city_secretary', 'receiving_clerk'], true)
-        && (!$id || ($record['status'] ?? '') === 'Received');
+        && (!$id || ($record['status'] ?? '') === 'Received' || (current_user()['role'] ?? '') === 'city_secretary');
     if (!$canTagAsNewOrExisting) {
         $reviewAction = 'finalize';
         $mergeTargetControlNumber = '';
@@ -494,7 +494,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (
         $id
         && can_city_secretary_action()
-        && ($record['status'] ?? '') === 'Received'
+        && $canTagAsNewOrExisting
         && $reviewAction === 'merge_existing'
     ) {
         if ($mergeTargetControlNumber === '') {
@@ -514,7 +514,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $newRecordParty = $partyName !== '' ? $partyName : (($record['client_name'] ?? '') ?: ($record['origin'] ?? ''));
         $mergeNotes = trim(implode("\n", array_filter([
             'Tagged as update to existing Communication Number ' . $targetRecord['control_number'] . '.',
-            'New received record: ' . ($record['control_number'] ?? ''),
+            'Merged record: ' . ($record['control_number'] ?? ''),
             'Title: ' . ($data['title'] ?: ($record['title'] ?? '')),
             $newRecordParty !== '' ? 'Client / Origin: ' . $newRecordParty : '',
             trim($data['remarks'] ?? '') !== '' ? 'Remarks: ' . trim($data['remarks']) : '',
@@ -528,6 +528,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $moveAttachments = $pdo->prepare('UPDATE record_attachments SET record_id = ? WHERE record_id = ?');
             $moveAttachments->execute([(int) $targetRecord['id'], $id]);
+
+            // Reviewed records may already have notes, recipients, and report numbers.
+            // A conflicting report number aborts the transaction instead of losing data.
+            foreach (['division_chief_notes', 'record_recipients', 'committee_report_numbers'] as $relatedTable) {
+                $moveRelated = $pdo->prepare('UPDATE ' . $relatedTable . ' SET record_id = ? WHERE record_id = ?');
+                $moveRelated->execute([(int) $targetRecord['id'], $id]);
+            }
+            $copyReceipts = $pdo->prepare('INSERT INTO record_division_receipts (record_id, division_name, received_by, received_at)
+                SELECT ?, division_name, received_by, received_at FROM record_division_receipts source
+                WHERE source.record_id = ? AND NOT EXISTS (
+                    SELECT 1 FROM record_division_receipts target WHERE target.record_id = ? AND target.division_name = source.division_name
+                )');
+            $copyReceipts->execute([(int) $targetRecord['id'], $id, (int) $targetRecord['id']]);
 
             $movement = $pdo->prepare('INSERT INTO record_movements (record_id, from_status, to_status, from_location, to_location, notes, record_title, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
             $movement->execute([
@@ -548,8 +561,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $delete->execute([$id]);
 
             $pdo->commit();
-            audit_log('record_merge_update', 'Merged received record ' . ($record['control_number'] ?? '') . ' into ' . $targetRecord['control_number'] . '.', 'record', (int) $targetRecord['id']);
-            flash('New record tagged as an update and merged into Communication Number ' . $targetRecord['control_number'] . '.');
+            audit_log('record_merge_update', 'Merged record ' . ($record['control_number'] ?? '') . ' into ' . $targetRecord['control_number'] . '.', 'record', (int) $targetRecord['id']);
+            flash('Record tagged as existing and merged into Communication Number ' . $targetRecord['control_number'] . '.');
             redirect($isPopup ? $popupCloseUrl : '/record_view.php?id=' . (int) $targetRecord['id']);
         } catch (Throwable $error) {
             $pdo->rollBack();
@@ -929,7 +942,7 @@ $priorities = ['Low', 'Normal', 'High', 'Urgent'];
 $pendingMergeTargetControlNumber = pending_existing_record_target($record['remarks'] ?? '');
 $remarksForForm = strip_pending_existing_record_tag($record['remarks'] ?? '');
 $canTagAsNewOrExisting = in_array(current_user()['role'] ?? '', ['admin', 'city_secretary', 'receiving_clerk'], true)
-    && (!$id || ($record['status'] ?? '') === 'Received');
+    && (!$id || ($record['status'] ?? '') === 'Received' || (current_user()['role'] ?? '') === 'city_secretary');
 $canShowClientContactFields = in_array(current_user()['role'] ?? '', ['admin', 'city_secretary', 'receiving_clerk', 'administrative_support'], true)
     || $canCorrectForPlenaryRecord;
 $reviewAttachmentCount = 0;
@@ -1038,7 +1051,7 @@ require __DIR__ . '/../app/partials/header.php';
         <?php endif; ?>
     </label>
 
-    <?php if ($mergeCandidateRecords): ?>
+    <?php if ($canTagAsNewOrExisting): ?>
         <section class="full review-choice-panel record-tagging-field">
             <h2>Tag as New or Existing Record</h2>
             <label class="choice-line">
@@ -1051,7 +1064,7 @@ require __DIR__ . '/../app/partials/header.php';
             </label>
             <label id="merge_target_wrap">Existing Communication Number
                 <input name="merge_target_control_number" id="merge_target_control_number" list="merge_record_candidates" value="<?= e($pendingMergeTargetControlNumber) ?>" placeholder="Type or choose the old Communication Number">
-                <span class="muted"><?= can_city_secretary_action() ? 'Saving the review will merge this record into the selected old Communication Number.' : 'This tag will remain pending until the SP Secretary reviews the record.' ?></span>
+                <span class="muted"><?= can_city_secretary_action() ? 'Saving will merge this record into the selected existing Communication Number.' : 'This tag will remain pending until the SP Secretary reviews the record.' ?></span>
             </label>
             <datalist id="merge_record_candidates">
                 <?php foreach ($mergeCandidateRecords as $candidate): ?>

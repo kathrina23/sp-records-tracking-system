@@ -28,21 +28,39 @@ if (!ensure_division_chief_notes_schema()) {
 }
 
 $action = trim((string) ($_POST['action'] ?? 'create'));
-if (!in_array($action, ['create', 'update', 'delete'], true)) {
+if (!in_array($action, ['create', 'update', 'delete', 'complete', 'archive'], true)) {
     http_response_code(400);
     exit('Invalid note action.');
 }
 
 $noteId = (int) ($_POST['note_id'] ?? 0);
 $existingNote = null;
-if (in_array($action, ['update', 'delete'], true)) {
-    $existingStmt = db()->prepare('SELECT id, record_id, reminder_at FROM division_chief_notes WHERE id = ? AND user_id = ? LIMIT 1');
+if (in_array($action, ['update', 'delete', 'complete', 'archive'], true)) {
+    $existingStmt = db()->prepare('SELECT id, record_id, reminder_at, completed_at, archived_at FROM division_chief_notes WHERE id = ? AND user_id = ? LIMIT 1');
     $existingStmt->execute([$noteId, $userId]);
     $existingNote = $existingStmt->fetch();
     if (!$existingNote) {
         http_response_code(404);
         exit('Personal note not found.');
     }
+}
+
+if (in_array($action, ['complete', 'archive'], true)) {
+    if ($action === 'archive' && empty($existingNote['completed_at'])) {
+        flash('Mark the note as done before archiving it.', 'error');
+        redirect($notesReturnPath);
+    }
+    try {
+        $column = $action === 'complete' ? 'completed_at' : 'archived_at';
+        $stateStmt = db()->prepare('UPDATE division_chief_notes SET ' . $column . ' = COALESCE(' . $column . ', NOW()) WHERE id = ? AND user_id = ?');
+        $stateStmt->execute([$noteId, $userId]);
+        audit_log('personal_note_' . $action, $action === 'complete' ? 'Marked personal note as done.' : 'Archived personal note.', 'personal_note', $noteId);
+        flash($action === 'complete' ? 'Personal note marked as done.' : 'Personal note archived.');
+    } catch (Throwable $error) {
+        error_log('Unable to change personal note state: ' . $error->getMessage());
+        flash('Unable to change the note. Please try again.', 'error');
+    }
+    redirect($notesReturnPath);
 }
 
 if ($action === 'delete') {
@@ -98,20 +116,17 @@ if ($reminderInput !== '') {
 }
 
 $recordId = (int) ($_POST['record_id'] ?? 0);
-if ($recordId <= 0) {
-    flash('Please tag a record available to your account.', 'error');
-    redirect($notesReturnPath);
-}
-
-$recordStmt = db()->prepare("SELECT r.*
-    FROM records r
-    WHERE r.id = ?
-    LIMIT 1");
-$recordStmt->execute([$recordId]);
-$record = $recordStmt->fetch();
-if (!$record || !can_view_record($record)) {
-    flash('The selected record is not available to your account.', 'error');
-    redirect($notesReturnPath);
+$record = null;
+if ($recordId > 0) {
+    $recordStmt = db()->prepare('SELECT r.* FROM records r WHERE r.id = ? LIMIT 1');
+    $recordStmt->execute([$recordId]);
+    $record = $recordStmt->fetch();
+    if (!$record || !can_view_record($record)) {
+        flash('The selected record is not available to your account.', 'error');
+        redirect($notesReturnPath);
+    }
+} else {
+    $recordId = null;
 }
 
 try {
@@ -130,7 +145,7 @@ try {
 
     audit_log(
         $auditAction,
-        ($action === 'create' ? 'Created' : 'Updated') . ' a personal note tagged to ' . $record['control_number']
+        ($action === 'create' ? 'Created' : 'Updated') . ' a personal note' . ($record ? ' tagged to ' . $record['control_number'] : '')
             . ($reminderAt !== null ? ' with a reminder for ' . display_datetime($reminderAt) : '') . '.',
         'personal_note',
         $noteId

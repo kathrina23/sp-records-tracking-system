@@ -283,7 +283,7 @@ require __DIR__ . '/../app/partials/header.php';
 
 <form method="get" class="filters">
     <input type="hidden" name="tab" value="<?= e($activeTab) ?>">
-    <input name="search" placeholder="Search communication no., title, origin, client" value="<?= e($search) ?>">
+    <input name="search" data-record-search-url="<?= e(url('/personal_note_record_search.php')) ?>" aria-label="Search records" placeholder="Search communication no., title, origin, client" value="<?= e($search) ?>">
     <select name="status">
         <option value="">All statuses</option>
         <?php if ($activeTab === 'all'): ?>

@@ -158,9 +158,11 @@ CREATE TABLE record_committees (
 CREATE TABLE division_chief_notes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    record_id INT NOT NULL,
+    record_id INT NULL,
     note_text TEXT NOT NULL,
     reminder_at DATETIME NULL,
+    completed_at DATETIME NULL,
+    archived_at DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     KEY idx_division_chief_notes_user_updated (user_id, updated_at),

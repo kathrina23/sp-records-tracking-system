@@ -38,5 +38,6 @@ document.addEventListener('click', (event) => {
 });
 </script>
 <script src="<?= url('/assets/table-pagination.js') ?>"></script>
+<script src="<?= url('/assets/record-search-suggestions.js') ?>"></script>
 </body>
 </html>

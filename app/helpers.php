@@ -1822,9 +1822,11 @@ function ensure_division_chief_notes_schema(): bool
         db()->exec("CREATE TABLE IF NOT EXISTS division_chief_notes (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL,
-            record_id INT NOT NULL,
+            record_id INT NULL,
             note_text TEXT NOT NULL,
             reminder_at DATETIME NULL,
+            completed_at DATETIME NULL,
+            archived_at DATETIME NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             KEY idx_division_chief_notes_user_updated (user_id, updated_at),
@@ -1853,7 +1855,16 @@ function ensure_division_chief_notes_schema(): bool
         }
 
         try {
-            db()->query('SELECT reminder_at FROM division_chief_notes LIMIT 0');
+            $noteColumns = db()->query('SHOW COLUMNS FROM division_chief_notes')->fetchAll(PDO::FETCH_UNIQUE);
+            if (($noteColumns['record_id']['Null'] ?? '') !== 'YES') {
+                db()->exec('ALTER TABLE division_chief_notes MODIFY record_id INT NULL');
+            }
+            foreach (['completed_at', 'archived_at'] as $column) {
+                if (!isset($noteColumns[$column])) {
+                    db()->exec('ALTER TABLE division_chief_notes ADD COLUMN ' . $column . ' DATETIME NULL');
+                }
+            }
+            db()->query('SELECT reminder_at, completed_at, archived_at FROM division_chief_notes LIMIT 0');
         } catch (Throwable $error) {
             error_log('Division Chief note reminders are unavailable: ' . $error->getMessage());
             $available = false;

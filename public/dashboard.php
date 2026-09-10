@@ -236,7 +236,7 @@ function render_dashboard_record_filters(
         <?php foreach ($hiddenFields as $name => $value): ?>
             <input type="hidden" name="<?= e((string) $name) ?>" value="<?= e((string) $value) ?>">
         <?php endforeach; ?>
-        <input name="search" placeholder="Search communication no., title, origin, client" value="<?= e($search) ?>">
+        <input name="search" data-record-search-url="<?= e(url('/personal_note_record_search.php')) ?>" aria-label="Search records" placeholder="Search communication no., title, origin, client" value="<?= e($search) ?>">
         <select name="status">
             <option value="">All statuses</option>
             <?php foreach ($statusOptions as $item): ?>
@@ -644,7 +644,7 @@ if ($personalNotesUserId > 0 && $divisionChiefDashboard['notes_available']) {
         $notesStmt = db()->prepare("SELECT n.*, r.control_number, r.title record_title,
                 r.status record_status, c.name committee_name
             FROM division_chief_notes n
-            INNER JOIN records r ON r.id = n.record_id
+            LEFT JOIN records r ON r.id = n.record_id
             LEFT JOIN committees c ON c.id = r.committee_id
             WHERE n.user_id = ?
             ORDER BY n.updated_at DESC, n.id DESC");
@@ -652,7 +652,7 @@ if ($personalNotesUserId > 0 && $divisionChiefDashboard['notes_available']) {
         $divisionChiefDashboard['notes'] = $notesStmt->fetchAll();
         foreach ($divisionChiefDashboard['notes'] as $note) {
             $reminderTimestamp = strtotime((string) ($note['reminder_at'] ?? ''));
-            if ($reminderTimestamp !== false && $reminderTimestamp <= time()) {
+            if (empty($note['completed_at']) && empty($note['archived_at']) && $reminderTimestamp !== false && $reminderTimestamp <= time()) {
                 $divisionChiefDashboard['due_reminder_count']++;
             }
         }
@@ -1448,7 +1448,7 @@ if ($isDashboardMonitor) {
                 <form method="get" class="filters dashboard-filters staff-update-filters">
                     <input type="hidden" name="division_tab" value="staff-updates">
                     <label>Search
-                        <input type="search" name="staff_update_search" placeholder="Any word or number" value="<?= e($staffUpdateSearch) ?>">
+                        <input type="search" name="staff_update_search" data-record-search-url="<?= e(url('/personal_note_record_search.php')) ?>" placeholder="Any word or number" value="<?= e($staffUpdateSearch) ?>">
                     </label>
                     <label>From Date
                         <input type="date" name="staff_update_date_from" value="<?= e($staffUpdateDateFrom) ?>">
@@ -2357,7 +2357,7 @@ if ($isDashboardMonitor) {
 <?php if (!$usesTabbedAssignedDashboard && !$usesCitySecretaryTabbedDashboard && $activeTab !== 'notes'): ?>
 <form method="get" class="filters dashboard-filters">
     <input type="hidden" name="tab" value="<?= e($activeTab) ?>">
-    <input name="search" placeholder="Search communication no., title, origin, client" value="<?= e($search) ?>">
+    <input name="search" data-record-search-url="<?= e(url('/personal_note_record_search.php')) ?>" aria-label="Search records" placeholder="Search communication no., title, origin, client" value="<?= e($search) ?>">
     <select name="status">
         <option value="">All statuses</option>
         <?php foreach ($statuses as $item): ?>
@@ -2724,7 +2724,7 @@ if (initialDivisionTabPanel) {
     updateDashboardFilterVisibility(initialDivisionTabPanel.dataset.divisionPanel);
 }
 
-const personalNoteReminderCards = document.querySelectorAll('.division-sticky-note[data-reminder-at]');
+const personalNoteReminderCards = document.querySelectorAll('.division-sticky-note[data-reminder-at]:not(.note-done)');
 const personalNoteReminderBadge = document.querySelector('[data-note-reminder-count]');
 const personalNoteReminderAlert = document.querySelector('[data-note-reminder-alert]');
 const personalNoteReminderMessage = document.querySelector('[data-note-reminder-message]');
@@ -2997,7 +2997,7 @@ if (personalNoteRecordPicker) {
         const currentSequence = ++searchSequence;
         showRecordSearchStatus('Searching records…');
         try {
-            const response = await fetch(`/personal_note_record_search.php?q=${encodeURIComponent(query)}`, {
+            const response = await fetch(<?= json_encode(url('/personal_note_record_search.php')) ?> + `?q=${encodeURIComponent(query)}`, {
                 headers: { Accept: 'application/json' },
                 signal: searchRequest.signal,
             });
@@ -3045,7 +3045,7 @@ if (personalNoteRecordPicker) {
         }
     });
     noteForm.addEventListener('submit', (event) => {
-        if (recordIdInput.value === '') {
+        if (recordIdInput.value === '' && recordSearchInput.value.trim() !== '') {
             event.preventDefault();
             recordSearchInput.setCustomValidity('Select a record from the suggestions.');
             recordSearchInput.reportValidity();
