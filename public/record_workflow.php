@@ -160,11 +160,11 @@ if ($action === 'act_administrative_document') {
 if ($action === 'update_plenary_numbers') {
     $returnTarget = ($_POST['return'] ?? '') === 'dashboard' ? 'dashboard' : 'record';
     $cityTab = trim($_POST['city_tab'] ?? '');
-    $returnUrl = url('/record_view.php?id=' . $id);
+    $returnUrl = '/record_view.php?id=' . $id;
     if ($returnTarget === 'dashboard') {
-        $returnUrl = url('/dashboard.php?city_tab=' . urlencode($cityTab !== '' ? $cityTab : 'for-plenary'));
+        $returnUrl = '/dashboard.php?city_tab=' . urlencode($cityTab !== '' ? $cityTab : 'for-plenary');
     }
-    $formUrl = url('/plenary_number_form.php?id=' . $id) . '&popup=1&return=' . urlencode($returnTarget);
+    $formUrl = '/plenary_number_form.php?id=' . $id . '&popup=1&return=' . urlencode($returnTarget);
     if ($cityTab !== '') {
         $formUrl .= '&city_tab=' . urlencode($cityTab);
     }

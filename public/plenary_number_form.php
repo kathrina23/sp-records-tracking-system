@@ -44,7 +44,7 @@ require __DIR__ . '/../app/partials/header.php';
             <p class="muted page-record-title"><?= e($record['control_number']) ?> - <?= e(display_record_title(record_title_for_current_user($record))) ?></p>
         </div>
         <?php if ($isPopup): ?>
-            <a class="modal-close" href="<?= e($closeUrl) ?>" aria-label="Close proposed number window">X</a>
+            <a class="modal-close" href="<?= e(url($closeUrl)) ?>" aria-label="Close proposed number window">X</a>
         <?php endif; ?>
     </div>
     <form method="post" action="<?= url('/record_workflow.php') ?>" class="form-grid">
@@ -68,7 +68,7 @@ require __DIR__ . '/../app/partials/header.php';
         </label>
         <div class="actions full">
             <button class="btn" type="submit">Save Proposed No.</button>
-            <a class="btn secondary" href="<?= e($closeUrl) ?>">Cancel</a>
+            <a class="btn secondary" href="<?= e(url($closeUrl)) ?>">Cancel</a>
         </div>
     </form>
 </section>
