@@ -23,10 +23,11 @@ if (
     || $closeParts === false
     || isset($closeParts['scheme'])
     || isset($closeParts['host'])
-    || ($closeParts['path'] ?? '') !== $allowedClosePath
+    || url($closeParts['path'] ?? '') !== $allowedClosePath
 ) {
     $closeUrl = $defaultCloseUrl;
 }
+$closeUrl = url($closeUrl);
 $recordStmt = db()->prepare('SELECT * FROM records WHERE id = ?');
 $recordStmt->execute([$recordId]);
 $record = $recordStmt->fetch();

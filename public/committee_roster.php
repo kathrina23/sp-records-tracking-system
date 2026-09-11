@@ -161,7 +161,7 @@ function official_select(string $name, string $currentValue, array $officials, s
                 <h1 id="committee_roster_title"><?= e($committee['name']) ?> Roster</h1>
                 <p class="muted"><?= e($term['name']) ?></p>
             </div>
-            <a class="modal-close" href="<?= e($closeUrl) ?>" aria-label="Close roster window">X</a>
+            <a class="modal-close" href="<?= e(url($closeUrl)) ?>" aria-label="Close roster window">X</a>
         </div>
 
         <div class="detail-list">

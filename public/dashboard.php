@@ -256,7 +256,7 @@ function render_dashboard_record_filters(
         <input type="date" name="date_from" value="<?= e($dateFrom) ?>" aria-label="Date received from">
         <input type="date" name="date_to" value="<?= e($dateTo) ?>" aria-label="Date received to">
         <button class="btn secondary records-filter-action" type="submit">Filter</button>
-        <a class="btn secondary records-filter-action" href="<?= e($clearUrl) ?>">Clear</a>
+        <a class="btn secondary records-filter-action" href="<?= e(url($clearUrl)) ?>">Clear</a>
     </form>
     <?php
 }
@@ -265,7 +265,7 @@ function dashboard_action_url(string $url): string
 {
     global $isDashboardMonitor;
 
-    return $isDashboardMonitor ? '#dashboard-monitor-read-only' : $url;
+    return $isDashboardMonitor ? '#dashboard-monitor-read-only' : url($url);
 }
 
 $dashboardWhere = '';
@@ -393,7 +393,7 @@ function render_recent_referrals_pagination(int $currentPage, int $totalPages, b
             $params['tab'] = 'committee';
         }
 
-        return '/dashboard.php?' . http_build_query($params);
+        return url('/dashboard.php?') . http_build_query($params);
     };
 
     $visiblePages = [1, $totalPages];
@@ -436,7 +436,7 @@ function render_staff_updates_pagination(int $currentPage, int $totalPages): voi
         $params = $_GET;
         $params['division_tab'] = 'staff-updates';
         $params['staff_updates_page'] = $page;
-        return '/dashboard.php?' . http_build_query($params);
+        return url('/dashboard.php?') . http_build_query($params);
     };
 
     $visiblePages = [1, $totalPages];
@@ -479,7 +479,7 @@ function render_staff_logs_pagination(int $currentPage, int $totalPages): void
         $params = $_GET;
         $params['city_tab'] = 'logs';
         $params['staff_logs_page'] = $page;
-        return '/dashboard.php?' . http_build_query($params);
+        return url('/dashboard.php?') . http_build_query($params);
     };
 
     $visiblePages = [1, $totalPages];
@@ -2123,7 +2123,7 @@ if ($isDashboardMonitor) {
                             <td><?= e(display_date($record['plenary_approved_date'] ?? '')) ?></td>
                             <td><?= e(display_datetime($record['updated_at'] ?? '')) ?></td>
                             <td class="center-cell">
-                                <a class="print-link small-action-link record-view-action" href="<?= e('/record_view.php?' . http_build_query([
+                                <a class="print-link small-action-link record-view-action" href="<?= e(url('/record_view.php?') . http_build_query([
                                     'id' => (int) $record['id'],
                                     'popup' => 1,
                                     'return' => 'dashboard',
@@ -2246,7 +2246,7 @@ if ($isDashboardMonitor) {
                             <tr>
                                 <td><?= e(display_datetime($log['created_at'] ?? '')) ?></td>
                                 <td>
-                                    <a class="log-history-link" href="<?= e($userLogUrl) ?>"><?= e($log['user_name'] ?? 'System') ?></a><br>
+                                    <a class="log-history-link" href="<?= e(url($userLogUrl)) ?>"><?= e($log['user_name'] ?? 'System') ?></a><br>
                                     <span class="muted"><?= e($log['user_email'] ?? '') ?></span>
                                 </td>
                                 <td><?= e(role_label($log['user_role'] ?? '')) ?></td>
@@ -2255,7 +2255,7 @@ if ($isDashboardMonitor) {
                                 <td><?= e($log['action'] ?? '') ?></td>
                                 <td>
                                     <?php if ($recordLogUrl !== '' && !empty($log['control_number'])): ?>
-                                        <a class="log-history-link" href="<?= e($recordLogUrl) ?>"><?= e($log['control_number']) ?></a>
+                                        <a class="log-history-link" href="<?= e(url($recordLogUrl)) ?>"><?= e($log['control_number']) ?></a>
                                     <?php else: ?>
                                         <span class="muted">—</span>
                                     <?php endif; ?>

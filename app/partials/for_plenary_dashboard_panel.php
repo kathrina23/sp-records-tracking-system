@@ -36,7 +36,7 @@
                     <td><?= e(display_datetime($record['updated_at'] ?? '')) ?></td>
                     <td class="center-cell for-plenary-action-cell">
                         <div class="for-plenary-actions">
-                            <a class="print-link small-action-link record-view-action" href="<?= e('/record_view.php?' . http_build_query([
+                            <a class="print-link small-action-link record-view-action" href="<?= e(url('/record_view.php?') . http_build_query([
                                 'id' => (int) $record['id'],
                                 'popup' => 1,
                                 'return' => 'dashboard',

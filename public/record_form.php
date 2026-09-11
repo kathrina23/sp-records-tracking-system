@@ -56,7 +56,7 @@ if (
     || $popupCloseParts === false
     || isset($popupCloseParts['scheme'])
     || isset($popupCloseParts['host'])
-    || ($popupCloseParts['path'] ?? '') !== $popupAllowedClosePath
+    || url($popupCloseParts['path'] ?? '') !== url($popupAllowedClosePath)
 ) {
     $popupCloseUrl = $popupDefaultCloseUrl;
 }
@@ -996,7 +996,7 @@ require __DIR__ . '/../app/partials/header.php';
     </div>
     <?php if ($isPopup): ?>
         <div class="actions">
-            <a class="modal-close" href="<?= e($popupCloseUrl) ?>" aria-label="Close record editor">X</a>
+            <a class="modal-close" href="<?= e(url($popupCloseUrl)) ?>" aria-label="Close record editor">X</a>
         </div>
     <?php endif; ?>
 </div>
@@ -1235,7 +1235,7 @@ require __DIR__ . '/../app/partials/header.php';
     <?php endif; ?>
     <div class="actions full">
         <button class="btn record-save-action" type="submit"><?= $id && can_city_secretary_action() && ($record['status'] ?? '') === 'Received' ? 'Save Review' : ($id && is_administrative_document_type($record['document_type'] ?? '') ? 'Save Forwarding' : 'Save Record') ?></button>
-        <a class="btn secondary record-cancel-action" href="<?= e($isPopup ? $popupCloseUrl : '/records.php') ?>"><?= $isPopup ? 'Close' : 'Cancel' ?></a>
+        <a class="btn secondary record-cancel-action" href="<?= e(url($isPopup ? $popupCloseUrl : '/records.php')) ?>"><?= $isPopup ? 'Close' : 'Cancel' ?></a>
     </div>
 </form>
 <?php if ($isPopup): ?>

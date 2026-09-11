@@ -14,11 +14,12 @@ if (
     || $closeParts === false
     || isset($closeParts['scheme'])
     || isset($closeParts['host'])
-    || !in_array(($closeParts['path'] ?? ''), [url('/record_view.php'), url('/dashboard.php')], true)
+    || !in_array(url($closeParts['path'] ?? ''), [url('/record_view.php'), url('/dashboard.php')], true)
 ) {
     $closeUrl = $defaultCloseUrl;
 }
 
+$closeUrl = url($closeUrl);
 $recordStmt = db()->prepare('SELECT * FROM records WHERE id = ?');
 $recordStmt->execute([$recordId]);
 $record = $recordStmt->fetch();

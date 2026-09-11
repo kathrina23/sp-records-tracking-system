@@ -16,7 +16,7 @@ if (
     || $recordsReturnParts === false
     || isset($recordsReturnParts['scheme'])
     || isset($recordsReturnParts['host'])
-    || ($recordsReturnParts['path'] ?? '') !== url('/records.php')
+    || url($recordsReturnParts['path'] ?? '') !== url('/records.php')
 ) {
     $recordsReturnUrl = url('/records.php');
 }
@@ -25,6 +25,7 @@ $staffUpdatesPage = max(1, (int) ($_GET['staff_updates_page'] ?? 1));
 $staffUpdateSearch = trim($_GET['staff_update_search'] ?? '');
 $staffUpdateDateFrom = trim($_GET['staff_update_date_from'] ?? '');
 $staffUpdateDateTo = trim($_GET['staff_update_date_to'] ?? '');
+$recordsReturnUrl = url($recordsReturnUrl);
 $dashboardReturnParams = [];
 if ($divisionTab !== '') {
     $dashboardReturnParams['division_tab'] = $divisionTab;
@@ -50,9 +51,9 @@ if ($returnTarget === 'dashboard') {
         && $requestedDashboardReturnParts !== false
         && !isset($requestedDashboardReturnParts['scheme'])
         && !isset($requestedDashboardReturnParts['host'])
-        && ($requestedDashboardReturnParts['path'] ?? '') === url('/dashboard.php')
+        && url($requestedDashboardReturnParts['path'] ?? '') === url('/dashboard.php')
     ) {
-        $dashboardReturnUrl = $requestedDashboardReturnUrl;
+        $dashboardReturnUrl = url($requestedDashboardReturnUrl);
     }
 }
 $recipientsReturnUrl = url('/record_recipients.php?record_id=' . $id);
@@ -64,9 +65,9 @@ if ($returnTarget === 'recipients') {
         && $requestedRecipientsReturnParts !== false
         && !isset($requestedRecipientsReturnParts['scheme'])
         && !isset($requestedRecipientsReturnParts['host'])
-        && ($requestedRecipientsReturnParts['path'] ?? '') === url('/record_recipients.php')
+        && url($requestedRecipientsReturnParts['path'] ?? '') === url('/record_recipients.php')
     ) {
-        $recipientsReturnUrl = $requestedRecipientsReturnUrl;
+        $recipientsReturnUrl = url($requestedRecipientsReturnUrl);
     }
 }
 $closeUrl = match ($returnTarget) {

@@ -27,10 +27,11 @@ if (
     || $closeParts === false
     || isset($closeParts['scheme'])
     || isset($closeParts['host'])
-    || ($closeParts['path'] ?? '') !== $allowedClosePath
+    || url($closeParts['path'] ?? '') !== $allowedClosePath
 ) {
     $closeUrl = $defaultCloseUrl;
 }
+$closeUrl = url($closeUrl);
 
 $user = null;
 $record = null;
@@ -145,7 +146,7 @@ require __DIR__ . '/../app/partials/header.php';
                             <td>
                                 <?php if (!empty($log['record_id']) && !empty($log['control_number'])): ?>
                                     <?php $recordUrl = '/log_history.php?' . http_build_query(array_merge($returnQuery, ['id' => (int) $log['record_id']])); ?>
-                                    <a class="log-history-link" href="<?= e($recordUrl) ?>"><?= e($log['control_number']) ?></a>
+                                    <a class="log-history-link" href="<?= e(url($recordUrl)) ?>"><?= e($log['control_number']) ?></a>
                                 <?php else: ?>
                                     <?= e(($log['entity_type'] ?? '') . (!empty($log['entity_id']) ? ' #' . $log['entity_id'] : '')) ?>
                                 <?php endif; ?>

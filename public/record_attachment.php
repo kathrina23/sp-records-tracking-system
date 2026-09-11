@@ -67,7 +67,7 @@ function attachment_manager_return_url(int $recordId): string
         || $parts === false
         || isset($parts['scheme'])
         || isset($parts['host'])
-        || ($parts['path'] ?? '') !== url('/record_attachments_manage.php')
+        || url($parts['path'] ?? '') !== url('/record_attachments_manage.php')
     ) {
         return $defaultUrl;
     }

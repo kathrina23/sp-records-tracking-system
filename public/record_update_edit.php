@@ -82,9 +82,9 @@ require __DIR__ . '/../app/partials/header.php';
         <p class="muted"><?= e($row['control_number']) ?> - <?= e($updatedByName) ?> - <?= e(display_datetime($row['movement_created_at'] ?? '')) ?></p>
     </div>
     <?php if ($isDashboardPopup): ?>
-        <a class="modal-close" href="<?= e($backUrl) ?>" aria-label="Close remarks window">X</a>
+        <a class="modal-close" href="<?= e(url($backUrl)) ?>" aria-label="Close remarks window">X</a>
     <?php else: ?>
-        <a class="btn secondary" href="<?= e($backUrl) ?>">Back to Record</a>
+        <a class="btn secondary" href="<?= e(url($backUrl)) ?>">Back to Record</a>
     <?php endif; ?>
 </div>
 

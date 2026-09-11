@@ -89,7 +89,7 @@ require __DIR__ . '/../app/partials/header.php';
         <p class="muted page-record-title"><?= e($record['control_number']) ?> - <?= e(display_record_title(record_title_for_current_user($record))) ?></p>
     </div>
     <?php if ($isPopup): ?>
-        <a class="modal-close" href="<?= e($closeUrl) ?>" aria-label="Close update window">X</a>
+        <a class="modal-close" href="<?= e(url($closeUrl)) ?>" aria-label="Close update window">X</a>
     <?php else: ?>
         <a class="btn secondary" href="<?= url('/record_view.php?id=') ?><?= (int) $record['id'] ?>">Track</a>
     <?php endif; ?>
@@ -202,7 +202,7 @@ require __DIR__ . '/../app/partials/header.php';
         </label>
         <div class="actions full">
             <button class="btn" type="submit">Save Status Update</button>
-            <a class="btn secondary" href="<?= e($isPopup ? $closeUrl : '/records.php') ?>">Cancel</a>
+            <a class="btn secondary" href="<?= e(url($isPopup ? $closeUrl : '/records.php')) ?>">Cancel</a>
         </div>
     </form>
 </section>

@@ -10,7 +10,7 @@ document.addEventListener('click', (event) => {
         return;
     }
 
-    const basePath = <?= json_encode(BASE_PATH) ?>;
+    const basePath = <?= json_encode(rtrim(BASE_PATH, '/')) ?>;
     const returnTargets = {
         [basePath + '/records.php']: 'records',
         [basePath + '/dashboard.php']: 'dashboard',

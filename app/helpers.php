@@ -36,7 +36,19 @@ function record_title_for_current_user(array $record): string
 
 function url(string $path): string
 {
-    return BASE_PATH . $path;
+    $basePath = rtrim(BASE_PATH, '/');
+    // Callers may pass an app path or an already deployment-prefixed URL.
+    // Match the whole directory, never a similarly named path or query value.
+    if ($basePath !== '' && (
+        $path === $basePath
+        || str_starts_with($path, $basePath . '/')
+        || str_starts_with($path, $basePath . '?')
+        || str_starts_with($path, $basePath . '#')
+    )) {
+        return $path;
+    }
+
+    return $basePath . $path;
 }
 
 function redirect(string $path): never
