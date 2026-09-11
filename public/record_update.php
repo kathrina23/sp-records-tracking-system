@@ -66,6 +66,9 @@ if (($record['document_type'] ?? '') === 'Committee Referrals'
     && !in_array(current_user()['role'] ?? '', ['admin', 'city_secretary'], true)) {
     $statuses = array_values(array_filter($statuses, fn ($status) => $status !== 'Approved in the Plenary'));
 }
+if ((current_user()['role'] ?? '') === 'admin') {
+    $statuses = all_statuses();
+}
 $committees = db()->query('SELECT id, name FROM committees ORDER BY name')->fetchAll();
 $committeeRows = ($record['document_type'] ?? '') === 'Committee Referrals'
     ? record_committee_rows((int) $record['id'], !empty($record['committee_id']) ? (int) $record['committee_id'] : null)

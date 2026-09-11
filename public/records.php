@@ -9,7 +9,7 @@ $isOthersUser = in_array($userRole, ['others', 'server_maintenance_staff'], true
 $canUseAllRecordsTab = in_array($userRole, ['admin', 'city_secretary'], true);
 $canUseAdministrativeDocumentsTab = in_array($userRole, ['admin', 'city_secretary', 'receiving_clerk', 'others', 'server_maintenance_staff'], true);
 $canUseCertifiedUrgentTab = !$isOthersUser;
-$activeTab = $_GET['tab'] ?? 'committee';
+$activeTab = $_GET['tab'] ?? ($userRole === 'admin' ? 'all' : 'committee');
 if (
     !in_array($activeTab, ['all', 'committee', 'certified', 'documents', 'transmittals', 'memoranda'], true)
     || (!$canUseAllRecordsTab && $activeTab === 'all')

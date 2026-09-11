@@ -48,14 +48,14 @@ if (!can_update_record_status($record)) {
 }
 
 $role = current_user()['role'] ?? '';
-if (($record['document_type'] ?? '') === 'Certified Urgent'
+if ($role !== 'admin' && ($record['document_type'] ?? '') === 'Certified Urgent'
     && can_manage_plenary_scheduling()
     && !in_array($newStatus, ['For Plenary Session', 'Scheduled for Plenary', 'Disapproved', 'Approved in the Plenary'], true)) {
     flash('Certified Urgent records can only use plenary statuses at this stage.', 'error');
     redirect($updateFormUrl);
 }
 if (($record['status'] ?? '') === 'Approved in the Plenary'
-    && in_array($role, ['admin', 'city_secretary', 'division_chief', 'secretariat', 'receiving_clerk'], true)) {
+    && in_array($role, ['city_secretary', 'division_chief', 'secretariat', 'receiving_clerk'], true)) {
     http_response_code(403);
     exit('Approved in the Plenary records can no longer be updated.');
 }
@@ -66,11 +66,11 @@ if ($role === 'administrative_support') {
         flash('Administrative Support can only update approved plenary records using post-plenary statuses.', 'error');
         redirect($updateFormUrl);
     }
-} elseif (in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified Urgent'], true) && in_array($newStatus, post_plenary_statuses(), true)) {
+} elseif ($role !== 'admin' && in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified Urgent'], true) && in_array($newStatus, post_plenary_statuses(), true)) {
     flash('Only Administrative Support can use post-plenary statuses.', 'error');
     redirect($updateFormUrl);
 }
-if ($newStatus === 'For Transmittal' && !record_has_plenary_approval($record)) {
+if ($role !== 'admin' && $newStatus === 'For Transmittal' && !record_has_plenary_approval($record)) {
     flash('For Transmittal can only be applied to records approved in the plenary.', 'error');
     redirect($updateFormUrl);
 }

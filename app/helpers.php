@@ -374,6 +374,10 @@ function referral_group_label(int $total): string
 
 function can_access_record_committees(array $record): bool
 {
+    if (($_SESSION['user']['role'] ?? '') === 'admin') {
+        return true;
+    }
+
     $rows = record_committee_rows((int) ($record['id'] ?? 0), !empty($record['committee_id']) ? (int) $record['committee_id'] : null);
     foreach ($rows as $row) {
         if (can_access_committee((int) $row['committee_id'])) {
@@ -975,6 +979,10 @@ function division_chief_first_action_done(array $record): bool
 
 function can_update_record_status(array $record): bool
 {
+    if (($_SESSION['user']['role'] ?? '') === 'admin') {
+        return true;
+    }
+
     if (($_SESSION['user']['role'] ?? '') === 'receiving_clerk') {
         return false;
     }
@@ -1089,6 +1097,10 @@ function can_view_record_attachments(array $record): bool
 
 function can_manage_plenary_record_attachments(array $record): bool
 {
+    if (($_SESSION['user']['role'] ?? '') === 'admin') {
+        return true;
+    }
+
     return ($_SESSION['user']['role'] ?? '') === 'secretariat'
         && is_laws_and_rules_secretariat()
         && in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified Urgent'], true)
@@ -1123,6 +1135,10 @@ function record_has_plenary_approval(array $record): bool
 
 function can_manage_transmittal_recipients(array $record): bool
 {
+    if (($_SESSION['user']['role'] ?? '') === 'admin') {
+        return true;
+    }
+
     return ($record['status'] ?? '') === 'For Transmittal'
         && record_has_plenary_approval($record)
         && can_view_transmittal_contact_details($record);
