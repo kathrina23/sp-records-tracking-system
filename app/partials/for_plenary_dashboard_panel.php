@@ -1,9 +1,7 @@
 <div class="division-tab-panel" data-division-panel="for-plenary">
     <h2>For Plenary</h2>
     <p class="muted">Committee Referrals and Certified Urgent records ready for or scheduled for plenary.</p>
-    <div class="actions plenary-print-controls">
-        <a class="btn" href="<?= e(dashboard_action_url('/for_plenary_print.php')) ?>" target="_blank">Print Result</a>
-    </div>
+    <?php require __DIR__ . '/plenary_filter_controls.php'; ?>
     <div class="table-wrap">
         <table>
             <thead><tr><th>Communication No.</th><th class="title-column">Title</th><th>Committee</th><th class="status-column">Status</th><th class="updated-column">Updated</th><th>Action</th></tr></thead>
@@ -86,7 +84,7 @@
                     </tr>
                 <?php endif; ?>
             <?php endforeach; ?>
-            <?php if (!$citySecretaryDashboard['for_plenary']): ?><tr><td colspan="6">No records are currently for plenary.</td></tr><?php endif; ?>
+            <?php if (!$citySecretaryDashboard['for_plenary']): ?><tr><td colspan="6">No plenary records match the selected session date.</td></tr><?php endif; ?>
             </tbody>
         </table>
     </div>

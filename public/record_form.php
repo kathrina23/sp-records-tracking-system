@@ -35,6 +35,7 @@ function strip_pending_existing_record_tag(?string $remarks): string
 }
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+$isRecordCorrection = $id > 0 && can_city_secretary_action() && ($_GET['mode'] ?? '') !== 'review';
 $popupReturnTarget = in_array($_GET['return'] ?? '', ['dashboard', 'records', 'record'], true)
     ? (string) $_GET['return']
     : '';
@@ -74,6 +75,9 @@ if (!in_array($selectedType, $documentTypes, true)) {
     $selectedType = 'Committee Referrals';
 }
 $recordFormQuery = [];
+if (!$isRecordCorrection && ($_GET['mode'] ?? '') === 'review') {
+    $recordFormQuery['mode'] = 'review';
+}
 if ($id > 0) {
     $recordFormQuery['id'] = $id;
 } elseif ($selectedType !== 'Committee Referrals') {
@@ -166,7 +170,7 @@ if ($id) {
         exit('You are not assigned to edit this record.');
     }
 }
-$canCorrectForPlenaryRecord = $id > 0
+$canCorrectForPlenaryRecord = $id > 0 && !$isRecordCorrection
     && can_manage_for_plenary_record($record);
 $isLawsAndRulesPlenaryEdit = $canCorrectForPlenaryRecord
     && (current_user()['role'] ?? '') === 'secretariat'
@@ -196,10 +200,10 @@ if (($record['document_type'] ?? '') === 'Certified Urgent' && !$canCorrectForPl
         )
     ));
 }
-$hideStatusInRecordForm = $id > 0
+$hideStatusInRecordForm = $isRecordCorrection || $id > 0
     && in_array(current_user()['role'] ?? '', ['admin', 'city_secretary'], true)
     && ($record['document_type'] ?? '') === 'Certified Urgent';
-$canEditStatusInRecordForm = $id > 0
+$canEditStatusInRecordForm = !$isRecordCorrection && $id > 0
     && in_array(current_user()['role'] ?? '', ['admin', 'city_secretary'], true)
     && ($record['status'] ?? '') !== 'Received'
     && !$hideStatusInRecordForm;
@@ -209,10 +213,10 @@ $receivingStaffCommentPending = $id && record_has_pending_receiving_staff_commen
 $receivingStaffComment = $receivingStaffCommentPending
     ? pending_receiving_staff_comment((int) $id)
     : null;
-$canChooseDocumentType = !$id
+$canChooseDocumentType = $isRecordCorrection || !$id
     || $canCorrectForPlenaryRecord
     || (($record['status'] ?? '') === 'Received' && in_array(current_user()['role'] ?? '', ['admin', 'city_secretary', 'receiving_clerk'], true));
-$canChooseReferralCommittee = (
+$canChooseReferralCommittee = $isRecordCorrection || (
         ($record['document_type'] ?? 'Committee Referrals') === 'Committee Referrals'
         || $canChooseDocumentType
     )
@@ -227,7 +231,7 @@ $canChooseReferralCommittee = (
 $canReviewCityCouncilProposal = $id > 0
     && can_city_secretary_action()
     && ($record['document_type'] ?? '') === 'Committee Referrals'
-    && ($record['status'] ?? '') === 'Received';
+    && ($isRecordCorrection || ($record['status'] ?? '') === 'Received');
 $receivingClerkDisplay = current_user()['role'] === 'receiving_clerk' ? current_user()['name'] : '';
 if (!empty($record['receiving_clerk_id'])) {
     $clerkNameStmt = db()->prepare('SELECT name FROM users WHERE id = ?');
@@ -258,9 +262,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $reviewAction = $_POST['review_action'] ?? 'finalize';
     $mergeTargetControlNumber = strtoupper(trim($_POST['merge_target_control_number'] ?? ''));
-    $canTagAsNewOrExisting = $documentType !== 'Certified Urgent'
+    $canTagAsNewOrExisting = ($isRecordCorrection || $documentType !== 'Certified Urgent')
         && in_array(current_user()['role'] ?? '', ['admin', 'city_secretary', 'receiving_clerk'], true)
-        && (!$id || ($record['status'] ?? '') === 'Received' || (current_user()['role'] ?? '') === 'city_secretary');
+        && (!$id || ($record['status'] ?? '') === 'Received' || in_array(current_user()['role'] ?? '', ['admin', 'city_secretary'], true));
     if (!$canTagAsNewOrExisting) {
         $reviewAction = 'finalize';
         $mergeTargetControlNumber = '';
@@ -271,7 +275,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $proposedResolutionNumber = trim((string) ($record['proposed_resolution_number'] ?? ''));
     $isCityCouncilProposalReview = $id > 0
         && can_city_secretary_action()
-        && ($record['status'] ?? '') === 'Received'
+        && ($isRecordCorrection || ($record['status'] ?? '') === 'Received')
         && $documentType === 'Committee Referrals'
         && $reviewAction !== 'merge_existing';
     if ($isCityCouncilProposalReview) {
@@ -320,13 +324,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $receivingClerkId = null;
     if (in_array($documentType, ['Committee Referrals', 'Certified Urgent'], true)) {
-        if ($id) {
+        if ($isRecordCorrection) {
+            $receivingClerkId = (int) ($_POST['receiving_clerk_id'] ?? 0) ?: null;
+        } elseif ($id) {
             $receivingClerkId = $record['receiving_clerk_id'] !== null ? (int) $record['receiving_clerk_id'] : null;
         } elseif ((current_user()['role'] ?? '') === 'receiving_clerk') {
             $receivingClerkId = (int) current_user()['id'];
         } elseif (($_POST['receiving_clerk_id'] ?? '') !== '') {
             $receivingClerkId = (int) $_POST['receiving_clerk_id'];
         }
+    } elseif ($isRecordCorrection) {
+        $receivingClerkId = (int) ($_POST['receiving_clerk_id'] ?? 0) ?: null;
     } elseif ($id) {
         $receivingClerkId = $record['receiving_clerk_id'] !== null ? (int) $record['receiving_clerk_id'] : null;
     } elseif ((current_user()['role'] ?? '') === 'receiving_clerk') {
@@ -381,11 +389,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $controlNumber = $canCorrectForPlenaryRecord
         ? (string) ($record['control_number'] ?? '')
         : strtoupper(trim($_POST['control_number'] ?? ''));
-    $autoAssignControlNumber = !$id || (
+    $autoAssignControlNumber = !$id || (!$isRecordCorrection && (
         ($record['status'] ?? '') === 'Received'
         && $documentType !== ($record['document_type'] ?? '')
         && in_array(current_user()['role'] ?? '', ['admin', 'city_secretary'], true)
-    ) || (
+    )) || (
         $canCorrectForPlenaryRecord
         && $documentType !== ($record['document_type'] ?? '')
         && is_administrative_document_type($documentType)
@@ -404,8 +412,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'document_type' => $documentType,
         'origin' => $documentType !== 'Committee Referrals' ? $partyName : '',
         'client_name' => $documentType === 'Committee Referrals' ? $partyName : null,
-        'contact_number' => $documentType === 'Certified Urgent' ? '' : trim($_POST['contact_number'] ?? ($record['contact_number'] ?? '')),
-        'client_email' => $documentType === 'Certified Urgent' ? '' : trim($_POST['client_email'] ?? ($record['client_email'] ?? '')),
+        'contact_number' => !$isRecordCorrection && $documentType === 'Certified Urgent' ? '' : trim($_POST['contact_number'] ?? ($record['contact_number'] ?? '')),
+        'client_email' => !$isRecordCorrection && $documentType === 'Certified Urgent' ? '' : trim($_POST['client_email'] ?? ($record['client_email'] ?? '')),
         'committee_id' => $documentType === 'Committee Referrals' ? $primaryCommitteeId : null,
         'assigned_user_id' => ($_POST['assigned_user_id'] ?? '') !== '' ? (int) $_POST['assigned_user_id'] : null,
         'receiving_clerk_id' => $receivingClerkId,
@@ -415,7 +423,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             : ($documentType === 'Certified Urgent' && (!$id || ($record['status'] ?? '') === 'Received')
                 ? 'For Plenary Session'
                 : ($id ? ($record['status'] ?? 'Received') : 'Received')),
-        'received_date' => in_array($documentType, ['Committee Referrals', 'Certified Urgent'], true)
+        'received_date' => $isRecordCorrection || in_array($documentType, ['Committee Referrals', 'Certified Urgent'], true)
             ? ($_POST['received_date'] ?? date('Y-m-d'))
             : ($record['received_date'] ?? date('Y-m-d')),
         'due_date' => null,
@@ -467,7 +475,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect($recordFormUrl);
         }
 
-        if ($documentType === 'Committee Referrals') {
+        if (!$isRecordCorrection && $documentType === 'Committee Referrals') {
             $targetCommitteeRows = record_committee_rows(
                 $mergeTargetRecordId,
                 !empty($mergeTargetRecord['committee_id']) ? (int) $mergeTargetRecord['committee_id'] : null
@@ -484,7 +492,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if (!can_city_secretary_action()) {
+        if ($isRecordCorrection || !can_city_secretary_action()) {
             $data['remarks'] = trim($data['remarks'] . "\n\n" . 'Tagged as update to existing Communication Number ' . $mergeTargetControlNumber . '. Pending SP Secretary review.');
         }
     }
@@ -492,6 +500,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (
         $id
         && can_city_secretary_action()
+        && !$isRecordCorrection
         && $canTagAsNewOrExisting
         && $reviewAction === 'merge_existing'
     ) {
@@ -577,6 +586,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data['document_type'] === 'Committee Referrals'
         && $id > 0
         && can_city_secretary_action()
+        && !$isRecordCorrection
         && ($record['status'] ?? 'Received') === 'Received'
     ) {
         if ($hasCityReceivingStaffComment) {
@@ -622,6 +632,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         is_administrative_document_type($data['document_type'])
         && $id
         && can_city_secretary_action()
+        && !$isRecordCorrection
         && ($record['status'] ?? 'Received') === 'Received'
         && $forwardedTo !== ''
     ) {
@@ -658,7 +669,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flash('Please complete the Client / Origin for this administrative record.', 'error');
         redirect($recordFormUrl);
     }
-    if (is_administrative_document_type($data['document_type']) && $id && can_city_secretary_action() && $forwardedTo === '') {
+    if (is_administrative_document_type($data['document_type']) && $id && can_city_secretary_action() && !$isRecordCorrection && $forwardedTo === '') {
         flash('Please select one or more recipients for this document.', 'error');
         redirect($recordFormUrl);
     }
@@ -670,6 +681,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $data['received_date']) || !strtotime((string) $data['received_date'])) {
             flash('Please enter a valid Date Received for the Certified Urgent record.', 'error');
             redirect($recordFormUrl);
+        }
+    }
+
+    if ($isRecordCorrection) {
+        // Corrections preserve workflow state and never create tracking movements.
+        $data['status'] = $record['status'];
+        $data['due_date'] = $record['due_date'];
+        if (!is_administrative_document_type($documentType) || ($forwardedTo === '' && !$selectedForwardOptions)) {
+            $data['current_location'] = $record['current_location'];
+        }
+        if (is_administrative_document_type($documentType) && $selectedForwardOptions) {
+            $data['current_location'] = $forwardedTo;
+        }
+        if ($documentType === $record['document_type'] && $primaryCommitteeId === ($record['committee_id'] === null ? null : (int) $record['committee_id'])) {
+            $data['assigned_user_id'] = $record['assigned_user_id'];
         }
     }
 
@@ -792,7 +818,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw $error;
         }
 
-        if ($oldStatus !== $data['status'] || $oldLocation !== $data['current_location'] || $titleChanged || $plenaryPrintTitleChanged || $isReceivingStaffCommentResponse || $hasCityReceivingStaffComment || $cityCouncilProposalChanged) {
+        if (!$isRecordCorrection && ($oldStatus !== $data['status'] || $oldLocation !== $data['current_location'] || $titleChanged || $plenaryPrintTitleChanged || $isReceivingStaffCommentResponse || $hasCityReceivingStaffComment || $cityCouncilProposalChanged)) {
             $move = db()->prepare('INSERT INTO record_movements (record_id, from_status, to_status, from_location, to_location, notes, record_title, previous_title, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
             if ($isReceivingStaffCommentResponse) {
                 $movementNotes = 'Receiving Staff updated the record in response to the City Secretary comment.';
@@ -944,7 +970,7 @@ $priorities = ['Low', 'Normal', 'High', 'Urgent'];
 $pendingMergeTargetControlNumber = pending_existing_record_target($record['remarks'] ?? '');
 $remarksForForm = strip_pending_existing_record_tag($record['remarks'] ?? '');
 $canTagAsNewOrExisting = in_array(current_user()['role'] ?? '', ['admin', 'city_secretary', 'receiving_clerk'], true)
-    && (!$id || ($record['status'] ?? '') === 'Received' || (current_user()['role'] ?? '') === 'city_secretary');
+    && (!$id || ($record['status'] ?? '') === 'Received' || in_array(current_user()['role'] ?? '', ['admin', 'city_secretary'], true));
 $canShowClientContactFields = in_array(current_user()['role'] ?? '', ['admin', 'city_secretary', 'receiving_clerk', 'administrative_support'], true)
     || $canCorrectForPlenaryRecord;
 $reviewAttachmentCount = 0;
@@ -991,8 +1017,8 @@ require __DIR__ . '/../app/partials/header.php';
 <?php endif; ?>
 <div class="page-head">
     <div>
-        <h1 id="record_form_title"><?= $id && $isPopup ? 'Edit Record' : ($id && can_city_secretary_action() && ($record['status'] ?? '') === 'Received' ? 'Review Record' : ($id && is_administrative_document_type($record['document_type'] ?? '') ? 'Forward to' : ($id ? 'Edit Record' : 'New Record'))) ?></h1>
-        <p class="muted"><?= ($record['status'] ?? '') === 'Received' ? 'The record type and routing are still for SP Secretary review.' : 'Encode record details and routing information.' ?></p>
+        <h1 id="record_form_title"><?= $isRecordCorrection ? 'Edit Record' : (!$isRecordCorrection && $id && can_city_secretary_action() && ($record['status'] ?? '') === 'Received' ? 'Review Record' : ($id && is_administrative_document_type($record['document_type'] ?? '') ? 'Forward to' : ($id ? 'Edit Record' : 'New Record'))) ?></h1>
+        <p class="muted"><?= $isRecordCorrection ? 'Edit record details. Saving does not create an official tracking update.' : (($record['status'] ?? '') === 'Received' ? 'The record type and routing are still for SP Secretary review.' : 'Encode record details and routing information.') ?></p>
     </div>
     <?php if ($isPopup): ?>
         <div class="actions">
@@ -1066,7 +1092,7 @@ require __DIR__ . '/../app/partials/header.php';
             </label>
             <label id="merge_target_wrap">Existing Communication Number
                 <input name="merge_target_control_number" id="merge_target_control_number" list="merge_record_candidates" value="<?= e($pendingMergeTargetControlNumber) ?>" placeholder="Type or choose the old Communication Number">
-                <span class="muted"><?= can_city_secretary_action() ? 'Saving will merge this record into the selected existing Communication Number.' : 'This tag will remain pending until the SP Secretary reviews the record.' ?></span>
+                <span class="muted"><?= $isRecordCorrection ? 'Saving changes this tag only. The record remains separate until reviewed.' : (can_city_secretary_action() ? 'Saving will merge this record into the selected existing Communication Number.' : 'This tag will remain pending until the SP Secretary reviews the record.') ?></span>
             </label>
             <datalist id="merge_record_candidates">
                 <?php foreach ($mergeCandidateRecords as $candidate): ?>
@@ -1096,10 +1122,10 @@ require __DIR__ . '/../app/partials/header.php';
             </label>
         <?php endif; ?>
     </div>
-    <label class="admin-field">Date Received
+    <label class="<?= $isRecordCorrection ? 'correction-original-field' : 'admin-field' ?>" <?= $isRecordCorrection ? 'hidden' : '' ?>>Date Received
         <input value="<?= e(display_date($record['received_date'] ?? '')) ?>" readonly>
     </label>
-    <label class="admin-field">Receiving Staff
+    <label class="<?= $isRecordCorrection ? 'correction-original-field' : 'admin-field' ?>" <?= $isRecordCorrection ? 'hidden' : '' ?>>Receiving Staff
         <input value="<?= e($receivingClerkDisplay !== '' ? $receivingClerkDisplay : 'Not set') ?>" readonly>
     </label>
     <?php if ($id && can_city_secretary_action()): ?>
@@ -1132,7 +1158,7 @@ require __DIR__ . '/../app/partials/header.php';
                     </label>
                 <?php endforeach; ?>
             </div>
-            <span class="muted"><?= $id > 0 && can_city_secretary_action() ? 'Check one or more committees. A correction note keeps the review pending; approval without a correction note finalizes it for committee action and printing.' : 'Check one or more committees. This is not final until reviewed by the SP Secretary.' ?></span>
+            <span class="muted"><?= $isRecordCorrection ? 'Edit the selected committees and lead committee.' : ($id > 0 && can_city_secretary_action() ? 'Check one or more committees. A correction note keeps the review pending; approval without a correction note finalizes it for committee action and printing.' : 'Check one or more committees. This is not final until reviewed by the SP Secretary.') ?></span>
         </label>
         <label class="legislative-field">Lead Committee
             <select name="lead_committee_id" id="lead_committee_id">
@@ -1153,12 +1179,12 @@ require __DIR__ . '/../app/partials/header.php';
     <label class="plenary-entry-field">Date Received
         <input type="date" name="received_date" value="<?= e($record['received_date']) ?>">
     </label>
-    <?php if ($id && can_city_secretary_action() && ($record['status'] ?? '') === 'Received'): ?>
+    <?php if (!$isRecordCorrection && $id && can_city_secretary_action() && ($record['status'] ?? '') === 'Received'): ?>
         <label class="legislative-field city-review-note-field">Correction Note to Receiving Staff
             <textarea class="compact-review-note" name="receiving_section_note" rows="2" maxlength="500" placeholder="Leave blank to approve, or enter the correction required."></textarea>
         </label>
     <?php endif; ?>
-    <?php if ($id || (current_user()['role'] ?? '') === 'receiving_clerk'): ?>
+    <?php if (!$isRecordCorrection && ($id || (current_user()['role'] ?? '') === 'receiving_clerk')): ?>
         <label class="plenary-entry-field">Receiving Staff
             <input value="<?= e($receivingClerkDisplay) ?>" readonly>
             <input type="hidden" name="receiving_clerk_id" value="<?= (int) ($id ? ($record['receiving_clerk_id'] ?? 0) : current_user()['id']) ?>">
@@ -1234,7 +1260,7 @@ require __DIR__ . '/../app/partials/header.php';
         </label>
     <?php endif; ?>
     <div class="actions full">
-        <button class="btn record-save-action" type="submit"><?= $id && can_city_secretary_action() && ($record['status'] ?? '') === 'Received' ? 'Save Review' : ($id && is_administrative_document_type($record['document_type'] ?? '') ? 'Save Forwarding' : 'Save Record') ?></button>
+        <button class="btn record-save-action" type="submit"><?= $isRecordCorrection ? 'Save Edits' : (!$isRecordCorrection && $id && can_city_secretary_action() && ($record['status'] ?? '') === 'Received' ? 'Save Review' : ($id && is_administrative_document_type($record['document_type'] ?? '') ? 'Save Forwarding' : 'Save Record')) ?></button>
         <a class="btn secondary record-cancel-action" href="<?= e(url($isPopup ? $popupCloseUrl : '/records.php')) ?>"><?= $isPopup ? 'Close' : 'Cancel' ?></a>
     </div>
 </form>
@@ -1274,8 +1300,9 @@ const mergeTargetInput = document.getElementById('merge_target_control_number');
 const mergeTargetWrap = document.getElementById('merge_target_wrap');
 const receivingSectionNoteInput = document.querySelector('[name="receiving_section_note"]');
 const cityCouncilProposalPanel = document.querySelector('[data-city-council-proposal-panel]');
+const isRecordCorrection = <?= $isRecordCorrection ? 'true' : 'false' ?>;
 const existingId = <?= (int) $id ?>;
-const canFinalizeCommitteeAssignment = <?= $id > 0 && can_city_secretary_action() ? 'true' : 'false' ?>;
+const canFinalizeCommitteeAssignment = <?= !$isRecordCorrection && $id > 0 && can_city_secretary_action() ? 'true' : 'false' ?>;
 const originalDocumentType = '<?= e($record['document_type']) ?>';
 const originalControlNumber = '<?= e($record['control_number']) ?>';
 const originalCommitteeIds = committeeInputs.filter((input) => input.checked).map((input) => input.value);
@@ -1317,7 +1344,7 @@ const setCommitteeSelection = (committeeIds, leadCommitteeId = '') => {
     }
 };
 const syncExistingRecordCommittees = () => {
-    if (!mergeTargetInput || !isMergeReviewSelected()) {
+    if (isRecordCorrection || !mergeTargetInput || !isMergeReviewSelected()) {
         return;
     }
 
@@ -1436,20 +1463,20 @@ const toggleRecordFields = () => {
             editableStatusSelect.value = 'For Plenary Session';
         }
     }
-    if (isCertifiedUrgent) {
+    if (isCertifiedUrgent && !isRecordCorrection) {
         const finalizeReview = reviewActionInputs.find((input) => input.value === 'finalize');
         if (finalizeReview) {
             finalizeReview.checked = true;
         }
     }
-    const isMergeReview = !isCertifiedUrgent && isMergeReviewSelected();
+    const isMergeReview = (!isCertifiedUrgent || isRecordCorrection) && isMergeReviewSelected();
     syncPartyField(selectedType);
     document.querySelectorAll('.legislative-field').forEach((field) => field.style.display = isLegislative ? 'grid' : 'none');
     document.querySelectorAll('.admin-field').forEach((field) => field.style.display = isAdministrative ? 'grid' : 'none');
     document.querySelectorAll('.non-committee-field').forEach((field) => field.style.display = !isLegislative ? 'grid' : 'none');
-    document.querySelectorAll('.plenary-entry-field').forEach((field) => field.style.display = (isLegislative || isCertifiedUrgent) ? 'grid' : 'none');
+    document.querySelectorAll('.plenary-entry-field').forEach((field) => field.style.display = (isRecordCorrection || isLegislative || isCertifiedUrgent) ? 'grid' : 'none');
     document.querySelectorAll('.client-contact-field, .record-tagging-field').forEach((field) => {
-        field.style.display = isCertifiedUrgent ? 'none' : 'grid';
+        field.style.display = isCertifiedUrgent && !isRecordCorrection ? 'none' : 'grid';
     });
     document.querySelectorAll('.client-contact-field input').forEach((field) => {
         field.required = false;
@@ -1462,7 +1489,7 @@ const toggleRecordFields = () => {
         titleInput.required = true;
     }
     if (recordTypeHelp) {
-        recordTypeHelp.textContent = canCorrectForPlenaryRecord
+        recordTypeHelp.textContent = isRecordCorrection ? 'Edit the record type without advancing its tracking status.' : canCorrectForPlenaryRecord
             ? (isCertifiedUrgent
                 ? 'Keep Certified Urgent only when the record is truly for plenary.'
                 : 'The reclassified record will return to Received for the appropriate workflow.')
@@ -1495,13 +1522,14 @@ const toggleRecordFields = () => {
     if (cityCouncilProposalPanel) {
         cityCouncilProposalPanel.style.display = isLegislative && !isMergeReview ? 'grid' : 'none';
     }
+    if (isRecordCorrection && remarksField) { remarksField.closest('label').style.display = 'grid'; }
     syncForwardingRecipients();
     syncAssignedChief();
 };
 if (documentTypeSelect) {
     documentTypeSelect.addEventListener('change', () => {
         syncPartyField(documentTypeSelect.value);
-        if (controlInput) {
+        if (controlInput && !isRecordCorrection) {
             if (canCorrectForPlenaryRecord) {
                 controlInput.value = administrativeDocumentTypes.includes(documentTypeSelect.value)
                     ? (nextControlNumbers[documentTypeSelect.value] || originalControlNumber)
@@ -1530,7 +1558,7 @@ reviewActionInputs.forEach((input) => input.addEventListener('change', () => {
     toggleRecordFields();
     if (isMergeReviewSelected()) {
         syncExistingRecordCommittees();
-    } else {
+    } else if (!isRecordCorrection) {
         setCommitteeSelection(originalCommitteeIds, originalLeadCommitteeId);
     }
 }));
@@ -1556,7 +1584,7 @@ const syncForwardingRecipients = () => {
             : 'Select recipients';
         forwardedToSummary.title = selectedRecipients.join(', ');
     }
-    forwardedToInputs[0].required = administrativeDocumentTypes.includes(getSelectedDocumentType())
+    forwardedToInputs[0].required = !isRecordCorrection && administrativeDocumentTypes.includes(getSelectedDocumentType())
         && !isMergeReviewSelected()
         && selectedRecipients.length === 0;
     if (remarksField) {

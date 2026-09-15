@@ -265,7 +265,7 @@ require __DIR__ . '/../app/partials/header.php';
         <?php if ($canUpdatePlenaryNumbers): ?>
             <a class="btn secondary" href="<?= url('/plenary_number_form.php?id=') ?><?= (int) $record['id'] ?>&amp;popup=1<?= $isPopup ? '&amp;return=dashboard&amp;division_tab=' . e($divisionTab !== '' ? $divisionTab : 'staff-updates') : '' ?>">Assign Proposed No.</a>
         <?php elseif (can_edit_record($record)): ?>
-            <a class="btn secondary<?= (current_user()['role'] ?? '') === 'city_secretary' && ($record['status'] ?? '') === 'Received' ? ' record-review-action' : ' record-edit-action' ?>" href="<?= e($recordEditUrl) ?>"><?= (current_user()['role'] ?? '') === 'city_secretary' && ($record['status'] ?? '') === 'Received' ? 'Review' : 'Edit' ?></a>
+            <a class="btn secondary record-edit-action" href="<?= e($recordEditUrl) ?>">Edit</a>
         <?php endif; ?>
         <?php if (can_update_record_status($record)): ?>
             <a class="btn secondary record-update-action" href="<?= url('/record_update.php?id=') ?><?= (int) $record['id'] ?><?= $isPopup ? '&amp;popup=1&amp;return=dashboard&amp;division_tab=' . e($divisionTab !== '' ? $divisionTab : 'staff-updates') : '' ?>">Update Status</a>

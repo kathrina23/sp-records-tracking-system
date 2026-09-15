@@ -460,7 +460,7 @@ require __DIR__ . '/../app/partials/header.php';
                 <div class="record-line record-actions"><strong>Action:</strong>
                     <span class="actions">
                         <?php if (can_edit_record($record)): ?>
-                            <a class="<?= (current_user()['role'] ?? '') === 'city_secretary' && ($record['status'] ?? '') === 'Received' ? 'record-review-action' : 'record-edit-action' ?>" href="<?= e($recordEditPopupUrl) ?>"><?= (current_user()['role'] ?? '') === 'city_secretary' && ($record['status'] ?? '') === 'Received' ? 'Review' : 'Edit' ?></a>
+                            <a class="record-edit-action" href="<?= e($recordEditPopupUrl) ?>">Edit</a>
                         <?php endif; ?>
                         <?php if (can_update_record_status($record)): ?>
                             <a class="record-update-action" href="<?= url('/record_update.php?id=') ?><?= (int) $record['id'] ?>">Update</a>

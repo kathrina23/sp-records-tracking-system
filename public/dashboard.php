@@ -3,6 +3,13 @@
 require_once __DIR__ . '/../app/auth.php';
 require_login();
 ensure_plenary_number_schema();
+require_once __DIR__ . '/../app/plenary_results.php';
+try {
+    $plenaryDateFilter = plenary_session_filter($_GET);
+} catch (InvalidArgumentException $error) {
+    http_response_code(400);
+    exit(e($error->getMessage()));
+}
 
 $authenticatedDashboardUser = current_user() ?? [];
 $monitorableDashboardRoles = [
@@ -765,15 +772,7 @@ if ($usesCitySecretaryTabbedDashboard) {
                 NULLIF(TRIM(approved_resolution_number), '')
             ) IS NULL")->fetchColumn();
 
-        $forPlenaryStmt = db()->query("SELECT r.*, c.name committee_name
-            FROM records r
-            LEFT JOIN committees c ON c.id = r.committee_id
-            WHERE r.document_type IN ('Committee Referrals', 'Certified Urgent')
-            AND r.status IN ('For Plenary Session', 'Scheduled for Plenary')
-            ORDER BY CASE WHEN r.status = 'For Plenary Session' THEN 0 ELSE 1 END,
-                r.plenary_session_date ASC, r.updated_at DESC, r.id DESC
-            LIMIT 50");
-        $citySecretaryDashboard['for_plenary'] = $forPlenaryStmt->fetchAll();
+        $citySecretaryDashboard['for_plenary'] = for_plenary_results($plenaryDateFilter);
     }
 
     $approvedPlenaryWhere = [
@@ -849,15 +848,7 @@ if ($isLawsAndRulesSecretariat) {
                 NULLIF(TRIM(proposed_ordinance_number), ''),
                 NULLIF(TRIM(proposed_resolution_number), '')
             ) IS NULL)")->fetchColumn();
-    $forPlenaryStmt = db()->query("SELECT r.*, c.name committee_name
-        FROM records r
-        LEFT JOIN committees c ON c.id = r.committee_id
-        WHERE r.document_type IN ('Committee Referrals', 'Certified Urgent')
-        AND r.status IN ('For Plenary Session', 'Scheduled for Plenary')
-        ORDER BY CASE WHEN r.status = 'For Plenary Session' THEN 0 ELSE 1 END,
-            r.plenary_session_date ASC, r.updated_at DESC, r.id DESC
-        LIMIT 50");
-    $citySecretaryDashboard['for_plenary'] = $forPlenaryStmt->fetchAll();
+    $citySecretaryDashboard['for_plenary'] = for_plenary_results($plenaryDateFilter);
 }
 if ($userRole === 'division_chief') {
     $chiefId = (int) (current_user()['id'] ?? 0);
@@ -1739,7 +1730,7 @@ if ($isDashboardMonitor) {
                                 <?php if (record_has_pending_receiving_staff_comment($record)): ?>
                                     <a class="print-link small-action-link record-view-action" href="<?= url('/record_view.php?id=') ?><?= (int) $record['id'] ?>">View Record</a>
                                 <?php else: ?>
-                                    <a class="print-link small-action-link record-review-action" href="<?= e(dashboard_action_url('/record_form.php?' . http_build_query([
+                                    <a class="print-link small-action-link record-review-action" href="<?= e(dashboard_action_url('/record_form.php?mode=review&' . http_build_query([
                                         'id' => (int) $record['id'],
                                         'popup' => 1,
                                         'return' => 'dashboard',
@@ -1848,7 +1839,7 @@ if ($isDashboardMonitor) {
                             <td class="center-cell administrative-action-cell">
                                 <div class="administrative-document-actions">
                                     <?php if (can_edit_record($record)): ?>
-                                        <a class="print-link small-action-link record-review-action" href="<?= e(dashboard_action_url('/record_form.php?' . http_build_query([
+                                        <a class="print-link small-action-link record-review-action" href="<?= e(dashboard_action_url('/record_form.php?mode=review&' . http_build_query([
                                             'id' => (int) $record['id'],
                                             'popup' => 1,
                                             'return' => 'dashboard',
@@ -1902,7 +1893,7 @@ if ($isDashboardMonitor) {
                             <td class="center-cell administrative-action-cell">
                                 <div class="administrative-document-actions">
                                     <?php if (can_edit_record($record)): ?>
-                                        <a class="print-link small-action-link record-review-action" href="<?= e(dashboard_action_url('/record_form.php?' . http_build_query([
+                                        <a class="print-link small-action-link record-review-action" href="<?= e(dashboard_action_url('/record_form.php?mode=review&' . http_build_query([
                                             'id' => (int) $record['id'],
                                             'popup' => 1,
                                             'return' => 'dashboard',
@@ -1960,9 +1951,7 @@ if ($isDashboardMonitor) {
         <div class="division-tab-panel" data-division-panel="for-plenary">
             <h2>For Plenary</h2>
             <p class="muted">Committee Referrals and Certified Urgent records ready for or scheduled for plenary.</p>
-            <div class="actions plenary-print-controls">
-                <a class="btn" href="<?= e(dashboard_action_url('/for_plenary_print.php')) ?>" target="_blank">Print Result</a>
-            </div>
+            <?php require __DIR__ . '/../app/partials/plenary_filter_controls.php'; ?>
             <div class="table-wrap">
                 <table>
                     <thead><tr><th>Communication No.</th><th class="title-column">Title</th><th>Committee</th><th class="status-column">Status</th><th class="updated-column">Updated</th><th>Action</th></tr></thead>
@@ -2038,7 +2027,7 @@ if ($isDashboardMonitor) {
                             </tr>
                         <?php endif; ?>
                     <?php endforeach; ?>
-                    <?php if (!$citySecretaryDashboard['for_plenary']): ?><tr><td colspan="6">No records are currently for plenary.</td></tr><?php endif; ?>
+                    <?php if (!$citySecretaryDashboard['for_plenary']): ?><tr><td colspan="6">No plenary records match the selected session date.</td></tr><?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -2083,11 +2072,11 @@ if ($isDashboardMonitor) {
                 <table>
                     <thead>
                         <tr>
-                            <th>Communication No.</th>
+                            <th><?= $usesAdministrativeSupportDashboard ? 'Ordinance / Resolution Number' : 'Communication No.' ?></th>
                             <th>Type</th>
                             <th class="title-column">Title</th>
                             <th>Committee</th>
-                            <th>Ordinance / Resolution No.</th>
+                            <th><?= $usesAdministrativeSupportDashboard ? 'Communication No.' : 'Ordinance / Resolution No.' ?></th>
                             <th>Date Approved</th>
                             <th class="updated-column">Updated</th>
                             <th>Action</th>
@@ -2109,20 +2098,26 @@ if ($isDashboardMonitor) {
                             $approvedEditUrl = dashboard_action_url('/record_form.php?' . http_build_query(['id' => (int) $record['id'], 'popup' => 1, 'return' => 'dashboard', 'return_url' => $approvedPlenaryReturnUrl]));
                         ?>
                         <tr>
-                            <td><?= control_number_link($record) ?></td>
-                            <td><?= e($approvedNumberLabel !== '' ? $approvedNumberLabel : 'Not set') ?></td>
-                            <td><?= e(display_record_title(record_title_for_current_user($record))) ?></td>
-                            <td><?= e($committeeNamesForRecord) ?></td>
-                            <td>
+                            <?php if ($usesAdministrativeSupportDashboard): ?><td>
                                 <?php if ($approvedNumber !== ''): ?>
                                     <strong><?= e($approvedNumberLabel) ?>:</strong> <?= e($approvedNumber) ?>
                                 <?php else: ?>
                                     <span class="muted">Not set</span>
                                 <?php endif; ?>
-                            </td>
+                            </td><?php else: ?><td><?= control_number_link($record) ?></td><?php endif; ?>
+                            <td><?= e($approvedNumberLabel !== '' ? $approvedNumberLabel : 'Not set') ?></td>
+                            <td><?= e(display_record_title(record_title_for_current_user($record))) ?></td>
+                            <td><?= e($committeeNamesForRecord) ?></td>
+                            <?php if (!$usesAdministrativeSupportDashboard): ?><td>
+                                <?php if ($approvedNumber !== ''): ?>
+                                    <strong><?= e($approvedNumberLabel) ?>:</strong> <?= e($approvedNumber) ?>
+                                <?php else: ?>
+                                    <span class="muted">Not set</span>
+                                <?php endif; ?>
+                            </td><?php else: ?><td><?= control_number_link($record) ?></td><?php endif; ?>
                             <td><?= e(display_date($record['plenary_approved_date'] ?? '')) ?></td>
                             <td><?= e(display_datetime($record['updated_at'] ?? '')) ?></td>
-                            <td class="center-cell">
+                            <td class="center-cell approved-plenary-action-cell"><div class="approved-plenary-actions">
                                 <a class="print-link small-action-link record-view-action" href="<?= e(url('/record_view.php?') . http_build_query([
                                     'id' => (int) $record['id'],
                                     'popup' => 1,
@@ -2130,18 +2125,18 @@ if ($isDashboardMonitor) {
                                     'return_url' => $approvedPlenaryReturnUrl,
                                 ])) ?>">View Record</a>
                                 <?php if (in_array($userRole, ['admin', 'city_secretary'], true) && can_edit_record($record)): ?>
-                                    <span class="muted"> | </span>
+
                                     <a class="print-link small-action-link record-edit-action" href="<?= e($approvedEditUrl) ?>">Edit</a>
                                 <?php endif; ?>
                                 <?php if (can_update_record_status($record)): ?>
-                                    <span class="muted"> | </span>
+
                                     <a class="print-link small-action-link record-update-action" href="<?= e(dashboard_action_url('/record_update.php?' . http_build_query([
                                         'id' => (int) $record['id'],
                                         'return' => 'dashboard',
                                         'city_tab' => 'approved-plenary',
                                     ]))) ?>"><?= $usesAdministrativeSupportDashboard ? 'New Update Status' : 'Update Status' ?></a>
                                 <?php endif; ?>
-                            </td>
+                            </div></td>
                         </tr>
                     <?php endforeach; ?>
                     <?php if (!$citySecretaryDashboard['approved_plenary']): ?><tr><td colspan="8">No records are approved in the plenary.</td></tr><?php endif; ?>

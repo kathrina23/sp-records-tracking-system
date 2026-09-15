@@ -7052,3 +7052,39 @@ body.dashboard-page .for-plenary-actions > .small-action-link::after {
 }
 
 .attachment-size-error { display: block; color: #b42318; font-size: 13px; margin-top: 6px; white-space: normal; }
+
+/* Keep approved-plenary actions uniform and contained within their table cell. */
+body.dashboard-page .approved-plenary-action-cell {
+    width: 144px;
+    white-space: normal;
+    vertical-align: middle;
+}
+body.dashboard-page .approved-plenary-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 6px;
+    width: 100%;
+    max-width: 144px;
+    min-width: 0;
+    margin: 0 auto;
+}
+body.dashboard-page .approved-plenary-actions > .small-action-link {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 36px;
+    margin: 0;
+    padding: 6px 8px;
+    border-radius: 7px;
+    font-size: 11px !important;
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+body.dashboard-page .approved-plenary-actions > .small-action-link::after {
+    content: none;
+    display: none;
+}
