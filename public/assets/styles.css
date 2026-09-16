@@ -7088,3 +7088,110 @@ body.dashboard-page .approved-plenary-actions > .small-action-link::after {
     content: none;
     display: none;
 }
+/* Public entrance: centered tracking with a database technology backdrop. */
+.public-landing-page .auth-main,
+.public-landing-page > .main, .login-background-page .auth-main {
+    background: linear-gradient(120deg, rgba(9, 27, 48, .58), rgba(13, 35, 58, .35)), url("database-technology-background.jpg") center / cover;
+    min-height: 100vh;
+    padding: 32px 40px 18px;
+}
+.public-landing-page .auth-main { display: flex; flex-direction: column; }
+.public-landing-page .public-landing {
+    width: 100%;
+    flex: 1;
+    min-height: 78vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    gap: 32px;
+}
+.public-landing .landing-head { justify-content: flex-start; padding-right: 150px; }
+.public-landing .landing-head img { width: 62px; height: 62px; border-radius: 50%; }
+.public-landing .landing-head h1 { color: #fff; font-size: clamp(17px, 1.8vw, 25px); max-width: 620px; line-height: 1.3; }
+.public-landing .landing-head .muted { color: #d7e0e9; font-size: 13px; margin: 6px 0 0; }
+.public-landing .landing-login {
+    position: absolute; right: 0; top: 8px;
+    display: inline-flex; align-items: center; gap: 14px;
+    padding: 10px 16px; border: 1px solid #94a3b8; border-radius: 7px;
+    background: rgba(255,255,255,.08); color: #fff; font-size: 13px; text-decoration: none;
+}
+.public-landing .landing-login:hover { background: rgba(255,255,255,.2); }
+.public-landing .landing-center { flex: 1; display: grid; place-items: center; padding: 22px 0; }
+.public-landing .public-card {
+    width: min(560px, 100%); min-height: auto; padding: 38px 42px; gap: 18px;
+    border: 1px solid #e4e8ed; border-top: 4px solid #c6a263; border-radius: 16px;
+    box-shadow: 0 24px 70px rgba(0,0,0,.25); text-align: center; background: #fff;
+}
+.public-landing .landing-eyebrow { margin: 0; color: #80622e; font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+.public-landing .public-card h2 { margin: 0; font-size: clamp(28px, 3vw, 38px); line-height: 1.16; letter-spacing: -.8px; color: #142d49; }
+.public-landing .public-card > .muted { margin: 0; color: #5b6878; font-size: 14px; line-height: 1.65; }
+.public-landing .public-search-form { text-align: left; gap: 16px; margin-top: 6px; }
+.public-landing .public-search-form label { color: #293c51; font-size: 13px; font-weight: 600; }
+.public-landing .public-search-form input { min-width: 0; width: 100%; min-height: 52px; margin-top: 7px; background: #f8fafc; border: 1px solid #c9d3df; border-radius: 8px; font-size: 15px; }
+.public-landing .public-search-form .btn { display: flex; justify-content: space-between; align-items: center; min-height: 50px; padding: 14px 20px; background: #183c61; color: #fff; border-radius: 8px; }
+.public-landing .public-search-form .btn:hover { background: #102c49; }
+.public-landing :is(a, button, input):focus-visible { outline: 3px solid #c6a263; outline-offset: 4px; }
+.public-landing .landing-help { margin: 0; color: #647182; font-size: 12px; line-height: 1.6; }
+.public-landing .landing-caption { text-align: center; color: #e0e7ef; font-size: 13px; margin: 0; }
+.public-landing-page .footer, .login-background-page .footer { width: 100%; color: #cbd5e1; border-color: rgba(255,255,255,.2); font-size: 11px; }
+@media (max-width: 600px) {
+    .public-landing-page .auth-main, .public-landing-page > .main, .login-background-page .auth-main { padding: 20px 18px 16px; }
+    .public-landing-page .public-landing { gap: 24px; }
+    .public-landing .landing-login { position: static; align-self: flex-end; order: -1; padding: 8px 12px; }
+    .public-landing .landing-head { padding-right: 0; gap: 12px; }
+    .public-landing .landing-head img { width: 50px; height: 50px; flex-shrink: 0; }
+    .public-landing .landing-center { padding: 10px 0; }
+    .public-landing .public-card { padding: 30px 22px; }
+}
+.public-status-remarks {
+    background: #f4f7fb;
+    border-left: 3px solid #c6a263;
+    border-radius: 6px;
+    padding: 16px;
+    overflow-wrap: anywhere;
+}
+.public-status-remarks p { margin: 8px 0 0; line-height: 1.6; }
+/* Public system overview. */
+.public-landing .landing-about {
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    max-width: 100%;
+    padding: 10px 16px;
+    border: 1px solid #94a3b8;
+    border-radius: 7px;
+    background: rgba(255,255,255,.08);
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+}
+.public-landing .landing-about:hover { background: rgba(255,255,255,.2); }
+.system-about-dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(640px, calc(100% - 36px));
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+    padding: 36px;
+    border: 1px solid #e4e8ed;
+    border-top: 4px solid #c6a263;
+    border-radius: 16px;
+    background: #fff;
+    color: #293c51;
+    box-shadow: 0 24px 70px rgba(0,0,0,.3);
+}
+.system-about-dialog::backdrop { background: rgba(5,18,34,.75); }
+.system-about-dialog h2 { margin: 12px 0 18px; color: #142d49; font-size: 26px; line-height: 1.25; }
+.system-about-dialog h3 { margin: 22px 0 8px; color: #183c61; font-size: 16px; }
+.system-about-dialog p { font-size: 14px; line-height: 1.7; margin: 0 0 14px; }
+.system-about-dialog .system-about-city { color: #80622e; font-size: 10px; letter-spacing: 1px; padding-right: 30px; }
+.system-about-close { position: absolute; top: 12px; right: 12px; }
+.system-about-close button { width: 36px; height: 36px; border: 0; border-radius: 6px; background: #edf2f6; color: #183c61; font-size: 24px; cursor: pointer; }
+@media (max-width: 600px) {
+    .system-about-dialog { padding: 28px 22px; }
+    .system-about-dialog h2 { font-size: 23px; }
+}

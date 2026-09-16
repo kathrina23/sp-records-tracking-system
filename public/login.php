@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $error = 'Invalid email or password.';
 }
 
+$loginBackground = true;
 require __DIR__ . '/../app/partials/header.php';
 ?>
 <section class="auth-card">

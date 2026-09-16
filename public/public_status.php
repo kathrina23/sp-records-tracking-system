@@ -7,6 +7,7 @@ $recordId = max(0, (int) ($_GET['record_id'] ?? 0));
 $lookupRequested = $recordId > 0 || $controlNumber !== '';
 $record = null;
 $forwardedTo = '';
+$latestRemarks = '';
 
 if ($lookupRequested) {
     $lookupColumn = $recordId > 0 ? 'r.id' : 'r.control_number';
@@ -20,6 +21,19 @@ if ($lookupRequested) {
     $record = $stmt->fetch();
     if ($record) {
         $controlNumber = (string) $record['control_number'];
+        $remarksStmt = db()->prepare("SELECT notes, report_remarks
+            FROM record_movements
+            WHERE record_id = ? AND to_status = ?
+            ORDER BY created_at DESC, id DESC
+            LIMIT 1");
+        $remarksStmt->execute([(int) $record['id'], $record['status']]);
+        $latestMovement = $remarksStmt->fetch();
+        if ($latestMovement) {
+            $latestRemarks = trim((string) ($latestMovement['report_remarks'] ?? ''));
+            if ($latestRemarks === '') {
+                $latestRemarks = trim((string) ($latestMovement['notes'] ?? ''));
+            }
+        }
     }
 
     if ($record && in_array($record['status'], ['Referred To', 'Referred', 'Forwarded for Review'], true)) {
@@ -84,9 +98,13 @@ require __DIR__ . '/../app/partials/header.php';
                 <?php if (in_array($record['status'], ['Referred To', 'Referred', 'Forwarded for Review'], true) && $forwardedTo !== ''): ?>
                     <div><strong>Referred To</strong><br><?= e($forwardedTo) ?></div>
                 <?php endif; ?>
+                <div class="full public-status-remarks">
+                    <strong>Latest Status Remarks</strong>
+                    <p><?= $latestRemarks !== '' ? nl2br(e($latestRemarks)) : 'No remarks were provided for the latest status.' ?></p>
+                </div>
                 <div><strong>Last Updated</strong><br><?= e(display_datetime($record['updated_at'] ?? '')) ?></div>
             </div>
-            <p class="muted public-note">Only the latest public status is shown. Full tracking details are available to authorized users.</p>
+            <p class="muted public-note">The latest public status and its remarks are shown. Full tracking details are available to authorized users.</p>
         </section>
     <?php endif; ?>
 </section>

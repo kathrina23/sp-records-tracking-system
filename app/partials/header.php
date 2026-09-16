@@ -14,7 +14,7 @@ $activeMonitorRole = trim((string) ($_GET['monitor_role'] ?? ''));
     <title><?= e(APP_NAME) ?></title>
     <link rel="stylesheet" href="<?= url('/assets/styles.css?v=') ?><?= (int) filemtime(__DIR__ . '/../../public/assets/styles.css') ?>">
 </head>
-<body>
+<body<?= !empty($publicLanding) ? ' class="public-landing-page"' : (!empty($loginBackground) ? ' class="login-background-page"' : '') ?>>
 <?php if ($user): ?>
 <?php $dashboardActionRequiredCount = dashboard_action_required_count(); ?>
 <aside class="sidebar">
