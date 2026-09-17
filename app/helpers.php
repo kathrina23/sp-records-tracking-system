@@ -719,6 +719,20 @@ function others_user_document_types(): array
 function can_view_record(array $record): bool
 {
     $role = $_SESSION['user']['role'] ?? '';
+    if ($role === 'messengerial_support') {
+        return ($record['status'] ?? '') === 'Forwarded to the Messengerial Services';
+    }
+
+    if ($role === 'administrative_support') {
+        return in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified Urgent'], true)
+            && in_array($record['status'] ?? '', [
+                'For Plenary Session', 'Approved in the Plenary',
+                "For Vice Mayor's Signature", 'Returned from The Vice Mayor',
+                'Forwarded for Admin/Mayor Signature', 'Returned from Admin/Mayor',
+                'Veto', 'Lapse into Ordinance', 'Forwarded to the Messengerial Services', 'Completed',
+                'For Transmittal',
+            ], true);
+    }
     if (in_array($role, ['others', 'server_maintenance_staff'], true)) {
         return in_array($record['document_type'] ?? '', others_user_document_types(), true);
     }
@@ -741,7 +755,7 @@ function can_view_record(array $record): bool
             && can_access_record_committees($record);
     }
 
-    return true;
+    return in_array($role, ['admin', 'city_secretary', 'receiving_clerk', 'records_officer', 'staff'], true);
 }
 
 function personal_note_record_suggestions(string $query, int $limit = 10): array
@@ -800,7 +814,7 @@ function personal_note_record_suggestions(string $query, int $limit = 10): array
         OR COALESCE(r.client_name, '') LIKE ?)";
     $params = array_merge($params, [$like, $like, $like, $like, $prefix, $prefix]);
 
-    $sql = "SELECT r.id, r.control_number, r.title, r.document_type, r.status,
+    $sql = "SELECT r.id, r.control_number, r.title, r.document_type, r.status, r.committee_id,
             COALESCE(NULLIF(r.client_name, ''), r.origin) party_name,
             c.name committee_name
         FROM records r
@@ -816,7 +830,7 @@ function personal_note_record_suggestions(string $query, int $limit = 10): array
         LIMIT $limit";
     $stmt = db()->prepare($sql);
     $stmt->execute($params);
-    return $stmt->fetchAll();
+    return array_values(array_filter($stmt->fetchAll(), 'can_view_record'));
 }
 
 function pending_receiving_staff_comment_sql(string $recordAlias = 'records'): string
@@ -1063,6 +1077,9 @@ function can_view_record_history(array $record): bool
 
 function can_view_record_materials(array $record): bool
 {
+    if (!can_view_record($record)) {
+        return false;
+    }
     $role = $_SESSION['user']['role'] ?? '';
     if (in_array($role, ['others', 'server_maintenance_staff'], true)) {
         return can_view_record($record);
