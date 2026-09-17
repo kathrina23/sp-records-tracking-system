@@ -242,6 +242,13 @@ if (can_view_record_attachments($record)) {
 $publicStatusUrl = public_record_status_url((int) $record['id']);
 require __DIR__ . '/../app/partials/header.php';
 ?>
+<?php if (can_manage_transmittal_recipients($record)): ?>
+    <div class="actions" style="margin:16px 0">
+        <a class="btn" href="<?= url('/record_recipients.php?record_id=') ?><?= (int) $record['id'] ?>">Manage Transmittal Recipients</a>
+    </div>
+<?php endif; ?>
+<?php
+?>
 <?php if ($isPopup): ?><div class="modal-backdrop" role="presentation"><?php endif; ?>
 <div class="<?= $isPopup ? 'panel user-edit-modal record-view-modal' : 'record-view-page' ?>" <?= $isPopup ? 'role="dialog" aria-modal="true" aria-labelledby="record_view_title"' : '' ?>>
 <?php if ($isPopup): ?>

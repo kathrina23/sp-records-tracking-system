@@ -47,6 +47,11 @@ if (!can_update_record_status($record)) {
     exit('You are not assigned to update this record.');
 }
 
+if ($newStatus === 'Forwarded to the Messengerial Services') {
+    flash('Use Mark as Complete on Transmittal Recipients after printing all transmittals.', 'error');
+    redirect('/record_recipients.php?record_id=' . $id);
+}
+
 $role = current_user()['role'] ?? '';
 if ($role !== 'admin' && ($record['document_type'] ?? '') === 'Certified Urgent'
     && can_manage_plenary_scheduling()

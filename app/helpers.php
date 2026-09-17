@@ -102,6 +102,7 @@ function role_label(string $role): string
         'secretariat' => 'Secretariat',
         'division_staff' => 'Division Staff',
         'administrative_support' => 'LMIS & Records Staff',
+        'messengerial_support' => 'Messengerial Support Staff',
         'others' => 'Others',
         'server_maintenance_staff' => 'Server Maintenance Staff',
         'records_officer' => 'Records Officer',
@@ -1145,6 +1146,18 @@ function record_has_plenary_approval(array $record): bool
         );
 }
 
+function can_view_messengerial(): bool
+{
+    return in_array($_SESSION['user']['role'] ?? '', ['admin', 'records_officer', 'administrative_support', 'messengerial_support'], true);
+}
+
+function can_complete_transmittals(array $record): bool
+{
+    return in_array($_SESSION['user']['role'] ?? '', ['admin', 'administrative_support'], true)
+        && ($record['status'] ?? '') === 'For Transmittal'
+        && record_has_plenary_approval($record);
+}
+
 function can_manage_transmittal_recipients(array $record): bool
 {
     if (($_SESSION['user']['role'] ?? '') === 'admin') {
@@ -1919,7 +1932,7 @@ function ensure_division_chief_notes_schema(): bool
 function ensure_plenary_number_schema(): void
 {
     try {
-        db()->exec("ALTER TABLE users MODIFY role ENUM('admin', 'city_secretary', 'division_chief', 'receiving_clerk', 'secretariat', 'division_staff', 'administrative_support', 'others', 'records_officer', 'staff', 'server_maintenance_staff') NOT NULL DEFAULT 'secretariat'");
+        db()->exec("ALTER TABLE users MODIFY role ENUM('admin', 'city_secretary', 'division_chief', 'receiving_clerk', 'secretariat', 'division_staff', 'administrative_support', 'others', 'records_officer', 'staff', 'server_maintenance_staff', 'messengerial_support') NOT NULL DEFAULT 'secretariat'");
     } catch (Throwable $error) {
         // Existing databases may already have this role list, or the user may apply SQL manually.
     }

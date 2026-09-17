@@ -7195,3 +7195,53 @@ body.dashboard-page .approved-plenary-actions > .small-action-link::after {
     .system-about-dialog { padding: 28px 22px; }
     .system-about-dialog h2 { font-size: 23px; }
 }
+.recipient-entry { margin: 0 0 18px; padding: 18px; border: 1px solid #ccd6e0; border-radius: 8px; }
+.recipient-entry legend { padding: 0 8px; font-weight: 600; }
+.recipient-entry .recipient-entry-actions,
+.recipient-entry .recipient-form-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.recipient-entry .recipient-entry-actions .btn {
+    flex: 0 0 auto;
+    width: auto;
+    margin: 0;
+    white-space: nowrap;
+}
+.recipient-entry .recipient-entry-actions .recipient-form-actions {
+    order: 0;
+}
+.recipient-entry .recipient-entry-actions > .remove-recipient {
+    order: 1;
+    margin-left: auto;
+}
+.recipient-delete-form { margin: 0; }
+button.recipient-delete-link {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 4px 0;
+    color: #b42318;
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+button.recipient-delete-link:hover { color: #801b13; background: transparent; }
+button.recipient-delete-link:focus-visible { outline: 2px solid #b42318; outline-offset: 3px; }
+/* Keep selection controls compact even inside full-width form/filter layouts. */
+input[type="checkbox"],
+input[type="radio"] {
+    box-sizing: border-box;
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    min-height: 16px !important;
+    max-width: 16px !important;
+    max-height: 16px !important;
+    flex: 0 0 16px !important;
+    padding: 0 !important;
+    vertical-align: middle;
+}

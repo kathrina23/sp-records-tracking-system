@@ -30,6 +30,9 @@ $activeMonitorRole = trim((string) ($_GET['monitor_role'] ?? ''));
             <?php endif; ?>
         </a>
         <a href="<?= url('/records.php') ?>"<?= $recordsActive ? ' class="active" aria-current="page"' : '' ?>>Records</a>
+        <?php if (can_view_messengerial()): ?>
+            <a href="<?= url('/messengerial.php') ?>"<?= $navCurrent(['messengerial.php']) ?>>Messengerial</a>
+        <?php endif; ?>
         <?php if (can_create_records()): ?>
             <a href="<?= url('/record_form.php') ?>"<?= $navCurrent(['record_form.php']) ?>>New Record</a>
         <?php endif; ?>

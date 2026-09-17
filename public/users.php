@@ -12,6 +12,8 @@ $roles = [
     'secretariat' => 'Secretariat',
     'division_staff' => 'Division Staff',
     'administrative_support' => 'LMIS & Records Staff',
+    'messengerial_support' => 'Messengerial Support Staff',
+    'records_officer' => 'Records Officer',
     'others' => 'Others',
     'server_maintenance_staff' => 'Server Maintenance Staff',
 ];
@@ -41,6 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $isActive = isset($_POST['is_active']) ? 1 : 0;
     $password = $_POST['password'] ?? '';
 
+    if ($role === 'messengerial_support') {
+        $divisionName = 'Administrative Support Division';
+    }
     if (!array_key_exists($role, $roles)) {
         $role = 'secretariat';
     }
@@ -211,6 +216,12 @@ if (passwordInput && togglePasswordButton) {
 if (userRoleSelect && divisionSelect) {
     const managementEditingUser = <?= json_encode(!empty($edit) && in_array(current_user()['role'] ?? '', ['admin', 'city_secretary'], true)) ?>;
     const syncDivisionField = () => {
+        if (userRoleSelect.value === 'messengerial_support') {
+            divisionSelect.value = 'Administrative Support Division';
+            divisionSelect.disabled = true;
+            divisionSelect.required = false;
+            return;
+        }
         if (managementEditingUser) {
             divisionSelect.disabled = false;
             divisionSelect.required = !['admin', 'city_secretary'].includes(userRoleSelect.value);

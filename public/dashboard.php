@@ -2,6 +2,9 @@
 
 require_once __DIR__ . '/../app/auth.php';
 require_login();
+if ((current_user()['role'] ?? '') === 'messengerial_support') {
+    redirect('/messengerial.php');
+}
 ensure_plenary_number_schema();
 require_once __DIR__ . '/../app/plenary_results.php';
 try {
@@ -589,22 +592,18 @@ if ($userRole === 'secretariat') {
 $transmittals = [];
 $recentTransmittals = [];
 if ($showTransmittals) {
-    $transmittalsWhere = [
-        "document_type = 'Committee Referrals'",
-        "status = 'For Transmittal'",
-        "(plenary_approved_date IS NOT NULL OR COALESCE(NULLIF(approved_ordinance_number, ''), NULLIF(approved_resolution_number, '')) IS NOT NULL)",
-    ];
+    $transmittalsWhere = ["status = 'For Transmittal'"];
     $transmittalsParams = [];
     if ($isReceivingClerk) {
         $transmittalsWhere[] = 'created_by = ?';
         $transmittalsParams[] = current_user()['id'];
     }
     append_dashboard_filters($transmittalsWhere, $transmittalsParams, 'records', false);
-    $transmittalsSql = 'SELECT * FROM records WHERE ' . implode(' AND ', $transmittalsWhere) . ' ORDER BY updated_at DESC LIMIT 8';
+    $transmittalsSql = 'SELECT * FROM records WHERE ' . implode(' AND ', $transmittalsWhere) . ' ORDER BY updated_at DESC, id DESC';
     $transmittalsStmt = db()->prepare($transmittalsSql);
     $transmittalsStmt->execute($transmittalsParams);
     $transmittals = $transmittalsStmt->fetchAll();
-    $recentTransmittals = $transmittals;
+    $recentTransmittals = array_slice($transmittals, 0, 8);
 }
 
 if (in_array($userRole, ['division_chief', 'secretariat', 'division_staff'], true)) {
@@ -1670,6 +1669,7 @@ if ($isDashboardMonitor) {
                     <?php endif; ?>
                 </button>
             <?php else: ?>
+                <?php if (can_view_messengerial()): ?><a href="<?= url('/messengerial.php') ?>">Messengerial</a><?php endif; ?>
                 <a class="<?= $administrativeSupportCityTab === 'transmittals' ? 'active' : '' ?>" href="<?= url('/dashboard.php?city_tab=transmittals') ?>">Transmittals</a>
             <?php endif; ?>
             <?php if ($usesAdministrativeSupportDashboard): ?>
@@ -2333,6 +2333,9 @@ if ($isDashboardMonitor) {
     <?php endif; ?>
     <?php if ($showMemorandumDocuments): ?>
         <a class="<?= $activeTab === 'memoranda' ? 'active' : '' ?>" href="<?= url('/dashboard.php?tab=memoranda') ?>">Memo and EO's</a>
+    <?php endif; ?>
+    <?php if (can_view_messengerial()): ?>
+        <a href="<?= url('/messengerial.php') ?>">Messengerial</a>
     <?php endif; ?>
     <?php if ($showTransmittals): ?>
         <a class="<?= $activeTab === 'transmittals' ? 'active' : '' ?>" href="<?= url('/dashboard.php?tab=transmittals') ?>">Transmittals</a>
