@@ -1669,8 +1669,10 @@ if ($isDashboardMonitor) {
                     <?php endif; ?>
                 </button>
             <?php else: ?>
-                <?php if (can_view_messengerial()): ?><a href="<?= url('/messengerial.php') ?>">Messengerial</a><?php endif; ?>
                 <a class="<?= $administrativeSupportCityTab === 'transmittals' ? 'active' : '' ?>" href="<?= url('/dashboard.php?city_tab=transmittals') ?>">Transmittals</a>
+            <?php endif; ?>
+            <?php if (can_view_messengerial()): ?>
+                <a href="<?= url('/messengerial.php') ?>">Messengerial</a>
             <?php endif; ?>
             <?php if ($usesAdministrativeSupportDashboard): ?>
                 <a class="<?= $administrativeSupportCityTab === 'approved-plenary' ? 'active' : '' ?>" href="<?= url('/dashboard.php?city_tab=approved-plenary') ?>">Approved in the Plenary</a>

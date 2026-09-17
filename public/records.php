@@ -139,7 +139,11 @@ if ($userRole === 'secretariat' && $activeTab !== 'certified') {
 }
 if ($userRole === 'administrative_support') {
     $where[] = "r.document_type IN ('Committee Referrals', 'Certified Urgent')";
-    $where[] = "r.status IN ('For Plenary Session', 'Approved in the Plenary', 'For Vice Mayor''s Signature', 'Returned from The Vice Mayor', 'Forwarded for Admin/Mayor Signature', 'Returned from Admin/Mayor', 'Veto', 'Lapse into Ordinance', 'Forwarded to the Messengerial Services', 'Completed')";
+    $where[] = "r.status IN ('For Plenary Session', 'Approved in the Plenary', 'For Vice Mayor''s Signature', 'Returned from The Vice Mayor', 'Forwarded for Admin/Mayor Signature', 'Returned from Admin/Mayor', 'Veto', 'Lapse into Ordinance', 'Forwarded to the Messengerial Services', 'For Transmittal', 'Completed')";
+}
+if ($userRole === 'messengerial_support') {
+    $where[] = 'r.status = ?';
+    $params[] = 'Forwarded to the Messengerial Services';
 }
 
 $secretariatActionSelect = $userRole === 'secretariat'
@@ -159,7 +163,7 @@ $sql .= ' ORDER BY ' . record_action_priority_sql('r') . ', r.updated_at DESC, r
 
 $stmt = db()->prepare($sql);
 $stmt->execute($params);
-$records = $stmt->fetchAll();
+$records = array_values(array_filter($stmt->fetchAll(), 'can_view_record'));
 
 $divisionReceiptsByRecord = [];
 $recordsReturnPath = '/records.php' . (!empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '');

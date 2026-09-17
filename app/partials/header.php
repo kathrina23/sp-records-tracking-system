@@ -5,6 +5,7 @@ $navCurrent = static fn (array $pages): string => in_array($currentPage, $pages,
 $recordsPages = ['records.php', 'record_view.php', 'record_update.php', 'record_attachments_view.php', 'record_attachments_manage.php'];
 $recordsActive = in_array($currentPage, $recordsPages, true);
 $activeMonitorRole = trim((string) ($_GET['monitor_role'] ?? ''));
+$dashboardActive = in_array($currentPage, ['dashboard.php', 'messengerial.php'], true) && $activeMonitorRole === '';
 ?>
 <!doctype html>
 <html lang="en">
@@ -23,16 +24,13 @@ $activeMonitorRole = trim((string) ($_GET['monitor_role'] ?? ''));
         <span>SP Records Tracking</span>
     </div>
     <nav>
-        <a class="nav-link-with-badge<?= $currentPage === 'dashboard.php' && $activeMonitorRole === '' ? ' active' : '' ?>" href="<?= url('/dashboard.php') ?>"<?= $currentPage === 'dashboard.php' && $activeMonitorRole === '' ? ' aria-current="page"' : '' ?>>
+        <a class="nav-link-with-badge<?= $dashboardActive ? ' active' : '' ?>" href="<?= url('/dashboard.php') ?>"<?= $dashboardActive ? ' aria-current="page"' : '' ?>>
             <span>Dashboard</span>
             <?php if ($dashboardActionRequiredCount > 0): ?>
                 <span class="nav-action-badge"><?= (int) $dashboardActionRequiredCount ?></span>
             <?php endif; ?>
         </a>
         <a href="<?= url('/records.php') ?>"<?= $recordsActive ? ' class="active" aria-current="page"' : '' ?>>Records</a>
-        <?php if (can_view_messengerial()): ?>
-            <a href="<?= url('/messengerial.php') ?>"<?= $navCurrent(['messengerial.php']) ?>>Messengerial</a>
-        <?php endif; ?>
         <?php if (can_create_records()): ?>
             <a href="<?= url('/record_form.php') ?>"<?= $navCurrent(['record_form.php']) ?>>New Record</a>
         <?php endif; ?>
