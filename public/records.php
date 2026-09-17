@@ -225,7 +225,7 @@ $statuses = match ($activeTab) {
 $showAssignmentDetails = in_array($userRole, ['admin', 'city_secretary', 'division_chief', 'secretariat', 'division_staff'], true);
 $committeeActionCount = action_required_count_for_type('Committee Referrals');
 $administrativeDocumentsActionCount = $canUseAdministrativeDocumentsTab
-    ? action_required_count_for_type('Transmittals, Letters and Endorsements')
+    ? action_required_count_for_type('Transmittals, Letters and Endorsements') + action_required_count_for_type('Memorandum, Executive Order, Directive Order and Etc.')
     : 0;
 
 require __DIR__ . '/../app/partials/header.php';

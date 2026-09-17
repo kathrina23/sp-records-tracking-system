@@ -460,6 +460,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ? 'Note to Receiving Staff: ' . $receivingSectionNote
         : '';
 
+    // Administrative tags finalize from Edit Record as well as Review Record.
+    $canFinalizeExistingTag = can_city_secretary_action()
+        && (!$isRecordCorrection || is_administrative_document_type($record['document_type'] ?? ''));
+
     if ($canTagAsNewOrExisting && $reviewAction === 'merge_existing') {
         if ($mergeTargetControlNumber === '') {
             flash('Please enter the Communication Number of the existing record.', 'error');
@@ -492,15 +496,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if ($isRecordCorrection || !can_city_secretary_action()) {
+        if (!$canFinalizeExistingTag) {
             $data['remarks'] = trim($data['remarks'] . "\n\n" . 'Tagged as update to existing Communication Number ' . $mergeTargetControlNumber . '. Pending SP Secretary review.');
         }
     }
 
     if (
         $id
-        && can_city_secretary_action()
-        && !$isRecordCorrection
+        && $canFinalizeExistingTag
         && $canTagAsNewOrExisting
         && $reviewAction === 'merge_existing'
     ) {
@@ -1092,7 +1095,7 @@ require __DIR__ . '/../app/partials/header.php';
             </label>
             <label id="merge_target_wrap">Existing Communication Number
                 <input name="merge_target_control_number" id="merge_target_control_number" list="merge_record_candidates" value="<?= e($pendingMergeTargetControlNumber) ?>" placeholder="Type or choose the old Communication Number">
-                <span class="muted"><?= $isRecordCorrection ? 'Saving changes this tag only. The record remains separate until reviewed.' : (can_city_secretary_action() ? 'Saving will merge this record into the selected existing Communication Number.' : 'This tag will remain pending until the SP Secretary reviews the record.') ?></span>
+                <span class="muted"><?= $isRecordCorrection && !is_administrative_document_type($record['document_type'] ?? '') ? 'Saving changes this tag only. The record remains separate until reviewed.' : (can_city_secretary_action() && $id ? 'Saving will merge this record into the selected existing Communication Number and free its current number for reuse.' : 'This tag will remain pending until the SP Secretary reviews the record.') ?></span>
             </label>
             <datalist id="merge_record_candidates">
                 <?php foreach ($mergeCandidateRecords as $candidate): ?>

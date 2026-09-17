@@ -1257,7 +1257,7 @@ function record_needs_user_action(array $record): bool
             && $status === 'Received'
         ) || (
             is_administrative_document_type($documentType)
-            && !in_array($status, ['Completed', 'Archived'], true)
+            && $status === 'Received'
         );
     }
 
@@ -1268,7 +1268,7 @@ function record_needs_user_action(array $record): bool
             && !record_has_pending_receiving_staff_comment($record)
         ) || (
             is_administrative_document_type($documentType)
-            && !in_array($status, ['Completed', 'Archived'], true)
+            && $status === 'Received'
         );
     }
 
@@ -1384,7 +1384,7 @@ function record_action_priority_sql(string $alias = 'records'): string
     if ($role === 'admin') {
         return "CASE WHEN (
             ($alias.document_type = 'Committee Referrals' AND $alias.status = 'Received')
-            OR ($alias.document_type IN ('Transmittals, Letters and Endorsements', 'Memorandum, Executive Order, Directive Order and Etc.') AND $alias.status NOT IN ('Completed', 'Archived'))
+            OR ($alias.document_type IN ('Transmittals, Letters and Endorsements', 'Memorandum, Executive Order, Directive Order and Etc.') AND $alias.status = 'Received')
         ) THEN 0 ELSE 1 END";
     }
 
@@ -1393,7 +1393,7 @@ function record_action_priority_sql(string $alias = 'records'): string
             ($alias.document_type = 'Committee Referrals'
                 AND $alias.status = 'Received'
                 AND NOT (" . pending_receiving_staff_comment_sql($alias) . "))
-            OR ($alias.document_type IN ('Transmittals, Letters and Endorsements', 'Memorandum, Executive Order, Directive Order and Etc.') AND $alias.status NOT IN ('Completed', 'Archived'))
+            OR ($alias.document_type IN ('Transmittals, Letters and Endorsements', 'Memorandum, Executive Order, Directive Order and Etc.') AND $alias.status = 'Received')
         ) THEN 0 ELSE 1 END";
     }
 
@@ -1432,12 +1432,12 @@ function action_required_count(): int
 
     if ($role === 'admin') {
         $where = "(document_type = 'Committee Referrals' AND status = 'Received')
-            OR (document_type IN ('Transmittals, Letters and Endorsements', 'Memorandum, Executive Order, Directive Order and Etc.') AND status NOT IN ('Completed', 'Archived'))";
+            OR (document_type IN ('Transmittals, Letters and Endorsements', 'Memorandum, Executive Order, Directive Order and Etc.') AND status = 'Received')";
     } elseif ($role === 'city_secretary') {
         $where = "(document_type = 'Committee Referrals'
                 AND status = 'Received'
                 AND NOT (" . pending_receiving_staff_comment_sql('records') . "))
-            OR (document_type IN ('Transmittals, Letters and Endorsements', 'Memorandum, Executive Order, Directive Order and Etc.') AND status NOT IN ('Completed', 'Archived'))";
+            OR (document_type IN ('Transmittals, Letters and Endorsements', 'Memorandum, Executive Order, Directive Order and Etc.') AND status = 'Received')";
     } elseif ($role === 'receiving_clerk') {
         $where = "(
             (
@@ -1509,7 +1509,7 @@ function dashboard_action_required_count(): int
                 END)
                 + SUM(CASE
                     WHEN document_type IN ('Transmittals, Letters and Endorsements', 'Memorandum, Executive Order, Directive Order and Etc.')
-                        AND status NOT IN ('Completed', 'Archived')
+                        AND status = 'Received'
                     THEN 1 ELSE 0
                 END)
                 + SUM(CASE
@@ -1668,7 +1668,8 @@ function action_required_count_for_type(string $documentType): int
                 $where .= " AND NOT (" . pending_receiving_staff_comment_sql('records') . ")";
             }
         } elseif (is_administrative_document_type($documentType)) {
-            $where = "document_type IN ('Transmittals, Letters and Endorsements', 'Memorandum, Executive Order, Directive Order and Etc.') AND status NOT IN ('Completed', 'Archived')";
+            $where = "document_type = ? AND status = 'Received'";
+            $params[] = $documentType;
         } else {
             return 0;
         }
