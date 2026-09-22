@@ -22,14 +22,34 @@ $recipientsByRecord = [];
 foreach ($recipientStmt->fetchAll() as $recipient) {
     $recipientsByRecord[(int) $recipient['record_id']][] = $recipient;
 }
+$isMessengerialMonitor = !empty($isDashboardMonitor)
+    && ($authenticatedDashboardUser['role'] ?? '') === 'admin'
+    && ($requestedMonitorRole ?? '') === 'messengerial_support';
+$messengerialQueueUrl = $isMessengerialMonitor
+    ? url('/dashboard.php?' . http_build_query([
+        'monitor_role' => $requestedMonitorRole,
+        'monitor_user_id' => $dashboardMonitorUserId,
+    ]))
+    : url('/messengerial.php');
+if ($isMessengerialMonitor) {
+    $_SESSION['user'] = $authenticatedDashboardUser;
+}
 require __DIR__ . '/../app/partials/header.php';
+if ($isMessengerialMonitor) {
+    $_SESSION['user'] = $dashboardMonitorUser;
+    require __DIR__ . '/../app/partials/dashboard_monitor_banner.php';
+}
 ?>
 <div class="page-head"><div><h1>Messengerial</h1><p class="muted">Records forwarded to Messengerial Services after transmittal preparation.</p></div></div>
 <section class="panel">
     <form method="get" class="filters">
+        <?php if ($isMessengerialMonitor): ?>
+            <input type="hidden" name="monitor_role" value="<?= e($requestedMonitorRole) ?>">
+            <input type="hidden" name="monitor_user_id" value="<?= (int) $dashboardMonitorUserId ?>">
+        <?php endif; ?>
         <label>Search records<input type="search" name="search" value="<?= e($search) ?>" placeholder="Control number, title, or origin"></label>
         <button class="btn" type="submit">Search</button>
-        <?php if ($search !== ''): ?><a class="btn secondary" href="<?= url('/messengerial.php') ?>">Clear</a><?php endif; ?>
+        <?php if ($search !== ''): ?><a class="btn secondary" href="<?= e($messengerialQueueUrl) ?>">Clear</a><?php endif; ?>
     </form>
 </section>
 <section class="panel">
@@ -60,4 +80,9 @@ require __DIR__ . '/../app/partials/header.php';
         </tbody>
     </table></div>
 </section>
-<?php require __DIR__ . '/../app/partials/footer.php'; ?>
+<?php
+if ($isMessengerialMonitor) {
+    $_SESSION['user'] = $authenticatedDashboardUser;
+}
+require __DIR__ . '/../app/partials/footer.php';
+?>

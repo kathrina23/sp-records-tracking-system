@@ -22,6 +22,7 @@ $monitorableDashboardRoles = [
     'secretariat',
     'division_staff',
     'administrative_support',
+    'messengerial_support',
     'others',
     'server_maintenance_staff',
     'records_officer',
@@ -70,6 +71,10 @@ if ($isDashboardMonitor) {
     $_SESSION['user'] = $dashboardMonitorUser;
 }
 
+if ($isDashboardMonitor && $requestedMonitorRole === 'messengerial_support') {
+    require __DIR__ . '/messengerial.php';
+    exit;
+}
 // Dashboard content below must depend only on the selected user's identity and
 // permissions. Monitoring may add admin context and block writes, but it must
 // not change visible role-specific panels or controls.
@@ -1277,32 +1282,7 @@ if ($isDashboardMonitor) {
     </div>
 </div>
 
-<?php if ($isDashboardMonitor): ?>
-    <section class="dashboard-monitor-banner" aria-label="Administrator dashboard monitoring">
-        <div>
-            <span class="dashboard-monitor-badge">Read-only monitoring</span>
-            <strong><?= e(role_label($requestedMonitorRole)) ?> Dashboard</strong>
-            <p>Showing the dashboard and assignments for <?= e($dashboardMonitorUser['name'] ?? 'No active account') ?>.</p>
-        </div>
-        <form method="get" class="dashboard-monitor-account-form">
-            <input type="hidden" name="monitor_role" value="<?= e($requestedMonitorRole) ?>">
-            <?php if ($dashboardMonitorUsers): ?>
-                <label>Account
-                    <select name="monitor_user_id" onchange="this.form.submit()">
-                        <?php foreach ($dashboardMonitorUsers as $monitorUser): ?>
-                            <option value="<?= (int) $monitorUser['id'] ?>" <?= (int) $monitorUser['id'] === $dashboardMonitorUserId ? 'selected' : '' ?>>
-                                <?= e($monitorUser['name']) ?><?= trim((string) ($monitorUser['division_name'] ?? '')) !== '' ? ' — ' . e($monitorUser['division_name']) : '' ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </label>
-            <?php else: ?>
-                <span class="muted">No active account exists for this user level.</span>
-            <?php endif; ?>
-            <a class="btn secondary" data-monitor-reset href="<?= url('/dashboard.php') ?>">Back to Administrator</a>
-        </form>
-    </section>
-<?php endif; ?>
+<?php require __DIR__ . '/../app/partials/dashboard_monitor_banner.php'; ?>
 <?php if ($usesTabbedAssignedDashboard): ?>
     <section class="panel division-chief-tabs" style="margin-bottom:18px;">
         <nav class="dashboard-tabs division-chief-tab-nav" aria-label="Division Chief dashboard tabs">

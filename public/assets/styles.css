@@ -7245,3 +7245,30 @@ input[type="radio"] {
     padding: 0 !important;
     vertical-align: middle;
 }
+.system-window {
+    width: 96vw;
+    max-width: 1500px;
+    height: 94vh;
+    max-height: 94vh;
+    padding: 12px;
+    border: 0;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+.system-window[open] {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.system-window::backdrop {
+    background: rgba(15, 23, 42, 0.65);
+}
+.system-window-close {
+    align-self: flex-end;
+}
+.system-window > iframe {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    border: 0;
+}

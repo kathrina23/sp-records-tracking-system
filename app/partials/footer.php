@@ -40,5 +40,6 @@ document.addEventListener('click', (event) => {
 <script src="<?= url('/assets/table-pagination.js') ?>"></script>
 <script src="<?= url('/assets/record-search-suggestions.js') ?>"></script>
 <script src="<?= url('/assets/attachment-validation.js') ?>" data-max-bytes="<?= ATTACHMENT_MAX_BYTES ?>" data-max-files="<?= ATTACHMENT_MAX_FILES ?>" data-max-total-bytes="<?= ATTACHMENT_MAX_TOTAL_BYTES ?>"></script>
+<script src="<?= url('/assets/system-windows.js?v=') ?><?= (int) filemtime(__DIR__ . '/../../public/assets/system-windows.js') ?>"></script>
 </body>
 </html>
