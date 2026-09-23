@@ -13,6 +13,12 @@ $dashboardActive = in_array($currentPage, ['dashboard.php', 'messengerial.php'],
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e(APP_NAME) ?></title>
+    <script>
+    // Apply before painting, including after form submissions inside the window.
+    if (window.frameElement && window.frameElement.classList.contains('system-window-frame')) {
+        document.documentElement.classList.add('system-window-content');
+    }
+    </script>
     <link rel="stylesheet" href="<?= url('/assets/styles.css?v=') ?><?= (int) filemtime(__DIR__ . '/../../public/assets/styles.css') ?>">
 </head>
 <body<?= !empty($publicLanding) ? ' class="public-landing-page"' : (!empty($loginBackground) ? ' class="login-background-page"' : '') ?>>

@@ -7272,3 +7272,38 @@ input[type="radio"] {
     min-height: 0;
     border: 0;
 }
+
+/* The outer dialog supplies the backdrop and close control. Embedded pages
+   should not repeat the dashboard shell or draw a second shaded modal. */
+.system-window-content body {
+    background: #fff;
+}
+.system-window-content .sidebar,
+.system-window-content .footer,
+.system-window-content .modal-close {
+    display: none;
+}
+.system-window-content .main {
+    margin: 0;
+    padding: 12px;
+    width: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+}
+.system-window-content .modal-backdrop {
+    position: static;
+    display: block;
+    padding: 0;
+    background: transparent;
+}
+.system-window-content .modal-backdrop > .user-edit-modal {
+    width: 100%;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    margin: 0;
+    box-shadow: none;
+}
+.system-window-content .main:has(> .modal-backdrop) > :not(.modal-backdrop):not(.flash) {
+    display: none;
+}

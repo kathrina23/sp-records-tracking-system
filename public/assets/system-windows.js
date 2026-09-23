@@ -52,6 +52,7 @@
         close.className = 'btn secondary system-window-close';
         close.textContent = 'Close window';
         const frame = document.createElement('iframe');
+        frame.className = 'system-window-frame';
         frame.title = title;
         frame.src = destination.href;
         let updated = false;
