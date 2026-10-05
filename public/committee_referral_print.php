@@ -234,7 +234,6 @@ foreach ($committeeRows as $index => $committeeRow) {
         'committee_name' => $committeeRow['committee_name'],
         'committee_code' => $committeeCodes[(int) $committeeRow['committee_id']] ?? '',
         'report_number' => committee_report_number($id, (int) $committeeRow['committee_id'], $committeeCodes[(int) $committeeRow['committee_id']] ?? ''),
-        'report_date' => display_date(($reportMovementByCommittee[(int) $committeeRow['committee_id']]['created_at'] ?? $reportMovement['created_at'] ?? '') ?: ''),
         'sequence_no' => (int) ($committeeRow['sequence_no'] ?? ($index + 1)),
         'roster' => $roster,
         'chairperson' => array_values(array_filter($roster, fn ($person) => $person['position'] === 'Chairperson')),
@@ -355,7 +354,7 @@ $publicStatusUrl = public_record_status_url((int) $record['id']);
                 </div>
                 <p class="report-number">
                     <span>Report No. <?= e($item['report_number']) ?></span>
-                    <span class="report-number-date">Date:<span><?= e($item['report_date']) ?></span></span>
+                    <span class="report-number-date">Date:<span></span></span>
                 </p>
                 <div class="report-writing-box" aria-label="Committee report writing area"></div>
 
