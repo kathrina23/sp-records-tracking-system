@@ -393,6 +393,21 @@ require __DIR__ . '/../app/partials/header.php';
     </div>
 </section>
 
+<?php
+if (can_city_secretary_action()) {
+    require_once __DIR__ . '/../app/record_merges.php';
+    ensure_record_merge_schema();
+    if (active_record_merges((int) $record['id']) || has_legacy_record_merge($record)) {
+        ?>
+        <section class="panel" style="margin-top:16px">
+            <h2>Merged Records</h2>
+            <p>Edit merged attachment titles or separate a merged record and its files.</p>
+            <a class="btn secondary" href="<?= e(url('/record_unmerge.php?record_id=' . (int) $record['id'])) ?>">Edit / Unmerge Records</a>
+        </section>
+        <?php
+    }
+}
+?>
 <?php if (can_view_record_attachments($record)): ?>
     <section class="panel" style="margin-top:16px;">
         <div class="panel-title-row">

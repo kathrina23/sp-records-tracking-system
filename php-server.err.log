@@ -848,3 +848,435 @@
 [Tue Sep 29 15:23:03 2026] [::1]:62271 Accepted
 [Tue Sep 29 15:23:03 2026] [::1]:62271 [200]: GET /assets/attachment-validation.js
 [Tue Sep 29 15:23:03 2026] [::1]:62271 Closing
+[Tue Sep 29 15:31:00 2026] [::1]:59870 Accepted
+[Tue Sep 29 15:31:00 2026] [::1]:59870 [404]: POST /record_unmerge.php?record_id=197 - No such file or directory
+[Tue Sep 29 15:31:00 2026] [::1]:59870 Closing
+[Tue Sep 29 15:31:06 2026] [::1]:49581 Accepted
+[Tue Sep 29 15:31:06 2026] [::1]:49581 [404]: GET /record_unmerge.php?record_id=197 - No such file or directory
+[Tue Sep 29 15:31:06 2026] [::1]:49581 Closing
+[Tue Sep 29 15:31:41 2026] [::1]:55100 Accepted
+[Tue Sep 29 15:31:41 2026] [::1]:55100 [404]: GET /record_unmerge.php?record_id=197 - No such file or directory
+[Tue Sep 29 15:31:41 2026] [::1]:55100 Closing
+[Tue Sep 29 15:32:29 2026] [::1]:53423 Accepted
+[Tue Sep 29 15:32:29 2026] [::1]:53423 [302]: GET /record_unmerge.php?record_id=197
+[Tue Sep 29 15:32:29 2026] [::1]:53423 Closing
+[Tue Sep 29 15:32:29 2026] [::1]:53424 Accepted
+[Tue Sep 29 15:32:29 2026] [::1]:53424 [200]: GET /login.php
+[Tue Sep 29 15:32:29 2026] [::1]:53424 Closing
+[Tue Sep 29 15:32:34 2026] [::1]:56394 Accepted
+[Tue Sep 29 15:32:35 2026] [::1]:56394 [200]: GET /record_unmerge.php?record_id=197
+[Tue Sep 29 15:32:35 2026] [::1]:56394 Closing
+[Tue Sep 29 15:32:35 2026] [::1]:54797 Accepted
+[Tue Sep 29 15:32:35 2026] [::1]:54797 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:32:35 2026] [::1]:54797 Closing
+[Tue Sep 29 15:32:35 2026] [::1]:63415 Accepted
+[Tue Sep 29 15:32:35 2026] [::1]:63973 Accepted
+[Tue Sep 29 15:32:35 2026] [::1]:63415 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:32:35 2026] [::1]:63973 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:32:35 2026] [::1]:63415 Closing
+[Tue Sep 29 15:32:35 2026] [::1]:63973 Closing
+[Tue Sep 29 15:32:35 2026] [::1]:58910 Accepted
+[Tue Sep 29 15:32:35 2026] [::1]:58910 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:32:35 2026] [::1]:54962 Accepted
+[Tue Sep 29 15:32:35 2026] [::1]:58910 Closing
+[Tue Sep 29 15:32:35 2026] [::1]:54962 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:32:35 2026] [::1]:54962 Closing
+[Tue Sep 29 15:32:37 2026] [::1]:52269 Accepted
+[Tue Sep 29 15:32:37 2026] [::1]:52269 [302]: POST /record_unmerge.php?record_id=197
+[Tue Sep 29 15:32:37 2026] [::1]:52269 Closing
+[Tue Sep 29 15:32:37 2026] [::1]:60158 Accepted
+[Tue Sep 29 15:32:38 2026] [::1]:60158 [200]: GET /record_form.php?id=217
+[Tue Sep 29 15:32:38 2026] [::1]:60158 Closing
+[Tue Sep 29 15:32:38 2026] [::1]:59973 Accepted
+[Tue Sep 29 15:32:38 2026] [::1]:54818 Accepted
+[Tue Sep 29 15:32:38 2026] [::1]:57780 Accepted
+[Tue Sep 29 15:32:38 2026] [::1]:59973 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:32:38 2026] [::1]:54818 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:32:38 2026] [::1]:57780 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:32:38 2026] [::1]:54818 Closing
+[Tue Sep 29 15:32:38 2026] [::1]:59973 Closing
+[Tue Sep 29 15:32:38 2026] [::1]:57780 Closing
+[Tue Sep 29 15:32:38 2026] [::1]:59204 Accepted
+[Tue Sep 29 15:32:38 2026] [::1]:59204 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:32:38 2026] [::1]:57023 Accepted
+[Tue Sep 29 15:32:38 2026] [::1]:59204 Closing
+[Tue Sep 29 15:32:38 2026] [::1]:57023 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:32:38 2026] [::1]:57023 Closing
+[Tue Sep 29 15:32:55 2026] [::1]:50756 Accepted
+[Tue Sep 29 15:32:56 2026] [::1]:50756 [200]: GET /records.php
+[Tue Sep 29 15:32:56 2026] [::1]:50756 Closing
+[Tue Sep 29 15:32:56 2026] [::1]:52522 Accepted
+[Tue Sep 29 15:32:56 2026] [::1]:59611 Accepted
+[Tue Sep 29 15:32:56 2026] [::1]:52522 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:32:56 2026] [::1]:59611 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:32:56 2026] [::1]:52522 Closing
+[Tue Sep 29 15:32:56 2026] [::1]:59611 Closing
+[Tue Sep 29 15:32:56 2026] [::1]:62069 Accepted
+[Tue Sep 29 15:32:56 2026] [::1]:62069 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:32:56 2026] [::1]:62069 Closing
+[Tue Sep 29 15:32:56 2026] [::1]:53913 Accepted
+[Tue Sep 29 15:32:56 2026] [::1]:63049 Accepted
+[Tue Sep 29 15:32:56 2026] [::1]:53913 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:32:56 2026] [::1]:63049 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:32:56 2026] [::1]:53913 Closing
+[Tue Sep 29 15:32:56 2026] [::1]:63049 Closing
+[Tue Sep 29 15:33:00 2026] [::1]:63039 Accepted
+[Tue Sep 29 15:33:01 2026] [::1]:63039 [200]: GET /record_view.php?id=217&popup=1&return=records&return_url=%2Frecords.php%23record-217
+[Tue Sep 29 15:33:01 2026] [::1]:63039 Closing
+[Tue Sep 29 15:33:01 2026] [::1]:55325 Accepted
+[Tue Sep 29 15:33:01 2026] [::1]:55325 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:33:01 2026] [::1]:53930 Accepted
+[Tue Sep 29 15:33:01 2026] [::1]:55325 Closing
+[Tue Sep 29 15:33:01 2026] [::1]:57119 Accepted
+[Tue Sep 29 15:33:01 2026] [::1]:53930 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:33:01 2026] [::1]:57119 [200]: GET /assets/vendor/qrcode-generator.js
+[Tue Sep 29 15:33:01 2026] [::1]:53930 Closing
+[Tue Sep 29 15:33:01 2026] [::1]:57119 Closing
+[Tue Sep 29 15:33:01 2026] [::1]:49166 Accepted
+[Tue Sep 29 15:33:01 2026] [::1]:49166 [200]: GET /assets/communication-qr.js
+[Tue Sep 29 15:33:01 2026] [::1]:49166 Closing
+[Tue Sep 29 15:33:01 2026] [::1]:59107 Accepted
+[Tue Sep 29 15:33:01 2026] [::1]:59641 Accepted
+[Tue Sep 29 15:33:01 2026] [::1]:59107 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:33:01 2026] [::1]:59641 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:33:01 2026] [::1]:57792 Accepted
+[Tue Sep 29 15:33:01 2026] [::1]:59107 Closing
+[Tue Sep 29 15:33:01 2026] [::1]:57792 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:33:01 2026] [::1]:59641 Closing
+[Tue Sep 29 15:33:01 2026] [::1]:57792 Closing
+[Tue Sep 29 15:33:10 2026] [::1]:52419 Accepted
+[Tue Sep 29 15:33:11 2026] [::1]:52419 [200]: GET /records.php
+[Tue Sep 29 15:33:11 2026] [::1]:52419 Closing
+[Tue Sep 29 15:33:11 2026] [::1]:60822 Accepted
+[Tue Sep 29 15:33:11 2026] [::1]:59213 Accepted
+[Tue Sep 29 15:33:11 2026] [::1]:60822 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:33:11 2026] [::1]:59213 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:33:11 2026] [::1]:60822 Closing
+[Tue Sep 29 15:33:11 2026] [::1]:59213 Closing
+[Tue Sep 29 15:33:11 2026] [::1]:54197 Accepted
+[Tue Sep 29 15:33:11 2026] [::1]:54197 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:33:11 2026] [::1]:54197 Closing
+[Tue Sep 29 15:33:11 2026] [::1]:53345 Accepted
+[Tue Sep 29 15:33:11 2026] [::1]:58737 Accepted
+[Tue Sep 29 15:33:11 2026] [::1]:53345 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:33:11 2026] [::1]:58737 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:33:11 2026] [::1]:53345 Closing
+[Tue Sep 29 15:33:11 2026] [::1]:58737 Closing
+[Tue Sep 29 15:33:14 2026] [::1]:58035 Accepted
+[Tue Sep 29 15:33:15 2026] [::1]:58035 [200]: GET /records.php?tab=committee
+[Tue Sep 29 15:33:15 2026] [::1]:58035 Closing
+[Tue Sep 29 15:33:15 2026] [::1]:56049 Accepted
+[Tue Sep 29 15:33:15 2026] [::1]:56049 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:33:15 2026] [::1]:56049 Closing
+[Tue Sep 29 15:33:15 2026] [::1]:61206 Accepted
+[Tue Sep 29 15:33:15 2026] [::1]:55237 Accepted
+[Tue Sep 29 15:33:15 2026] [::1]:61206 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:33:15 2026] [::1]:55237 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:33:15 2026] [::1]:61206 Closing
+[Tue Sep 29 15:33:15 2026] [::1]:55237 Closing
+[Tue Sep 29 15:33:15 2026] [::1]:64360 Accepted
+[Tue Sep 29 15:33:15 2026] [::1]:64360 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:33:15 2026] [::1]:50358 Accepted
+[Tue Sep 29 15:33:15 2026] [::1]:64360 Closing
+[Tue Sep 29 15:33:15 2026] [::1]:50358 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:33:15 2026] [::1]:50358 Closing
+[Tue Sep 29 15:33:23 2026] [::1]:56624 Accepted
+[Tue Sep 29 15:33:23 2026] [::1]:56624 [200]: GET /dashboard.php
+[Tue Sep 29 15:33:23 2026] [::1]:56624 Closing
+[Tue Sep 29 15:33:23 2026] [::1]:65413 Accepted
+[Tue Sep 29 15:33:23 2026] [::1]:59881 Accepted
+[Tue Sep 29 15:33:23 2026] [::1]:65413 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:33:23 2026] [::1]:59881 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:33:23 2026] [::1]:65413 Closing
+[Tue Sep 29 15:33:23 2026] [::1]:59881 Closing
+[Tue Sep 29 15:33:23 2026] [::1]:50632 Accepted
+[Tue Sep 29 15:33:23 2026] [::1]:50632 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:33:23 2026] [::1]:50632 Closing
+[Tue Sep 29 15:33:23 2026] [::1]:52108 Accepted
+[Tue Sep 29 15:33:23 2026] [::1]:50887 Accepted
+[Tue Sep 29 15:33:23 2026] [::1]:52108 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:33:23 2026] [::1]:50887 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:33:23 2026] [::1]:52108 Closing
+[Tue Sep 29 15:33:23 2026] [::1]:50887 Closing
+[Tue Sep 29 15:33:29 2026] [::1]:62144 Accepted
+[Tue Sep 29 15:33:29 2026] [::1]:62144 [200]: GET /record_form.php?mode=review&id=213&popup=1&return=dashboard&city_tab=review
+[Tue Sep 29 15:33:29 2026] [::1]:62144 Closing
+[Tue Sep 29 15:33:29 2026] [::1]:54759 Accepted
+[Tue Sep 29 15:33:29 2026] [::1]:54759 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:33:29 2026] [::1]:54759 Closing
+[Tue Sep 29 15:33:29 2026] [::1]:63522 Accepted
+[Tue Sep 29 15:33:29 2026] [::1]:61850 Accepted
+[Tue Sep 29 15:33:29 2026] [::1]:63522 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:33:29 2026] [::1]:61850 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:33:29 2026] [::1]:63522 Closing
+[Tue Sep 29 15:33:29 2026] [::1]:61850 Closing
+[Tue Sep 29 15:33:29 2026] [::1]:63274 Accepted
+[Tue Sep 29 15:33:29 2026] [::1]:63274 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:33:29 2026] [::1]:63274 Closing
+[Tue Sep 29 15:33:29 2026] [::1]:64689 Accepted
+[Tue Sep 29 15:33:29 2026] [::1]:64689 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:33:29 2026] [::1]:64689 Closing
+[Tue Sep 29 15:33:49 2026] [::1]:61773 Accepted
+[Tue Sep 29 15:33:50 2026] [::1]:61773 [302]: POST /record_form.php?mode=review&id=213&popup=1&return=dashboard&city_tab=review
+[Tue Sep 29 15:33:50 2026] [::1]:61773 Closing
+[Tue Sep 29 15:33:50 2026] [::1]:51237 Accepted
+[Tue Sep 29 15:33:50 2026] [::1]:51237 [200]: GET /dashboard.php?city_tab=review
+[Tue Sep 29 15:33:50 2026] [::1]:51237 Closing
+[Tue Sep 29 15:33:50 2026] [::1]:64080 Accepted
+[Tue Sep 29 15:33:50 2026] [::1]:58302 Accepted
+[Tue Sep 29 15:33:50 2026] [::1]:64080 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:33:50 2026] [::1]:54821 Accepted
+[Tue Sep 29 15:33:50 2026] [::1]:58302 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:33:50 2026] [::1]:63471 Accepted
+[Tue Sep 29 15:33:50 2026] [::1]:54821 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:33:50 2026] [::1]:59973 Accepted
+[Tue Sep 29 15:33:50 2026] [::1]:63471 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:33:50 2026] [::1]:59973 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:33:50 2026] [::1]:64080 Closing
+[Tue Sep 29 15:33:50 2026] [::1]:58302 Closing
+[Tue Sep 29 15:33:50 2026] [::1]:54821 Closing
+[Tue Sep 29 15:33:50 2026] [::1]:63471 Closing
+[Tue Sep 29 15:33:50 2026] [::1]:59973 Closing
+[Tue Sep 29 15:33:54 2026] [::1]:61811 Accepted
+[Tue Sep 29 15:33:55 2026] [::1]:61811 [200]: GET /dashboard.php
+[Tue Sep 29 15:33:55 2026] [::1]:61811 Closing
+[Tue Sep 29 15:33:55 2026] [::1]:57376 Accepted
+[Tue Sep 29 15:33:55 2026] [::1]:64737 Accepted
+[Tue Sep 29 15:33:55 2026] [::1]:57376 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:33:55 2026] [::1]:64737 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:33:55 2026] [::1]:57376 Closing
+[Tue Sep 29 15:33:55 2026] [::1]:64737 Closing
+[Tue Sep 29 15:33:55 2026] [::1]:63923 Accepted
+[Tue Sep 29 15:33:55 2026] [::1]:63923 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:33:55 2026] [::1]:63923 Closing
+[Tue Sep 29 15:33:55 2026] [::1]:61155 Accepted
+[Tue Sep 29 15:33:55 2026] [::1]:50781 Accepted
+[Tue Sep 29 15:33:55 2026] [::1]:61155 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:33:55 2026] [::1]:50781 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:33:55 2026] [::1]:61155 Closing
+[Tue Sep 29 15:33:55 2026] [::1]:50781 Closing
+[Tue Sep 29 15:33:57 2026] [::1]:60162 Accepted
+[Tue Sep 29 15:33:57 2026] [::1]:60162 [200]: GET /records.php
+[Tue Sep 29 15:33:57 2026] [::1]:60162 Closing
+[Tue Sep 29 15:33:57 2026] [::1]:65283 Accepted
+[Tue Sep 29 15:33:57 2026] [::1]:55700 Accepted
+[Tue Sep 29 15:33:57 2026] [::1]:65283 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:33:57 2026] [::1]:55700 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:33:57 2026] [::1]:55700 Closing
+[Tue Sep 29 15:33:57 2026] [::1]:65283 Closing
+[Tue Sep 29 15:33:57 2026] [::1]:58778 Accepted
+[Tue Sep 29 15:33:57 2026] [::1]:58778 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:33:57 2026] [::1]:55653 Accepted
+[Tue Sep 29 15:33:57 2026] [::1]:52932 Accepted
+[Tue Sep 29 15:33:57 2026] [::1]:58778 Closing
+[Tue Sep 29 15:33:57 2026] [::1]:55653 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:33:57 2026] [::1]:52932 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:33:57 2026] [::1]:55653 Closing
+[Tue Sep 29 15:33:57 2026] [::1]:52932 Closing
+[Tue Sep 29 15:34:04 2026] [::1]:57072 Accepted
+[Tue Sep 29 15:34:04 2026] [::1]:57072 [200]: GET /personal_note_record_search.php?q=74
+[Tue Sep 29 15:34:04 2026] [::1]:57072 Closing
+[Tue Sep 29 15:34:06 2026] [::1]:58423 Accepted
+[Tue Sep 29 15:34:06 2026] [::1]:58423 [200]: GET /records.php?tab=all&search=L-00074-2026&status=&date_from=&date_to=
+[Tue Sep 29 15:34:06 2026] [::1]:58423 Closing
+[Tue Sep 29 15:34:06 2026] [::1]:63542 Accepted
+[Tue Sep 29 15:34:06 2026] [::1]:57340 Accepted
+[Tue Sep 29 15:34:06 2026] [::1]:52916 Accepted
+[Tue Sep 29 15:34:06 2026] [::1]:63542 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:34:06 2026] [::1]:57340 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:34:06 2026] [::1]:52916 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:34:06 2026] [::1]:57340 Closing
+[Tue Sep 29 15:34:06 2026] [::1]:52916 Closing
+[Tue Sep 29 15:34:06 2026] [::1]:63542 Closing
+[Tue Sep 29 15:34:06 2026] [::1]:62229 Accepted
+[Tue Sep 29 15:34:06 2026] [::1]:62229 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:34:06 2026] [::1]:62229 Closing
+[Tue Sep 29 15:34:06 2026] [::1]:51460 Accepted
+[Tue Sep 29 15:34:06 2026] [::1]:51460 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:34:06 2026] [::1]:51460 Closing
+[Tue Sep 29 15:34:10 2026] [::1]:60220 Accepted
+[Tue Sep 29 15:34:10 2026] [::1]:60220 [200]: GET /personal_note_record_search.php?q=L-00074-2026
+[Tue Sep 29 15:34:10 2026] [::1]:60220 Closing
+[Tue Sep 29 15:34:13 2026] [::1]:55065 Accepted
+[Tue Sep 29 15:34:13 2026] [::1]:55065 [200]: GET /record_view.php?id=155&popup=1&return=records&return_url=%2Frecords.php%3Ftab%3Dall%26search%3DL-00074-2026%26status%3D%26date_from%3D%26date_to%3D%23record-155
+[Tue Sep 29 15:34:13 2026] [::1]:55065 Closing
+[Tue Sep 29 15:34:13 2026] [::1]:58497 Accepted
+[Tue Sep 29 15:34:13 2026] [::1]:64385 Accepted
+[Tue Sep 29 15:34:13 2026] [::1]:59745 Accepted
+[Tue Sep 29 15:34:13 2026] [::1]:58497 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:34:13 2026] [::1]:64385 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:34:13 2026] [::1]:59745 [200]: GET /assets/vendor/qrcode-generator.js
+[Tue Sep 29 15:34:13 2026] [::1]:58497 Closing
+[Tue Sep 29 15:34:13 2026] [::1]:64385 Closing
+[Tue Sep 29 15:34:13 2026] [::1]:59745 Closing
+[Tue Sep 29 15:34:13 2026] [::1]:61241 Accepted
+[Tue Sep 29 15:34:13 2026] [::1]:61241 [200]: GET /assets/communication-qr.js
+[Tue Sep 29 15:34:13 2026] [::1]:64284 Accepted
+[Tue Sep 29 15:34:13 2026] [::1]:64284 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:34:13 2026] [::1]:61241 Closing
+[Tue Sep 29 15:34:13 2026] [::1]:60724 Accepted
+[Tue Sep 29 15:34:13 2026] [::1]:64284 Closing
+[Tue Sep 29 15:34:13 2026] [::1]:61672 Accepted
+[Tue Sep 29 15:34:13 2026] [::1]:60724 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:34:13 2026] [::1]:61672 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:34:13 2026] [::1]:60724 Closing
+[Tue Sep 29 15:34:13 2026] [::1]:61672 Closing
+[Tue Sep 29 15:34:20 2026] [::1]:59011 Accepted
+[Tue Sep 29 15:34:20 2026] [::1]:59011 [200]: GET /record_unmerge.php?record_id=155
+[Tue Sep 29 15:34:20 2026] [::1]:59011 Closing
+[Tue Sep 29 15:34:20 2026] [::1]:58853 Accepted
+[Tue Sep 29 15:34:20 2026] [::1]:59406 Accepted
+[Tue Sep 29 15:34:20 2026] [::1]:52886 Accepted
+[Tue Sep 29 15:34:20 2026] [::1]:58853 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:34:20 2026] [::1]:59406 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:34:20 2026] [::1]:52886 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:34:20 2026] [::1]:59406 Closing
+[Tue Sep 29 15:34:20 2026] [::1]:58853 Closing
+[Tue Sep 29 15:34:20 2026] [::1]:52886 Closing
+[Tue Sep 29 15:34:20 2026] [::1]:55574 Accepted
+[Tue Sep 29 15:34:20 2026] [::1]:55574 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:34:20 2026] [::1]:55574 Closing
+[Tue Sep 29 15:34:20 2026] [::1]:55297 Accepted
+[Tue Sep 29 15:34:20 2026] [::1]:55297 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:34:20 2026] [::1]:55297 Closing
+[Tue Sep 29 15:34:39 2026] [::1]:52044 Accepted
+[Tue Sep 29 15:34:39 2026] [::1]:52044 [302]: POST /record_unmerge.php?record_id=155
+[Tue Sep 29 15:34:39 2026] [::1]:52044 Closing
+[Tue Sep 29 15:34:39 2026] [::1]:56276 Accepted
+[Tue Sep 29 15:34:40 2026] [::1]:56276 [200]: GET /record_form.php?id=218
+[Tue Sep 29 15:34:40 2026] [::1]:56276 Closing
+[Tue Sep 29 15:34:40 2026] [::1]:52906 Accepted
+[Tue Sep 29 15:34:40 2026] [::1]:52906 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:34:40 2026] [::1]:55221 Accepted
+[Tue Sep 29 15:34:40 2026] [::1]:54577 Accepted
+[Tue Sep 29 15:34:40 2026] [::1]:55221 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:34:40 2026] [::1]:54577 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:34:40 2026] [::1]:52906 Closing
+[Tue Sep 29 15:34:40 2026] [::1]:55221 Closing
+[Tue Sep 29 15:34:40 2026] [::1]:54577 Closing
+[Tue Sep 29 15:34:40 2026] [::1]:56617 Accepted
+[Tue Sep 29 15:34:40 2026] [::1]:56617 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:34:40 2026] [::1]:56617 Closing
+[Tue Sep 29 15:34:40 2026] [::1]:50994 Accepted
+[Tue Sep 29 15:34:40 2026] [::1]:50994 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:34:40 2026] [::1]:50994 Closing
+[Tue Sep 29 15:34:46 2026] [::1]:50465 Accepted
+[Tue Sep 29 15:34:46 2026] [::1]:50465 [302]: POST /record_form.php?id=218
+[Tue Sep 29 15:34:46 2026] [::1]:50465 Closing
+[Tue Sep 29 15:34:46 2026] [::1]:63380 Accepted
+[Tue Sep 29 15:34:46 2026] [::1]:63380 [200]: GET /record_view.php?id=218
+[Tue Sep 29 15:34:46 2026] [::1]:63380 Closing
+[Tue Sep 29 15:34:46 2026] [::1]:53564 Accepted
+[Tue Sep 29 15:34:46 2026] [::1]:53564 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:34:46 2026] [::1]:51634 Accepted
+[Tue Sep 29 15:34:46 2026] [::1]:57727 Accepted
+[Tue Sep 29 15:34:46 2026] [::1]:53564 Closing
+[Tue Sep 29 15:34:46 2026] [::1]:51634 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:34:46 2026] [::1]:57727 [200]: GET /assets/vendor/qrcode-generator.js
+[Tue Sep 29 15:34:46 2026] [::1]:51634 Closing
+[Tue Sep 29 15:34:46 2026] [::1]:57727 Closing
+[Tue Sep 29 15:34:46 2026] [::1]:60647 Accepted
+[Tue Sep 29 15:34:46 2026] [::1]:60647 [200]: GET /assets/communication-qr.js
+[Tue Sep 29 15:34:46 2026] [::1]:60647 Closing
+[Tue Sep 29 15:34:46 2026] [::1]:59238 Accepted
+[Tue Sep 29 15:34:46 2026] [::1]:59238 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:34:46 2026] [::1]:59238 Closing
+[Tue Sep 29 15:34:46 2026] [::1]:55932 Accepted
+[Tue Sep 29 15:34:46 2026] [::1]:55932 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:34:46 2026] [::1]:55932 Closing
+[Tue Sep 29 15:34:46 2026] [::1]:60783 Accepted
+[Tue Sep 29 15:34:46 2026] [::1]:60783 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:34:46 2026] [::1]:60783 Closing
+[Tue Sep 29 15:34:53 2026] [::1]:63925 Accepted
+[Tue Sep 29 15:34:54 2026] [::1]:63925 [200]: GET /dashboard.php
+[Tue Sep 29 15:34:54 2026] [::1]:63925 Closing
+[Tue Sep 29 15:34:54 2026] [::1]:51590 Accepted
+[Tue Sep 29 15:34:54 2026] [::1]:61843 Accepted
+[Tue Sep 29 15:34:54 2026] [::1]:51590 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:34:54 2026] [::1]:61843 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:34:54 2026] [::1]:51590 Closing
+[Tue Sep 29 15:34:54 2026] [::1]:61843 Closing
+[Tue Sep 29 15:34:54 2026] [::1]:51393 Accepted
+[Tue Sep 29 15:34:54 2026] [::1]:51393 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:34:54 2026] [::1]:51393 Closing
+[Tue Sep 29 15:34:54 2026] [::1]:52465 Accepted
+[Tue Sep 29 15:34:54 2026] [::1]:58337 Accepted
+[Tue Sep 29 15:34:54 2026] [::1]:52465 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:34:54 2026] [::1]:58337 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:34:54 2026] [::1]:52465 Closing
+[Tue Sep 29 15:34:54 2026] [::1]:58337 Closing
+[Tue Sep 29 15:34:57 2026] [::1]:51696 Accepted
+[Tue Sep 29 15:34:57 2026] [::1]:51696 [200]: GET /personal_note_record_search.php?q=74
+[Tue Sep 29 15:34:57 2026] [::1]:51696 Closing
+[Tue Sep 29 15:34:59 2026] [::1]:62480 Accepted
+[Tue Sep 29 15:34:59 2026] [::1]:62480 [200]: GET /dashboard.php?city_tab=search&tab=committee&search=L-00074-2026&status=&committee_id=&date_from=&date_to=
+[Tue Sep 29 15:34:59 2026] [::1]:62480 Closing
+[Tue Sep 29 15:34:59 2026] [::1]:53371 Accepted
+[Tue Sep 29 15:34:59 2026] [::1]:59460 Accepted
+[Tue Sep 29 15:34:59 2026] [::1]:53371 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:34:59 2026] [::1]:59460 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:34:59 2026] [::1]:53371 Closing
+[Tue Sep 29 15:34:59 2026] [::1]:59460 Closing
+[Tue Sep 29 15:34:59 2026] [::1]:65516 Accepted
+[Tue Sep 29 15:34:59 2026] [::1]:65516 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:34:59 2026] [::1]:65516 Closing
+[Tue Sep 29 15:34:59 2026] [::1]:64083 Accepted
+[Tue Sep 29 15:34:59 2026] [::1]:50456 Accepted
+[Tue Sep 29 15:34:59 2026] [::1]:64083 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:34:59 2026] [::1]:50456 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:34:59 2026] [::1]:64083 Closing
+[Tue Sep 29 15:34:59 2026] [::1]:50456 Closing
+[Tue Sep 29 15:35:06 2026] [::1]:55443 Accepted
+[Tue Sep 29 15:35:06 2026] [::1]:55443 [200]: GET /personal_note_record_search.php?q=L-00074-2026
+[Tue Sep 29 15:35:06 2026] [::1]:55443 Closing
+[Tue Sep 29 15:35:08 2026] [::1]:58626 Accepted
+[Tue Sep 29 15:35:08 2026] [::1]:58626 [200]: GET /dashboard.php?city_tab=search&tab=committee&search=L-00074-2026&status=&committee_id=&date_from=&date_to=
+[Tue Sep 29 15:35:08 2026] [::1]:58626 Closing
+[Tue Sep 29 15:35:08 2026] [::1]:63745 Accepted
+[Tue Sep 29 15:35:08 2026] [::1]:63177 Accepted
+[Tue Sep 29 15:35:08 2026] [::1]:63745 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:35:08 2026] [::1]:63177 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:35:08 2026] [::1]:52871 Accepted
+[Tue Sep 29 15:35:08 2026] [::1]:56708 Accepted
+[Tue Sep 29 15:35:08 2026] [::1]:51583 Accepted
+[Tue Sep 29 15:35:08 2026] [::1]:52871 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:35:08 2026] [::1]:56708 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:35:08 2026] [::1]:63745 Closing
+[Tue Sep 29 15:35:08 2026] [::1]:63177 Closing
+[Tue Sep 29 15:35:08 2026] [::1]:51583 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:35:08 2026] [::1]:52871 Closing
+[Tue Sep 29 15:35:08 2026] [::1]:56708 Closing
+[Tue Sep 29 15:35:08 2026] [::1]:51583 Closing
+[Tue Sep 29 15:35:15 2026] [::1]:64379 Accepted
+[Tue Sep 29 15:35:15 2026] [::1]:64379 [200]: GET /record_view.php?id=155
+[Tue Sep 29 15:35:15 2026] [::1]:64379 Closing
+[Tue Sep 29 15:35:15 2026] [::1]:54414 Accepted
+[Tue Sep 29 15:35:15 2026] [::1]:64903 Accepted
+[Tue Sep 29 15:35:15 2026] [::1]:54414 [200]: GET /assets/styles.css?v=1790667040
+[Tue Sep 29 15:35:15 2026] [::1]:56580 Accepted
+[Tue Sep 29 15:35:15 2026] [::1]:64903 [200]: GET /assets/splogo.jpg
+[Tue Sep 29 15:35:15 2026] [::1]:56580 [200]: GET /assets/vendor/qrcode-generator.js
+[Tue Sep 29 15:35:15 2026] [::1]:54414 Closing
+[Tue Sep 29 15:35:15 2026] [::1]:64903 Closing
+[Tue Sep 29 15:35:15 2026] [::1]:56580 Closing
+[Tue Sep 29 15:35:16 2026] [::1]:51328 Accepted
+[Tue Sep 29 15:35:16 2026] [::1]:51887 Accepted
+[Tue Sep 29 15:35:16 2026] [::1]:51328 [200]: GET /assets/communication-qr.js
+[Tue Sep 29 15:35:16 2026] [::1]:51887 [200]: GET /assets/table-pagination.js
+[Tue Sep 29 15:35:16 2026] [::1]:53232 Accepted
+[Tue Sep 29 15:35:16 2026] [::1]:51328 Closing
+[Tue Sep 29 15:35:16 2026] [::1]:51887 Closing
+[Tue Sep 29 15:35:16 2026] [::1]:59553 Accepted
+[Tue Sep 29 15:35:16 2026] [::1]:53232 [200]: GET /assets/record-search-suggestions.js
+[Tue Sep 29 15:35:16 2026] [::1]:59553 [200]: GET /assets/attachment-validation.js
+[Tue Sep 29 15:35:16 2026] [::1]:53232 Closing
+[Tue Sep 29 15:35:16 2026] [::1]:59553 Closing
+[Tue Sep 29 16:16:58 2026] [::1]:54724 Accepted
+[Tue Sep 29 16:16:58 2026] [::1]:54724 [404]: GET /record_attachments_manage.php?record_id=213&return_url=%2Frecord_view.php%3Fid%3D213%26popup%3D1%26return%3Ddashboard%26return_url%3D%252Fdashboard.php%253Fcity_tab%253Dreview&popup=1
+[Tue Sep 29 16:16:58 2026] [::1]:54724 Closing
+[Tue Sep 29 16:16:58 2026] [::1]:56353 Accepted
+[Tue Sep 29 16:17:01 2026] [::1]:56353 [404]: GET /record_attachments_manage.php?record_id=213&return_url=%2Frecord_view.php%3Fid%3D213%26popup%3D1%26return%3Ddashboard%26return_url%3D%252Fdashboard.php%253Fcity_tab%253Dreview&popup=1
+[Tue Sep 29 16:17:01 2026] [::1]:56353 Closing
+[Tue Sep 29 16:17:01 2026] [::1]:61196 Accepted
+[Tue Sep 29 16:19:21 2026] [::1]:61196 Closed without sending a request; it was probably just an unused speculative preconnection
+[Tue Sep 29 16:19:21 2026] [::1]:61196 Closing

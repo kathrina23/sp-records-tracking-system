@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $isPlenaryManagerAction = $attachmentAction === 'manage_plenary_attachments';
     if ($isPlenaryManagerAction && !can_manage_plenary_record_attachments($record)) {
         http_response_code(403);
-        exit('Only the Laws and Rules Secretariat can manage Attachments on File for plenary records.');
+        exit('You are not allowed to manage attachments for this record.');
     }
     if (!$isPlenaryManagerAction && !can_upload_record_attachment($record)) {
         http_response_code(403);
