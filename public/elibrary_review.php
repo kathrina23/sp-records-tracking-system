@@ -26,11 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $record = $stmt->fetch();
         if ($draft['record_id'] !== null && (!$record || legislation_number($record, $draft['kind']) === ''
             || legislation_number($record, $draft['kind']) !== $draft['number']
-            || $record['title'] !== $draft['title']
             || ($record['plenary_approved_date'] ?: null) !== $draft['approved_date'])) {
             throw new InvalidArgumentException('The approved record changed. Edit the draft to refresh its details before posting.');
         }
         legislation_fields($draft);
+        if (trim($draft['title']) === '' || strlen($draft['title']) > 20000) {
+            throw new InvalidArgumentException('Enter the title (up to 20,000 bytes). Edit the draft before posting.');
+        }
         legislation_amendment_ids(['amendment_ids' => json_decode($draft['amendment_ids'] ?? '[]', true)], $id);
         if ($draft['record_id'] === null) {
             $termQuery = db()->prepare('SELECT * FROM committee_terms WHERE id=? FOR UPDATE');

@@ -23,18 +23,24 @@ $stmt = db()->prepare('SELECT * FROM legislation_drafts WHERE record_id=? AND ki
 $stmt->execute([$recordId, $kind]);
 $draft = $stmt->fetch() ?: [];
 $values = $draft;
+$values['title'] = $draft['title'] ?? $record['title'];
 $categories = legislation_categories($kind);
 $councilors = db()->query("SELECT DISTINCT name FROM city_officials WHERE position='City Councilor' ORDER BY name")->fetchAll(PDO::FETCH_COLUMN);
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
     $newFile = null;
-    foreach (['keywords', 'category', 'author', 'co_author', 'folder_code'] as $field) {
+    foreach (['title', 'keywords', 'category', 'author', 'co_author', 'folder_code'] as $field) {
         $values[$field] = is_string($_POST[$field] ?? null) ? $_POST[$field] : '';
     }
     $values['amendment_ids'] = json_encode($_POST['amendment_ids'] ?? []);
     try {
+        $title = trim($values['title']);
+        if ($title === '' || strlen($title) > 20000) {
+            throw new InvalidArgumentException('Enter the title (up to 20,000 bytes).');
+        }
         $values = legislation_fields($_POST, $kind);
+        $values['title'] = $title;
         $values['amendment_ids'] = legislation_amendment_ids($_POST, (int) ($draft['id'] ?? 0));
         $revision = (int) ($_POST['revision'] ?? 0);
         if ($revision !== (int) ($draft['revision'] ?? 0)) {
@@ -45,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newFile = legislation_upload($_FILES['signed_file']);
             $file = $newFile;
         }
-        $fields = ['number' => legislation_number($record, $kind), 'title' => $record['title'],
+        $fields = ['number' => legislation_number($record, $kind),
             'approved_date' => $record['plenary_approved_date'] ?: null] + $values;
         foreach (['original_name', 'stored_name', 'mime_type', 'file_size'] as $field) {
             $fields[$field] = $file[$field];
@@ -86,6 +92,9 @@ require __DIR__ . '/../app/partials/header.php';
     <form method="post" enctype="multipart/form-data" class="form-grid">
         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
         <input type="hidden" name="revision" value="<?= (int) ($draft['revision'] ?? 0) ?>">
+        <label class="full">Title / Subject<textarea name="title" rows="3" maxlength="20000" required><?= e($values['title']) ?></textarea>
+            <span class="muted">This title is used for the E-Library posting. The tracked record title stays unchanged.</span>
+        </label>
         <label>Keywords<input name="keywords" value="<?= e($values['keywords'] ?? '') ?>" maxlength="1000" placeholder="Example: health, public services, transport" required>
             <span class="muted">Separate each keyword or phrase with a comma. Each item is saved as a separate keyword.</span>
         </label>

@@ -63,10 +63,11 @@ try {
         $formPath = '/elibrary_form.php?record_id=' . $recordId . '&kind=' . $kind;
         [$status, $html] = request($formPath);
         check($status === 200, 'Posting form failed');
+        check(str_contains($html, '<textarea name="title"') && str_contains($html, $tag . ' Legislation'), 'Editable title is missing or not initialized from the record');
         check(str_contains($html, '<select name="category"') && str_contains($html, 'list="councilor-names"'), 'Category dropdown or councilor suggestions missing');
         [$categoryStatus] = request('/elibrary_categories.php');
         check($categoryStatus === 200, 'LMIS Data Entry Staff cannot access E-Library Data Entry');
-        $fields = ['csrf_token' => token($html), 'revision' => '0', 'keywords' => $tag . ', environment, transport',
+        $fields = ['csrf_token' => token($html), 'revision' => '0', 'title' => $tag . ' Legislation for E-Library', 'keywords' => $tag . ', environment, transport',
             'category' => $tag . ' Public Services', 'author' => 'Test Author', 'co_author' => '', 'folder_code' => ''];
         if ($kind === 'resolution') {
             $parentId = (int) db()->query("SELECT id FROM legislation_publications WHERE record_id=$recordId AND kind='ordinance'")->fetchColumn();
@@ -74,9 +75,19 @@ try {
         }
         [$invalidStatus, $invalidBody] = request($formPath, array_replace($fields, ['category' => $tag . ' Invalid']));
         check($invalidStatus === 200 && str_contains($invalidBody, 'Please select a saved category'), 'Unsaved category accepted');
+        foreach (['   ', str_repeat('x', 20001), ['invalid']] as $invalidTitle) {
+            $invalidFields = array_replace($fields, ['title' => $invalidTitle]);
+            if (is_array($invalidTitle)) {
+                unset($invalidFields['title']);
+                $invalidFields['title[0]'] = 'invalid';
+            }
+            [$invalidStatus, $invalidBody] = request($formPath, $invalidFields);
+            check($invalidStatus === 200 && str_contains($invalidBody, 'Enter the title'), 'Invalid title accepted');
+        }
         [$status, $body] = request($formPath, $fields);
         check($status === 302, 'Draft without a signed copy was rejected');
         $noFileDraft = db()->query("SELECT * FROM legislation_drafts WHERE record_id=$recordId AND kind='$kind'")->fetch();
+        check($noFileDraft['title'] === $fields['title'], 'Edited title was not saved');
         $noFileReview = '/elibrary_review.php?id=' . $noFileDraft['id'];
         [$status, $noFileHtml] = request($noFileReview);
         check($status === 200 && str_contains($noFileHtml, 'No copy attached.'), 'Review without a copy failed');
@@ -131,13 +142,20 @@ try {
         $fields['csrf_token'] = token($html);
         $fields['revision'] = '1';
         $fields['category'] = $tag . ' Updated Category';
+        check(str_contains($html, $fields['title']), 'Saved title was not retained when reopening the form');
+        $fields['title'] = $tag . ' Legislation revised for E-Library';
         [$status] = request($formPath, $fields);
         check($status === 302, 'Edit without replacing signed file failed');
         $category = db()->query("SELECT category FROM legislation_publications WHERE record_id=$recordId AND kind='$kind'")->fetchColumn();
         check($category === $tag . ' Public Services', 'Unreviewed edit altered public publication');
+        $publishedTitle = db()->query("SELECT title FROM legislation_publications WHERE record_id=$recordId AND kind='$kind'")->fetchColumn();
+        check($publishedTitle === $tag . ' Legislation for E-Library', 'Unreviewed title changed the public publication');
         [$status, $html] = request($reviewPath);
         [$status, $body] = request($reviewPath, ['csrf_token' => token($html), 'revision' => '2']);
         check($status === 302, 'Reposting edited draft failed: ' . strip_tags($body));
+        $publishedTitle = db()->query("SELECT title FROM legislation_publications WHERE record_id=$recordId AND kind='$kind'")->fetchColumn();
+        check($publishedTitle === $fields['title'], 'Reposted title was not updated');
+        check(db()->query("SELECT title FROM records WHERE id=$recordId")->fetchColumn() === $tag . ' Legislation', 'E-Library title edit changed the tracked record');
     }
     [$status, $html] = request('/legislation.php?search=' . urlencode($tag . ' Updated Category'), null, true);
     check($status === 200 && substr_count($html, $tag . ' Legislation') === 2, 'Updated ordinance and resolution not searchable');
