@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../app/auth.php';
+ensure_plenary_number_schema();
 
 $controlNumber = strtoupper(trim($_GET['control_number'] ?? ''));
 $recordId = max(0, (int) ($_GET['record_id'] ?? 0));
@@ -12,7 +13,7 @@ $latestRemarks = '';
 if ($lookupRequested) {
     $lookupColumn = $recordId > 0 ? 'r.id' : 'r.control_number';
     $lookupValue = $recordId > 0 ? $recordId : $controlNumber;
-    $stmt = db()->prepare("SELECT r.id, r.control_number, r.title, r.document_type, r.status, r.received_date, r.updated_at, c.name committee_name
+    $stmt = db()->prepare("SELECT r.id, r.control_number, r.title, r.document_type, r.status, r.received_date, r.updated_at, r.published_on, c.name committee_name
         FROM records r
         LEFT JOIN committees c ON c.id = r.committee_id
         WHERE $lookupColumn = ?
@@ -95,6 +96,9 @@ require __DIR__ . '/../app/partials/header.php';
                     <div><strong>Committee</strong><br><?= e($record['committee_name'] ?: 'For Committee Assignment') ?></div>
                 <?php endif; ?>
                 <div><strong>Latest Status</strong><br><span class="badge <?= e(status_class($record['status'])) ?>"><?= e($record['status']) ?></span></div>
+                <?php if (!empty($record['published_on'])): ?>
+                    <div><strong>Date Published</strong><br><?= e($record['published_on']) ?></div>
+                <?php endif; ?>
                 <?php if (in_array($record['status'], ['Referred To', 'Referred', 'Forwarded for Review'], true) && $forwardedTo !== ''): ?>
                     <div><strong>Referred To</strong><br><?= e($forwardedTo) ?></div>
                 <?php endif; ?>

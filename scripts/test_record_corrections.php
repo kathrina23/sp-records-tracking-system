@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/../app/helpers.php';
 $source = file_get_contents(__DIR__ . '/../public/record_form.php');
+$source = str_replace("\r\n", "\n", $source);
 $start = strpos($source, '    if ($isRecordCorrection) {' . "\n" . '        // Corrections preserve');
 $end = strpos($source, '    $pendingAttachments = [];', $start);
 $correction = substr($source, $start, $end - $start);

@@ -142,7 +142,7 @@ if ($userRole === 'secretariat' && $activeTab !== 'certified') {
 }
 if ($userRole === 'administrative_support') {
     $where[] = "r.document_type IN ('Committee Referrals', 'Certified Urgent')";
-    $where[] = "r.status IN ('For Plenary Session', 'Approved in the Plenary', 'For Vice Mayor''s Signature', 'Returned from The Vice Mayor', 'Forwarded for Admin/Mayor Signature', 'Returned from Admin/Mayor', 'Veto', 'Lapse into Ordinance', 'Forwarded to the Messengerial Services', 'For Transmittal', 'Completed')";
+    $where[] = "r.status IN ('For Plenary Session', 'Approved in the Plenary', 'For Publication', 'Published', 'For Vice Mayor''s Signature', 'Returned from The Vice Mayor', 'Forwarded for Admin/Mayor Signature', 'Returned from Admin/Mayor', 'Veto', 'Lapse into Ordinance', 'Forwarded to the Messengerial Services', 'For Transmittal', 'Completed')";
 }
 if ($userRole === 'messengerial_support') {
     $where[] = "r.status IN ('For Transmittal', 'Forwarded to the Messengerial Services')";

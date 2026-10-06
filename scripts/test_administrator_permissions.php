@@ -25,7 +25,7 @@ foreach (['city_secretary', 'division_chief', 'receiving_clerk', 'secretariat', 
     $_SESSION['user']['role'] = $role;
     $record = ['id' => 1, 'document_type' => 'Certified Urgent',
         'status' => 'Approved in the Plenary', 'committee_id' => 1];
-    if (can_update_record_status($record) || can_manage_plenary_record_attachments($record)
+    if (can_update_record_status($record) !== ($role === 'city_secretary') || can_manage_plenary_record_attachments($record)
         || can_manage_transmittal_recipients($record)) {
         throw new RuntimeException("Administrator bypass leaked to $role");
     }

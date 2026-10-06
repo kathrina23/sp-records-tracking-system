@@ -743,6 +743,7 @@ function can_view_record(array $record): bool
         return in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified Urgent'], true)
             && in_array($record['status'] ?? '', [
                 'For Plenary Session', 'Approved in the Plenary',
+                'For Publication', 'Published',
                 "For Vice Mayor's Signature", 'Returned from The Vice Mayor',
                 'Forwarded for Admin/Mayor Signature', 'Returned from Admin/Mayor',
                 'Veto', 'Lapse into Ordinance', 'Forwarded to the Messengerial Services', 'Completed',
@@ -1020,6 +1021,18 @@ function division_chief_first_action_done(array $record): bool
     }
 }
 
+function publication_statuses(): array
+{
+    return ['For Publication', 'Published'];
+}
+
+function can_manage_record_publication(array $record): bool
+{
+    return in_array($_SESSION['user']['role'] ?? '', ['admin', 'city_secretary', 'administrative_support'], true)
+        && in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified Urgent'], true)
+        && (($record['status'] ?? '') === 'Approved in the Plenary' || record_has_plenary_approval($record));
+}
+
 function can_update_record_status(array $record): bool
 {
     if (($_SESSION['user']['role'] ?? '') === 'admin') {
@@ -1031,6 +1044,9 @@ function can_update_record_status(array $record): bool
     }
 
     $role = $_SESSION['user']['role'] ?? '';
+    if (can_manage_record_publication($record)) {
+        return true;
+    }
     if ($role === 'secretariat'
         && is_laws_and_rules_secretariat()
         && in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified Urgent'], true)
@@ -1831,6 +1847,8 @@ function referral_statuses(): array
         'Scheduled for Plenary',
         'Disapproved',
         'Approved in the Plenary',
+        'For Publication',
+        'Published',
         'Others',
     ];
 }
@@ -1838,6 +1856,8 @@ function referral_statuses(): array
 function post_plenary_statuses(): array
 {
     return [
+        'For Publication',
+        'Published',
         "For Vice Mayor's Signature",
         'Returned from The Vice Mayor',
         'Forwarded for Admin/Mayor Signature',
@@ -2049,7 +2069,7 @@ function ensure_plenary_number_schema(): void
         'users' => ['role'],
         'records' => ['status', 'proposed_ordinance_number', 'proposed_resolution_number', 'proposed_by_city_council_member',
             'approved_ordinance_number', 'approved_resolution_number', 'plenary_session_date', 'plenary_approved_date',
-            'contact_number', 'client_email', 'plenary_print_title'],
+            'contact_number', 'client_email', 'plenary_print_title', 'published_on'],
         'record_movements' => ['chief_remarks_updated_at', 'record_title', 'previous_title'],
         'record_recipients' => ['record_id', 'title', 'name', 'position', 'office', 'address', 'contact_number', 'created_by', 'created_at'],
         'record_division_receipts' => ['record_id', 'division_name', 'received_by', 'received_at'],
@@ -2066,11 +2086,11 @@ function ensure_plenary_number_schema(): void
     }
 
     try {
-        db()->exec("ALTER TABLE records MODIFY status ENUM('Received', 'Assigned to the Committee', 'Pending to the Committee', 'For Meeting', 'For Inspection', 'Recommending Approval', 'Deferred', 'Tabled', 'Noted', 'Referred', 'Referred To', 'Referred Back to Committee', 'Perusal', 'Endorsement', 'For Plenary Session', 'Scheduled for Plenary', 'Disapproved', 'Approved in the Plenary', 'For Vice Mayor''s Signature', 'Returned from The Vice Mayor', 'Forwarded for Admin/Mayor Signature', 'Returned from Admin/Mayor', 'Veto', 'Lapse into Ordinance', 'Forwarded to the Messengerial Services', 'For Transmittal', 'Others', 'Completed', 'Archived') NOT NULL DEFAULT 'Received'");
+        db()->exec("ALTER TABLE records MODIFY status ENUM('Received', 'Assigned to the Committee', 'Pending to the Committee', 'For Meeting', 'For Inspection', 'Recommending Approval', 'Deferred', 'Tabled', 'Noted', 'Referred', 'Referred To', 'Referred Back to Committee', 'Perusal', 'Endorsement', 'For Plenary Session', 'Scheduled for Plenary', 'Disapproved', 'Approved in the Plenary', 'For Publication', 'Published', 'For Vice Mayor''s Signature', 'Returned from The Vice Mayor', 'Forwarded for Admin/Mayor Signature', 'Returned from Admin/Mayor', 'Veto', 'Lapse into Ordinance', 'Forwarded to the Messengerial Services', 'For Transmittal', 'Others', 'Completed', 'Archived') NOT NULL DEFAULT 'Received'");
         db()->exec("UPDATE records SET status = 'Referred To' WHERE status = 'Referred'");
         db()->exec("UPDATE record_movements SET from_status = 'Referred To' WHERE from_status = 'Referred'");
         db()->exec("UPDATE record_movements SET to_status = 'Referred To' WHERE to_status = 'Referred'");
-        db()->exec("ALTER TABLE records MODIFY status ENUM('Received', 'Assigned to the Committee', 'Pending to the Committee', 'For Meeting', 'For Inspection', 'Recommending Approval', 'Deferred', 'Tabled', 'Noted', 'Referred To', 'Referred Back to Committee', 'Perusal', 'Endorsement', 'For Plenary Session', 'Scheduled for Plenary', 'Disapproved', 'Approved in the Plenary', 'For Vice Mayor''s Signature', 'Returned from The Vice Mayor', 'Forwarded for Admin/Mayor Signature', 'Returned from Admin/Mayor', 'Veto', 'Lapse into Ordinance', 'Forwarded to the Messengerial Services', 'For Transmittal', 'Others', 'Completed', 'Archived') NOT NULL DEFAULT 'Received'");
+        db()->exec("ALTER TABLE records MODIFY status ENUM('Received', 'Assigned to the Committee', 'Pending to the Committee', 'For Meeting', 'For Inspection', 'Recommending Approval', 'Deferred', 'Tabled', 'Noted', 'Referred To', 'Referred Back to Committee', 'Perusal', 'Endorsement', 'For Plenary Session', 'Scheduled for Plenary', 'Disapproved', 'Approved in the Plenary', 'For Publication', 'Published', 'For Vice Mayor''s Signature', 'Returned from The Vice Mayor', 'Forwarded for Admin/Mayor Signature', 'Returned from Admin/Mayor', 'Veto', 'Lapse into Ordinance', 'Forwarded to the Messengerial Services', 'For Transmittal', 'Others', 'Completed', 'Archived') NOT NULL DEFAULT 'Received'");
     } catch (Throwable $error) {
         // Existing databases may already have this status list, or the user may apply SQL manually.
     }
@@ -2115,6 +2135,12 @@ function ensure_plenary_number_schema(): void
         db()->exec("ALTER TABLE records ADD COLUMN plenary_approved_date DATE NULL AFTER plenary_session_date");
     } catch (Throwable $error) {
         // Column already exists or the current database user cannot alter it here.
+    }
+
+    try {
+        db()->exec("ALTER TABLE records ADD COLUMN published_on VARCHAR(255) NULL AFTER plenary_approved_date");
+    } catch (Throwable $error) {
+        // Column already exists or the migration must be applied manually.
     }
 
     try {

@@ -2099,7 +2099,10 @@ if ($isDashboardMonitor) {
                                     <span class="muted">Not set</span>
                                 <?php endif; ?>
                             </td><?php else: ?><td><?= control_number_link($record) ?></td><?php endif; ?>
-                            <td><?= e(display_date($record['plenary_approved_date'] ?? '')) ?></td>
+                            <td><?= e(display_date($record['plenary_approved_date'] ?? '')) ?><br>
+                                <span class="badge <?= e(status_class($record['status'])) ?>"><?= e($record['status']) ?></span>
+                                <?php if (!empty($record['published_on'])): ?><br><span>Date Published: <?= e($record['published_on']) ?></span><?php endif; ?>
+                            </td>
                             <td><?= e(display_datetime($record['updated_at'] ?? '')) ?></td>
                             <td class="center-cell approved-plenary-action-cell"><div class="approved-plenary-actions">
                                 <a class="print-link small-action-link record-view-action" href="<?= e(url('/record_view.php?') . http_build_query([
