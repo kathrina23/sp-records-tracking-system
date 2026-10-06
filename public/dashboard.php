@@ -22,6 +22,7 @@ $monitorableDashboardRoles = [
     'secretariat',
     'division_staff',
     'administrative_support',
+    'lmis_data_entry',
     'messengerial_support',
     'others',
     'server_maintenance_staff',
@@ -73,6 +74,10 @@ if ($isDashboardMonitor) {
 
 if ($isDashboardMonitor && $requestedMonitorRole === 'messengerial_support') {
     require __DIR__ . '/messengerial.php';
+    exit;
+}
+if ((current_user()['role'] ?? '') === 'lmis_data_entry') {
+    require __DIR__ . '/elibrary.php';
     exit;
 }
 // Dashboard content below must depend only on the selected user's identity and
@@ -781,7 +786,7 @@ if ($usesCitySecretaryTabbedDashboard) {
 
     $approvedPlenaryWhere = [
         "r.document_type IN ('Committee Referrals', 'Certified Urgent')",
-        "(r.plenary_approved_date IS NOT NULL OR COALESCE(NULLIF(r.approved_ordinance_number, ''), NULLIF(r.approved_resolution_number, '')) IS NOT NULL)",
+        "(r.status = 'Approved in the Plenary' OR r.plenary_approved_date IS NOT NULL OR COALESCE(NULLIF(r.approved_ordinance_number, ''), NULLIF(r.approved_resolution_number, '')) IS NOT NULL)",
     ];
     $approvedPlenaryParams = [];
     if ($approvedDate !== '') {
@@ -798,8 +803,7 @@ if ($usesCitySecretaryTabbedDashboard) {
         FROM records r
         LEFT JOIN committees c ON c.id = r.committee_id
         WHERE " . implode(' AND ', $approvedPlenaryWhere) . "
-        ORDER BY COALESCE(r.plenary_approved_date, DATE(r.updated_at)) DESC, r.updated_at DESC, r.id DESC
-        LIMIT 50");
+        ORDER BY COALESCE(r.plenary_approved_date, DATE(r.updated_at)) DESC, r.updated_at DESC, r.id DESC");
     $approvedPlenaryStmt->execute($approvedPlenaryParams);
     $citySecretaryDashboard['approved_plenary'] = $approvedPlenaryStmt->fetchAll();
 
@@ -1918,7 +1922,7 @@ if ($isDashboardMonitor) {
                             <td><?= e(display_datetime($record['updated_at'] ?? '')) ?></td>
                             <td class="center-cell">
                                 <?php if (can_manage_transmittal_recipients($record)): ?>
-                                    <a class="print-link small-action-link" href="<?= e(dashboard_action_url('/record_recipients.php?record_id=' . (int) $record['id'])) ?>">Add Recipients</a>
+                                    <a class="print-link small-action-link" href="<?= e(dashboard_action_url('/record_recipients.php?record_id=' . (int) $record['id'])) ?>">View Recipients</a>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -2055,7 +2059,6 @@ if ($isDashboardMonitor) {
                     <thead>
                         <tr>
                             <th><?= $usesAdministrativeSupportDashboard ? 'Ordinance / Resolution Number' : 'Communication No.' ?></th>
-                            <th>Type</th>
                             <th class="title-column">Title</th>
                             <th>Committee</th>
                             <th><?= $usesAdministrativeSupportDashboard ? 'Communication No.' : 'Ordinance / Resolution No.' ?></th>
@@ -2087,7 +2090,6 @@ if ($isDashboardMonitor) {
                                     <span class="muted">Not set</span>
                                 <?php endif; ?>
                             </td><?php else: ?><td><?= control_number_link($record) ?></td><?php endif; ?>
-                            <td><?= e($approvedNumberLabel !== '' ? $approvedNumberLabel : 'Not set') ?></td>
                             <td><?= e(display_record_title(record_title_for_current_user($record))) ?></td>
                             <td><?= e($committeeNamesForRecord) ?></td>
                             <?php if (!$usesAdministrativeSupportDashboard): ?><td>
@@ -2106,6 +2108,9 @@ if ($isDashboardMonitor) {
                                     'return' => 'dashboard',
                                     'return_url' => $approvedPlenaryReturnUrl,
                                 ])) ?>">View Record</a>
+                                <?php if (can_manage_transmittal_recipients($record)): ?>
+                                    <a class="print-link small-action-link" href="<?= e(dashboard_action_url('/record_recipients.php?record_id=' . (int) $record['id'])) ?>">Add Recipients</a>
+                                <?php endif; ?>
                                 <?php if (in_array($userRole, ['admin', 'city_secretary'], true) && can_edit_record($record)): ?>
 
                                     <a class="print-link small-action-link record-edit-action" href="<?= e($approvedEditUrl) ?>">Edit</a>
@@ -2117,11 +2122,14 @@ if ($isDashboardMonitor) {
                                         'return' => 'dashboard',
                                         'city_tab' => 'approved-plenary',
                                     ]))) ?>"><?= $usesAdministrativeSupportDashboard ? 'New Update Status' : 'Update Status' ?></a>
+                                    <?php if (($record['status'] ?? '') === 'Forwarded for Admin/Mayor Signature'): ?>
+                                        <a class="print-link small-action-link" href="<?= url('/indorsement_print.php?id=') ?><?= (int) $record['id'] ?>" target="_blank" rel="noopener">Print Indorsement</a>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </div></td>
                         </tr>
                     <?php endforeach; ?>
-                    <?php if (!$citySecretaryDashboard['approved_plenary']): ?><tr><td colspan="8">No records are approved in the plenary.</td></tr><?php endif; ?>
+                    <?php if (!$citySecretaryDashboard['approved_plenary']): ?><tr><td colspan="7">No records are approved in the plenary.</td></tr><?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -2646,7 +2654,7 @@ if ($isDashboardMonitor) {
                             <td><?= e(display_datetime($record['updated_at'] ?? '')) ?></td>
                             <td class="center-cell">
                                 <?php if (can_manage_transmittal_recipients($record)): ?>
-                                    <a class="print-link small-action-link" href="<?= e(dashboard_action_url('/record_recipients.php?record_id=' . (int) $record['id'])) ?>">Add Recipients</a>
+                                    <a class="print-link small-action-link" href="<?= e(dashboard_action_url('/record_recipients.php?record_id=' . (int) $record['id'])) ?>">View Recipients</a>
                                 <?php endif; ?>
                             </td>
                         </tr>

@@ -25,7 +25,7 @@ $returnTarget = ($_GET['return'] ?? $_POST['return'] ?? '') === 'dashboard' ? 'd
 $divisionTab = $_GET['division_tab'] ?? $_POST['division_tab'] ?? '';
 $closeUrl = $returnTarget === 'dashboard'
     ? '/dashboard.php' . ($divisionTab !== '' ? '?division_tab=' . urlencode($divisionTab) : '')
-    : '/committees.php';
+    : '/committees.php' . ($termId > 0 ? '?term_id=' . $termId : '');
 
 $stmt = db()->prepare('SELECT * FROM committees WHERE id = ?');
 $stmt->execute([$committeeId]);
@@ -187,10 +187,10 @@ function official_select(string $name, string $currentValue, array $officials, s
 
 <div class="page-head">
     <div>
-        <h1><?= e($committee['name']) ?> Roster</h1>
+        <h1><?= e($committee['name']) ?> Membership</h1>
         <p class="muted"><?= e($term['name']) ?> committee membership.</p>
     </div>
-    <a class="btn secondary" href="<?= url('/committees.php') ?>">Back to Committees</a>
+    <a class="btn secondary" href="<?= url('/committees.php?term_id=') . $termId ?>">Back to Standing Committees</a>
 </div>
 
 <section class="panel" style="margin-bottom:16px;">
@@ -226,7 +226,7 @@ function official_select(string $name, string $currentValue, array $officials, s
             <?php if (!$officialsReady): ?>
                 <p class="muted">Import <strong>database/migration_city_officials.sql</strong> to enable official selection.</p>
             <?php elseif (!$officials): ?>
-                <p class="muted">No Vice Mayor or City Councilors encoded yet for this term. Add them on the Officials page.</p>
+                <p class="muted">No Vice Mayor or City Councilors encoded yet for this term. Add them on the <a href="<?= url('/councilors.php?term_id=') . $termId ?>">City Councilors page</a>.</p>
             <?php endif; ?>
             <div class="member-grid">
                 <?php for ($i = 0; $i < 20; $i++): ?>
@@ -237,7 +237,7 @@ function official_select(string $name, string $currentValue, array $officials, s
             </div>
         </div>
         <div class="actions full">
-            <button class="btn" type="submit">Save Roster</button>
+            <button class="btn" type="submit">Save Committee Membership</button>
         </div>
     </form>
 <?php endif; ?>

@@ -12,6 +12,7 @@ $roles = [
     'secretariat' => 'Secretariat',
     'division_staff' => 'Division Staff',
     'administrative_support' => 'LMIS & Records Staff',
+    'lmis_data_entry' => 'LMIS Data Entry Staff',
     'messengerial_support' => 'Messengerial Support Staff',
     'records_officer' => 'Records Officer',
     'others' => 'Others',

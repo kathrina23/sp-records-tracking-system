@@ -1,0 +1,1 @@
+ALTER TABLE record_recipients ADD COLUMN IF NOT EXISTS office VARCHAR(180) NULL AFTER position;

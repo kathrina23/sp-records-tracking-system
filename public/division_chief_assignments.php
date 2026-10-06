@@ -14,7 +14,7 @@ try {
     require __DIR__ . '/../app/partials/header.php';
     ?>
     <section class="panel">
-        <h1>Committee Assignment</h1>
+        <h1>Staff Committee Assignment</h1>
         <p class="muted">Import <strong>database/migration_division_chief_committees.sql</strong> in phpMyAdmin to enable committee assignments.</p>
     </section>
     <?php
@@ -82,7 +82,7 @@ require __DIR__ . '/../app/partials/header.php';
 ?>
 <div class="page-head">
     <div>
-        <h1>Committee Assignment</h1>
+        <h1>Staff Committee Assignment</h1>
         <p class="muted">Assign which committees each Division Chief can access and manage.</p>
     </div>
 </div>
@@ -105,7 +105,7 @@ require __DIR__ . '/../app/partials/header.php';
                 <?php endforeach; ?>
             </div>
             <div class="actions">
-                <button class="btn" type="submit">Save Committee Assignment</button>
+                <button class="btn" type="submit">Save Staff Committee Assignment</button>
             </div>
         </form>
     </section>

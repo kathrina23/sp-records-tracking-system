@@ -19,7 +19,8 @@ foreach ($roles as $role) {
                 'division_chief', 'secretariat', 'division_staff' => $type === 'Certified Urgent',
                 'administrative_support' => in_array($type, ['Committee Referrals', 'Certified Urgent'], true)
                     && in_array($status, ['For Plenary Session', 'For Transmittal', 'Forwarded to the Messengerial Services'], true),
-                'messengerial_support' => $status === 'Forwarded to the Messengerial Services',
+                // Both queues are available for recipient delivery tracking.
+                'messengerial_support' => in_array($status, ['For Transmittal', 'Forwarded to the Messengerial Services'], true),
                 default => false,
             };
             if (can_view_record($record) !== $expected || can_view_record_history($record) !== $expected) {
@@ -30,6 +31,24 @@ foreach ($roles as $role) {
             }
             $checks++;
         }
+    }
+}
+$_SESSION['user'] = ['id' => 0, 'role' => 'messengerial_support'];
+foreach ($types as $type) {
+    foreach (['Received', 'Approved in the Plenary', 'For Transmittal', 'Forwarded to the Messengerial Services', 'Completed', 'Archived'] as $status) {
+        $record = ['id' => 1, 'committee_id' => null, 'document_type' => $type, 'status' => $status];
+        $expectedView = in_array($status, ['For Transmittal', 'Forwarded to the Messengerial Services'], true);
+        if (can_view_record($record) !== $expectedView || can_view_record_history($record) !== $expectedView) {
+            throw new RuntimeException("Messenger workflow access: $type / $status");
+        }
+        if (!$expectedView && can_view_record_attachments($record)) {
+            throw new RuntimeException("Messenger attachment access outside delivery queues: $type / $status");
+        }
+        if (can_create_records() || can_edit_record($record) || can_update_record_status($record)
+            || can_upload_record_attachment($record) || can_complete_transmittals($record) || can_manage_users()) {
+            throw new RuntimeException("Messenger gained record management permissions: $type / $status");
+        }
+        $checks++;
     }
 }
 echo "PASS: $checks role, document type, and workflow combinations; history and attachment access.\n";

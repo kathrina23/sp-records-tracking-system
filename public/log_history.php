@@ -165,7 +165,7 @@ require __DIR__ . '/../app/partials/header.php';
         </div>
 
         <div class="actions log-history-actions">
-            <a class="btn secondary" href="<?= e($closeUrl) ?>">Close</a>
+            <a class="window-close-control" href="<?= e($closeUrl) ?>" aria-label="Close log history">X</a>
         </div>
     </section>
 </div>

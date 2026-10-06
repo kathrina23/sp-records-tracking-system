@@ -1,8 +1,12 @@
 <?php
 
 require_once __DIR__ . '/../app/auth.php';
+require_once __DIR__ . '/../app/term_dates.php';
 require_login();
-require_management_access();
+if (!can_view_terms()) {
+    http_response_code(403);
+    exit('This page is for authorized term viewers only.');
+}
 
 try {
     db()->query('SELECT 1 FROM committee_terms LIMIT 1');
@@ -59,8 +63,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $name = trim($_POST['name'] ?? '');
-    $startYear = (int) ($_POST['start_year'] ?? date('Y'));
-    $endYear = (int) ($_POST['end_year'] ?? ($startYear + 3));
+    try {
+        [$startYear, $startMonth] = term_parse_period(is_string($_POST['start_period'] ?? null) ? $_POST['start_period'] : '');
+        [$endYear, $endMonth] = term_parse_period(is_string($_POST['end_period'] ?? null) ? $_POST['end_period'] : '');
+        if ($name === '' || strlen($name) > 120 || $_POST['end_period'] < $_POST['start_period']) {
+            throw new InvalidArgumentException('Enter a term name up to 120 bytes and an end month on or after the start month.');
+        }
+    } catch (InvalidArgumentException $error) {
+        flash($error->getMessage(), 'error');
+        redirect('/terms.php' . ($id ? '?edit=' . $id : ''));
+    }
     $isCurrent = isset($_POST['is_current']) ? 1 : 0;
 
     $pdo = db();
@@ -71,13 +83,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($id) {
-            $stmt = $pdo->prepare('UPDATE committee_terms SET name=?, start_year=?, end_year=?, is_current=? WHERE id=?');
-            $stmt->execute([$name, $startYear, $endYear, $isCurrent, $id]);
+            $stmt = $pdo->prepare('UPDATE committee_terms SET name=?, start_year=?, start_month=?, end_year=?, end_month=?, is_current=? WHERE id=?');
+            $stmt->execute([$name, $startYear, $startMonth, $endYear, $endMonth, $isCurrent, $id]);
             audit_log('term_update', 'Updated term ' . $name . '.', 'term', $id);
             flash('Term updated.');
         } else {
-            $stmt = $pdo->prepare('INSERT INTO committee_terms (name, start_year, end_year, is_current) VALUES (?, ?, ?, ?)');
-            $stmt->execute([$name, $startYear, $endYear, $isCurrent]);
+            $stmt = $pdo->prepare('INSERT INTO committee_terms (name, start_year, start_month, end_year, end_month, is_current) VALUES (?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$name, $startYear, $startMonth, $endYear, $endMonth, $isCurrent]);
             audit_log('term_create', 'Created term ' . $name . '.', 'term', (int) $pdo->lastInsertId());
             flash('Term added. You can now add committee rosters for this term.');
         }
@@ -105,7 +117,7 @@ require __DIR__ . '/../app/partials/header.php';
 <div class="page-head">
     <div>
         <h1>Terms</h1>
-        <p class="muted">Create a new 3-year term and mark the active roster group.</p>
+        <p class="muted">Set each term's start and end month and year, and mark the active roster group. Edit older terms to specify their months.</p>
     </div>
 </div>
 
@@ -119,11 +131,11 @@ require __DIR__ . '/../app/partials/header.php';
             <label>Term Name
                 <input name="name" required placeholder="2026-2029 Term" value="<?= e($edit['name'] ?? '') ?>">
             </label>
-            <label>Start Year
-                <input type="number" name="start_year" min="1900" max="2200" required value="<?= e((string) ($edit['start_year'] ?? date('Y'))) ?>">
+            <label>Start Month and Year
+                <input type="month" name="start_period" min="1901-01" max="2155-12" required value="<?= e($edit ? term_period_input($edit, 'start') : date('Y-m')) ?>">
             </label>
-            <label>End Year
-                <input type="number" name="end_year" min="1900" max="2200" required value="<?= e((string) ($edit['end_year'] ?? ((int) date('Y') + 3))) ?>">
+            <label>End Month and Year
+                <input type="month" name="end_period" min="1901-01" max="2155-12" required value="<?= e($edit ? term_period_input($edit, 'end') : date('Y-m', strtotime('+3 years'))) ?>">
             </label>
             <label>
                 <span><input type="checkbox" name="is_current" value="1" <?= (int) ($edit['is_current'] ?? 0) === 1 ? 'checked' : '' ?>> Current term</span>
@@ -141,12 +153,12 @@ require __DIR__ . '/../app/partials/header.php';
 
 <section class="panel table-wrap">
     <table>
-        <thead><tr><th>Term</th><th>Years</th><th>Status</th><th>Roster Entries</th><th></th></tr></thead>
+        <thead><tr><th>Term</th><th>Month and Year</th><th>Status</th><th>Roster Entries</th><th></th></tr></thead>
         <tbody>
         <?php foreach ($terms as $term): ?>
             <tr>
                 <td><?= e($term['name']) ?></td>
-                <td><?= e((string) $term['start_year']) ?>-<?= e((string) $term['end_year']) ?></td>
+                <td><?= e(term_period_label($term)) ?></td>
                 <td><?= $term['is_current'] ? 'Current' : 'Archived' ?></td>
                 <td><?= (int) $term['member_count'] ?></td>
                 <td class="actions">

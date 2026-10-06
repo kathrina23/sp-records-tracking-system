@@ -102,6 +102,7 @@ function role_label(string $role): string
         'secretariat' => 'Secretariat',
         'division_staff' => 'Division Staff',
         'administrative_support' => 'LMIS & Records Staff',
+        'lmis_data_entry' => 'LMIS Data Entry Staff',
         'messengerial_support' => 'Messengerial Support Staff',
         'others' => 'Others',
         'server_maintenance_staff' => 'Server Maintenance Staff',
@@ -171,6 +172,11 @@ function update_age_marker(?string $value): ?array
     return ['label' => ($daysOld + 1) . ' Days', 'class' => 'age-three-days'];
 }
 
+function can_manage_elibrary_data(): bool
+{
+    return in_array($_SESSION['user']['role'] ?? '', ['lmis_data_entry', 'admin', 'city_secretary', 'records_officer'], true);
+}
+
 function can_manage_users(): bool
 {
     // User creation and division assignment for accounts is limited to these two roles.
@@ -180,6 +186,11 @@ function can_manage_users(): bool
 function can_manage_assignments(): bool
 {
     return in_array($_SESSION['user']['role'] ?? '', ['admin', 'city_secretary', 'division_chief'], true);
+}
+
+function can_view_terms(): bool
+{
+    return can_access_management_pages() || ($_SESSION['user']['role'] ?? '') === 'lmis_data_entry';
 }
 
 function can_access_management_pages(): bool
@@ -719,8 +730,13 @@ function others_user_document_types(): array
 function can_view_record(array $record): bool
 {
     $role = $_SESSION['user']['role'] ?? '';
+    if ($role === 'lmis_data_entry') {
+        return record_has_plenary_approval($record)
+            || (in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified Urgent'], true)
+                && ($record['status'] ?? '') === 'Approved in the Plenary');
+    }
     if ($role === 'messengerial_support') {
-        return ($record['status'] ?? '') === 'Forwarded to the Messengerial Services';
+        return in_array($record['status'] ?? '', ['For Transmittal', 'Forwarded to the Messengerial Services'], true);
     }
 
     if ($role === 'administrative_support') {
@@ -1081,7 +1097,7 @@ function can_view_record_materials(array $record): bool
         return false;
     }
     $role = $_SESSION['user']['role'] ?? '';
-    if (in_array($role, ['others', 'server_maintenance_staff'], true)) {
+    if (in_array($role, ['others', 'server_maintenance_staff', 'lmis_data_entry'], true)) {
         return can_view_record($record);
     }
 
@@ -1181,8 +1197,8 @@ function can_manage_transmittal_recipients(array $record): bool
         return true;
     }
 
-    return ($record['status'] ?? '') === 'For Transmittal'
-        && record_has_plenary_approval($record)
+    return (($record['status'] ?? '') === 'Approved in the Plenary' || record_has_plenary_approval($record))
+        && in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified Urgent'], true)
         && can_view_transmittal_contact_details($record);
 }
 
@@ -1234,7 +1250,7 @@ function can_backup_system(): bool
 
 function can_view_reports(): bool
 {
-    return !in_array($_SESSION['user']['role'] ?? '', ['others', 'server_maintenance_staff'], true);
+    return !in_array($_SESSION['user']['role'] ?? '', ['others', 'server_maintenance_staff', 'lmis_data_entry'], true);
 }
 
 function can_delete_records(): bool
@@ -1857,8 +1873,80 @@ function all_statuses(): array
     return array_values(array_unique(array_merge(referral_statuses(), post_plenary_statuses(), administrative_statuses())));
 }
 
+// CLI checks use actual connection tables, including temporary test tables.
+// Completed installations must not rerun DDL and historical backfills on page loads.
+function schema_structure_matches(array $tables, array $indexes = [], array $enums = [], array $nullable = []): bool
+{
+    try {
+        $columns = [];
+        if (PHP_SAPI !== 'cli') {
+            $names = array_keys($tables);
+            $placeholders = implode(',', array_fill(0, count($names), '?'));
+            $stmt = db()->prepare("SELECT TABLE_NAME, COLUMN_NAME AS `Field`, COLUMN_TYPE AS `Type`, IS_NULLABLE AS `Null`
+                FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ($placeholders)");
+            $stmt->execute($names);
+            foreach ($stmt->fetchAll() as $row) {
+                $columns[$row['TABLE_NAME']][$row['Field']] = $row;
+            }
+        }
+        foreach ($tables as $table => $requiredColumns) {
+            if (PHP_SAPI === 'cli') {
+                $rows = db()->query('SHOW COLUMNS FROM `' . $table . '`')->fetchAll();
+                foreach ($rows as $row) {
+                    $columns[$table][$row['Field']] = $row;
+                }
+            }
+            foreach ($requiredColumns as $column) {
+                if (!isset($columns[$table][$column])) {
+                    return false;
+                }
+            }
+        }
+        foreach ($enums as $table => $fields) {
+            foreach ($fields as $column => $values) {
+                $type = $columns[$table][$column]['Type'] ?? '';
+                foreach ($values as $value) {
+                    if (!str_contains($type, "'" . str_replace("'", "''", $value) . "'")) {
+                        return false;
+                    }
+                }
+                if ($table === 'records' && $column === 'status' && str_contains($type, "'Referred'")) {
+                    return false;
+                }
+            }
+        }
+        foreach ($nullable as $table => $fields) {
+            foreach ($fields as $column) {
+                if (($columns[$table][$column]['Null'] ?? '') !== 'YES') {
+                    return false;
+                }
+            }
+        }
+        foreach ($indexes as $table => $requiredIndexes) {
+            $rows = db()->query('SHOW INDEX FROM `' . $table . '`')->fetchAll();
+            $names = array_column($rows, 'Key_name');
+            foreach ($requiredIndexes as $index) {
+                if (!in_array($index, $names, true)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    } catch (Throwable $error) {
+        // Older installations retain the existing migration fallback.
+        return false;
+    }
+}
+
 function ensure_committee_reporting_schema(): void
 {
+    static $checked = false;
+    if ($checked) { return; }
+    $checked = true;
+    if (schema_structure_matches([
+        'committees' => ['committee_code'],
+        'committee_report_numbers' => ['record_id', 'committee_id', 'report_year', 'sequence_no'],
+    ])) { return; }
     try {
         db()->exec("ALTER TABLE committees ADD COLUMN committee_code VARCHAR(20) NULL AFTER name");
     } catch (Throwable $error) {
@@ -1889,6 +1977,11 @@ function ensure_division_chief_notes_schema(): bool
 
     if ($available !== null) {
         return $available;
+    }
+    if (schema_structure_matches([
+        'division_chief_notes' => ['user_id', 'record_id', 'note_text', 'reminder_at', 'completed_at', 'archived_at', 'created_at', 'updated_at'],
+    ], ['division_chief_notes' => ['idx_division_chief_notes_user_reminder']], [], ['division_chief_notes' => ['record_id']])) {
+        return $available = true;
     }
 
     try {
@@ -1949,8 +2042,25 @@ function ensure_division_chief_notes_schema(): bool
 
 function ensure_plenary_number_schema(): void
 {
+    static $checked = false;
+    if ($checked) { return; }
+    $checked = true;
+    if (schema_structure_matches([
+        'users' => ['role'],
+        'records' => ['status', 'proposed_ordinance_number', 'proposed_resolution_number', 'proposed_by_city_council_member',
+            'approved_ordinance_number', 'approved_resolution_number', 'plenary_session_date', 'plenary_approved_date',
+            'contact_number', 'client_email', 'plenary_print_title'],
+        'record_movements' => ['chief_remarks_updated_at', 'record_title', 'previous_title'],
+        'record_recipients' => ['record_id', 'title', 'name', 'position', 'office', 'address', 'contact_number', 'created_by', 'created_at'],
+        'record_division_receipts' => ['record_id', 'division_name', 'received_by', 'received_at'],
+        'record_attachments' => ['title'],
+    ], ['records' => ['uq_records_control_number']], [
+        'users' => ['role' => ['admin', 'city_secretary', 'division_chief', 'receiving_clerk', 'secretariat', 'division_staff',
+            'administrative_support', 'others', 'records_officer', 'staff', 'server_maintenance_staff', 'messengerial_support', 'lmis_data_entry']],
+        'records' => ['status' => all_statuses()],
+    ])) { return; }
     try {
-        db()->exec("ALTER TABLE users MODIFY role ENUM('admin', 'city_secretary', 'division_chief', 'receiving_clerk', 'secretariat', 'division_staff', 'administrative_support', 'others', 'records_officer', 'staff', 'server_maintenance_staff', 'messengerial_support') NOT NULL DEFAULT 'secretariat'");
+        db()->exec("ALTER TABLE users MODIFY role ENUM('admin', 'city_secretary', 'division_chief', 'receiving_clerk', 'secretariat', 'division_staff', 'administrative_support', 'others', 'records_officer', 'staff', 'server_maintenance_staff', 'messengerial_support', 'lmis_data_entry') NOT NULL DEFAULT 'secretariat'");
     } catch (Throwable $error) {
         // Existing databases may already have this role list, or the user may apply SQL manually.
     }
@@ -2113,6 +2223,12 @@ function ensure_plenary_number_schema(): void
         )");
     } catch (Throwable $error) {
         // Recipient storage can be created manually if the database account cannot create tables here.
+    }
+
+    try {
+        db()->exec("ALTER TABLE record_recipients ADD COLUMN office VARCHAR(180) NULL AFTER position");
+    } catch (Throwable $error) {
+        // Existing installations may already have the office column.
     }
 
     try {

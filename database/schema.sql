@@ -14,7 +14,9 @@ CREATE TABLE committee_terms (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
     start_year YEAR NOT NULL,
+    start_month TINYINT UNSIGNED NULL,
     end_year YEAR NOT NULL,
+    end_month TINYINT UNSIGNED NULL,
     is_current TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -36,6 +38,7 @@ CREATE TABLE city_officials (
     term_id INT NOT NULL,
     name VARCHAR(150) NOT NULL,
     position ENUM('Vice Mayor', 'City Councilor') NOT NULL DEFAULT 'City Councilor',
+    district ENUM('District 1', 'District 2', 'Ex Officio') NULL,
     officer_role ENUM('Presiding Officer', 'Presiding Officer Pro-Tempore', 'Majority Floor Leader', 'Assistant Majority Floor Leader', 'Minority Floor Leader', 'Assistant Minority Floor Leader', 'SK Federation President', 'IPMR Representative', 'Association of Barangay Captain President') NULL,
     sort_order INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -49,7 +52,7 @@ CREATE TABLE users (
     division_name VARCHAR(160) NULL,
     email VARCHAR(160) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'city_secretary', 'division_chief', 'receiving_clerk', 'secretariat', 'division_staff', 'administrative_support', 'others', 'records_officer', 'staff', 'server_maintenance_staff', 'messengerial_support') NOT NULL DEFAULT 'secretariat',
+    role ENUM('admin', 'city_secretary', 'division_chief', 'receiving_clerk', 'secretariat', 'division_staff', 'administrative_support', 'others', 'records_officer', 'staff', 'server_maintenance_staff', 'messengerial_support', 'lmis_data_entry') NOT NULL DEFAULT 'secretariat',
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -224,6 +227,9 @@ CREATE TABLE record_recipients (
     title VARCHAR(80) NULL,
     name VARCHAR(180) NOT NULL,
     position VARCHAR(180) NULL,
+    office VARCHAR(180) NULL,
+    delivered_at DATETIME NULL,
+    delivered_by INT NULL,
     address TEXT NULL,
     contact_number VARCHAR(80) NULL,
     created_by INT NULL,
@@ -301,3 +307,39 @@ INSERT INTO records (
 
 INSERT INTO record_movements (record_id, from_status, to_status, from_location, to_location, notes, updated_by)
 VALUES (1, NULL, 'Pending to the Committee', NULL, 'Records Receiving Desk', 'Initial record received and encoded.', 1);
+CREATE TABLE IF NOT EXISTS legislation_drafts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    record_id INT NULL,
+    term_id INT NULL,
+    committee_names TEXT NULL,
+    committee_ids TEXT NULL,
+    amendment_ids TEXT NULL,
+    kind ENUM('ordinance','resolution') NOT NULL,
+    number VARCHAR(255) NOT NULL,
+    title TEXT NOT NULL,
+    approved_date DATE NULL,
+    keywords VARCHAR(1000) NOT NULL,
+    category VARCHAR(255) NOT NULL,
+    author VARCHAR(1000) NOT NULL,
+    co_author VARCHAR(1000) NOT NULL DEFAULT '',
+    folder_code VARCHAR(255) NOT NULL,
+    original_name VARCHAR(255) NOT NULL,
+    stored_name VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    file_size INT NOT NULL,
+    updated_by INT NOT NULL,
+    revision INT NOT NULL DEFAULT 1,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY legislation_record_kind (record_id, kind),
+    UNIQUE KEY historical_number_term (term_id, kind, number)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS legislation_publications LIKE legislation_drafts;
+ALTER TABLE legislation_publications ADD COLUMN source_draft_id INT NULL, ADD UNIQUE KEY publication_source_draft (source_draft_id);
+
+CREATE TABLE IF NOT EXISTS legislation_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    kind ENUM('ordinance','resolution') NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    UNIQUE KEY legislation_category_kind_name (kind, name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
