@@ -53,14 +53,24 @@ if ($newStatus === 'Forwarded to the Messengerial Services') {
 }
 
 $role = current_user()['role'] ?? '';
+if (in_array($newStatus, publication_statuses(), true) && !can_manage_record_publication($record)) {
+    flash('Only the Administrator, City Secretary, or LMIS & Records Staff can update publication status after plenary approval.', 'error');
+    redirect($updateFormUrl);
+}
+if ($role === 'city_secretary' && can_manage_record_publication($record)
+    && !in_array($newStatus, publication_statuses(), true)) {
+    flash('Use For Publication or Published for publication updates.', 'error');
+    redirect($updateFormUrl);
+}
 if ($role !== 'admin' && ($record['document_type'] ?? '') === 'Certified Urgent'
     && can_manage_plenary_scheduling()
-    && !in_array($newStatus, ['For Plenary Session', 'Scheduled for Plenary', 'Disapproved', 'Approved in the Plenary'], true)) {
+    && !in_array($newStatus, array_merge(['For Plenary Session', 'Scheduled for Plenary', 'Disapproved', 'Approved in the Plenary'], publication_statuses()), true)) {
     flash('Certified Urgent records can only use plenary statuses at this stage.', 'error');
     redirect($updateFormUrl);
 }
 if (($record['status'] ?? '') === 'Approved in the Plenary'
-    && in_array($role, ['city_secretary', 'division_chief', 'secretariat', 'receiving_clerk'], true)) {
+    && in_array($role, ['city_secretary', 'division_chief', 'secretariat', 'receiving_clerk'], true)
+    && !in_array($newStatus, publication_statuses(), true)) {
     http_response_code(403);
     exit('Approved in the Plenary records can no longer be updated.');
 }
@@ -71,7 +81,8 @@ if ($role === 'administrative_support') {
         flash('Administrative Support can only update approved plenary records using post-plenary statuses.', 'error');
         redirect($updateFormUrl);
     }
-} elseif ($role !== 'admin' && in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified Urgent'], true) && in_array($newStatus, post_plenary_statuses(), true)) {
+} elseif ($role !== 'admin' && in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified Urgent'], true) && in_array($newStatus, post_plenary_statuses(), true)
+    && !($role === 'city_secretary' && in_array($newStatus, publication_statuses(), true))) {
     flash('Only Administrative Support can use post-plenary statuses.', 'error');
     redirect($updateFormUrl);
 }
@@ -276,6 +287,17 @@ if (in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified 
     }
 }
 
+$publishedOn = null;
+if ($newStatus === 'Published') {
+    $publishedOn = trim((string) ($_POST['published_on'] ?? ''));
+    if ($publishedOn === '' || (function_exists('mb_strlen') ? mb_strlen($publishedOn, 'UTF-8') : strlen($publishedOn)) > 255) {
+        flash('Please enter when the record was published (up to 255 characters).', 'error');
+        redirect($updateFormUrl);
+    }
+    $detailLabel = 'Date Published';
+    $detailValue = $publishedOn;
+}
+
 if ($detailLabel !== '' && $detailValue === '') {
     flash('Please complete the required field for this status: ' . $detailLabel . '.', 'error');
     redirect($updateFormUrl);
@@ -343,6 +365,9 @@ try {
         $approvedResolutionNumber = $approvedPlenaryType === 'resolution' ? $approvedPlenaryNumber : null;
         $update = $pdo->prepare('UPDATE records SET status = ?, approved_ordinance_number = ?, approved_resolution_number = ?, plenary_approved_date = ?, remarks = CASE WHEN ? <> "" THEN ? ELSE remarks END, updated_by = ? WHERE id = ?');
         $update->execute([$newStatus, $approvedOrdinanceNumber, $approvedResolutionNumber, $approvedPlenaryDate, $combinedNotes, $combinedNotes, current_user()['id'], $id]);
+    } elseif ($newStatus === 'Published') {
+        $update = $pdo->prepare('UPDATE records SET status = ?, published_on = ?, remarks = ?, updated_by = ? WHERE id = ?');
+        $update->execute([$newStatus, $publishedOn, $combinedNotes, current_user()['id'], $id]);
     } else {
         $update = $pdo->prepare('UPDATE records SET status = ?, remarks = CASE WHEN ? <> "" THEN ? ELSE remarks END, updated_by = ? WHERE id = ?');
         $update->execute([$newStatus, $combinedNotes, $combinedNotes, current_user()['id'], $id]);

@@ -34,4 +34,4 @@ try {
 }
 audit_log('transmittals_completed', 'All recipient transmittals confirmed printed; forwarded to Messengerial Services.', 'record', $id);
 flash('Transmittals marked complete. The record has been forwarded to Messengerial Services.');
-redirect('/messengerial.php');
+redirect('/messengerial.php?tab=forwarded');

@@ -69,6 +69,14 @@ if (($record['document_type'] ?? '') === 'Committee Referrals'
 if ((current_user()['role'] ?? '') === 'admin') {
     $statuses = all_statuses();
 }
+if ((current_user()['role'] ?? '') === 'city_secretary' && can_manage_record_publication($record)) {
+    $statuses = publication_statuses();
+}
+if (can_manage_record_publication($record)) {
+    $statuses = array_values(array_unique(array_merge($statuses, publication_statuses())));
+} else {
+    $statuses = array_values(array_diff($statuses, publication_statuses()));
+}
 $committees = db()->query('SELECT id, name FROM committees ORDER BY name')->fetchAll();
 $committeeRows = ($record['document_type'] ?? '') === 'Committee Referrals'
     ? record_committee_rows((int) $record['id'], !empty($record['committee_id']) ? (int) $record['committee_id'] : null)
@@ -200,6 +208,9 @@ require __DIR__ . '/../app/partials/header.php';
         </label>
         <label class="status-extra" data-status="Approved in the Plenary">Date Approved
             <input type="date" name="approved_plenary_date">
+        </label>
+        <label class="status-extra" data-status="Published">Date Published
+            <input type="text" name="published_on" maxlength="255" placeholder="Example: October 7, 2026" value="<?= e($record['published_on'] ?? '') ?>">
         </label>
         <label class="status-extra" data-status="Others">Details
             <input name="other_status_detail" placeholder="Specify the status detail">

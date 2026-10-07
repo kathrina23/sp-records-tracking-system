@@ -2,6 +2,9 @@
 
 require_once __DIR__ . '/../app/auth.php';
 require_login();
+if ((current_user()['role'] ?? '') === 'lmis_data_entry') {
+    redirect('/elibrary.php');
+}
 ensure_plenary_number_schema();
 
 $userRole = current_user()['role'] ?? '';
@@ -139,11 +142,10 @@ if ($userRole === 'secretariat' && $activeTab !== 'certified') {
 }
 if ($userRole === 'administrative_support') {
     $where[] = "r.document_type IN ('Committee Referrals', 'Certified Urgent')";
-    $where[] = "r.status IN ('For Plenary Session', 'Approved in the Plenary', 'For Vice Mayor''s Signature', 'Returned from The Vice Mayor', 'Forwarded for Admin/Mayor Signature', 'Returned from Admin/Mayor', 'Veto', 'Lapse into Ordinance', 'Forwarded to the Messengerial Services', 'For Transmittal', 'Completed')";
+    $where[] = "r.status IN ('For Plenary Session', 'Approved in the Plenary', 'For Publication', 'Published', 'For Vice Mayor''s Signature', 'Returned from The Vice Mayor', 'Forwarded for Admin/Mayor Signature', 'Returned from Admin/Mayor', 'Veto', 'Lapse into Ordinance', 'Forwarded to the Messengerial Services', 'For Transmittal', 'Completed')";
 }
 if ($userRole === 'messengerial_support') {
-    $where[] = 'r.status = ?';
-    $params[] = 'Forwarded to the Messengerial Services';
+    $where[] = "r.status IN ('For Transmittal', 'Forwarded to the Messengerial Services')";
 }
 
 $secretariatActionSelect = $userRole === 'secretariat'
@@ -189,9 +191,31 @@ if ($records) {
     }
 }
 
+$showAssignmentDetails = in_array($userRole, ['admin', 'city_secretary', 'division_chief', 'secretariat', 'division_staff'], true);
+$committeeRowsByRecord = null;
+$committeeAssignments = [];
+if ($records) {
+    try {
+        $stmt = db()->prepare("SELECT rc.record_id, rc.committee_id, rc.sequence_no, c.name committee_name
+            FROM record_committees rc INNER JOIN committees c ON c.id=rc.committee_id
+            WHERE rc.record_id IN ($attachmentPlaceholders) ORDER BY rc.record_id, rc.sequence_no, c.name");
+        $stmt->execute($recordIds);
+        $committeeRowsByRecord = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $committeeRowsByRecord[(int) $row['record_id']][] = $row;
+        }
+    } catch (Throwable $error) {
+        // Preserve the existing fallback for older databases.
+    }
+}
 foreach ($records as &$recordItem) {
     if (($recordItem['document_type'] ?? '') === 'Committee Referrals') {
-        $committeeRows = record_committee_rows((int) $recordItem['id'], !empty($recordItem['committee_id']) ? (int) $recordItem['committee_id'] : null);
+        $committeeRows = $committeeRowsByRecord === null
+            ? record_committee_rows((int) $recordItem['id'], !empty($recordItem['committee_id']) ? (int) $recordItem['committee_id'] : null)
+            : ($committeeRowsByRecord[(int) $recordItem['id']] ?? []);
+        if (!$committeeRows && !empty($recordItem['committee_id']) && !empty($recordItem['committee_name'])) {
+            $committeeRows = [['committee_id' => (int) $recordItem['committee_id'], 'sequence_no' => 1, 'committee_name' => $recordItem['committee_name']]];
+        }
         if ($committeeRows) {
             $recordItem['committee_names'] = implode('; ', array_map(fn ($row) => $row['committee_name'], $committeeRows));
             $recordItem['lead_committee_name'] = lead_committee_name_from_rows($committeeRows);
@@ -199,10 +223,27 @@ foreach ($records as &$recordItem) {
             $recordItem['committee_names'] = $recordItem['committee_name'] ?? '';
             $recordItem['lead_committee_name'] = '';
         }
-        $recordAssignments = record_assignment_names(
-            (int) $recordItem['id'],
-            !empty($recordItem['committee_id']) ? (int) $recordItem['committee_id'] : null
-        );
+        $recordAssignments = ['divisions' => [], 'secretariats' => []];
+        if ($showAssignmentDetails) {
+            foreach ($committeeRows as $committeeRow) {
+                $id = (int) $committeeRow['committee_id'];
+                if (!isset($committeeAssignments[$id])) {
+                    $chief = division_chief_for_committee($id);
+                    $names = [];
+                    try {
+                        $stmt = db()->prepare('SELECT u.name FROM committee_secretariats a INNER JOIN users u ON u.id=a.user_id WHERE a.committee_id=? AND u.is_active=1 ORDER BY u.name');
+                        $stmt->execute([$id]);
+                        $names = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                    } catch (Throwable $error) {
+                        // Keep division information available if assignments are unavailable.
+                    }
+                    $committeeAssignments[$id] = ['divisions' => $chief ? [$chief['name']] : [], 'secretariats' => $names];
+                }
+                foreach (['divisions', 'secretariats'] as $field) {
+                    $recordAssignments[$field] = array_values(array_unique(array_merge($recordAssignments[$field], $committeeAssignments[$id][$field])));
+                }
+            }
+        }
         $recordItem['division_names'] = implode('; ', $recordAssignments['divisions']);
         $recordItem['secretariat_names'] = implode('; ', $recordAssignments['secretariats']);
     }
@@ -226,7 +267,6 @@ $statuses = match ($activeTab) {
     'documents', 'transmittals', 'memoranda' => administrative_statuses(),
     default => array_values(array_unique(array_merge(referral_statuses(), administrative_statuses()))),
 };
-$showAssignmentDetails = in_array($userRole, ['admin', 'city_secretary', 'division_chief', 'secretariat', 'division_staff'], true);
 $committeeActionCount = action_required_count_for_type('Committee Referrals');
 $administrativeDocumentsActionCount = $canUseAdministrativeDocumentsTab
     ? action_required_count_for_type('Transmittals, Letters and Endorsements') + action_required_count_for_type('Memorandum, Executive Order, Directive Order and Etc.')

@@ -24,13 +24,21 @@ require __DIR__ . '/../app/partials/header.php';
             </form>
             <p id="tracking-help" class="landing-help">Use the communication number provided when your request was received. No sign-in required.</p>
         </article>
+        <article class="landing-card public-card legislation-card">
+            <h2>Search Legislation</h2>
+            <p class="muted">Explore approved ordinances and resolutions in the public E-Library.</p>
+            <div class="public-search-form">
+                <a class="btn" href="<?= url('/legislation.php') ?>">Search Legislation <span aria-hidden="true">&rarr;</span></a>
+            </div>
+            <p class="landing-help">Find legislation by keyword, title, number, category, or author. No sign-in required.</p>
+        </article>
     </div>
     <button class="landing-about" type="button" id="open-system-about" aria-haspopup="dialog" aria-controls="system-about">
         About the Legislative Records Tracking System <span aria-hidden="true">&rarr;</span>
     </button>
     <dialog id="system-about" class="system-about-dialog" aria-labelledby="system-about-title">
         <form method="dialog" class="system-about-close">
-            <button type="submit" aria-label="Close system overview" autofocus>&times;</button>
+            <button type="submit" class="window-close-control" aria-label="Close system overview" autofocus>X</button>
         </form>
         <p class="system-about-city">SANGGUNIANG PANLUNGSOD &middot; CAGAYAN DE ORO CITY</p>
         <h2 id="system-about-title">About the Legislative Records Tracking System</h2>

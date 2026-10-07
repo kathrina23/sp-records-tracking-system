@@ -86,7 +86,7 @@
             }
         };
 
-        const showPage = (page, shouldScroll = false) => {
+        const showPage = (page) => {
             currentPage = Math.min(totalPages, Math.max(1, page));
             const start = (currentPage - 1) * rowsPerPage;
             const end = start + rowsPerPage;
@@ -96,12 +96,6 @@
             });
             renderPagination();
 
-            if (shouldScroll) {
-                (table.closest('.table-wrap') || table).scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start',
-                });
-            }
         };
 
         pagination.addEventListener('click', (event) => {
@@ -109,7 +103,7 @@
             if (!button) {
                 return;
             }
-            showPage(Number.parseInt(button.dataset.page || '1', 10), true);
+            showPage(Number.parseInt(button.dataset.page || '1', 10));
         });
 
         table.dataset.autoPaginated = 'true';

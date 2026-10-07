@@ -6,9 +6,9 @@
         'record_view.php', 'record_form.php', 'record_update.php',
         'record_update_edit.php', 'plenary_number_form.php', 'committee_roster.php',
         'record_attachments_view.php', 'record_attachments_manage.php', 'log_history.php',
-        'record_recipients.php',
+        'record_recipients.php', 'legislation_detail.php',
     ]);
-    const adminPages = new Set(['users.php', 'officials.php', 'committees.php', 'terms.php']);
+    const adminPages = new Set(['users.php', 'councilors.php', 'committees.php', 'terms.php']);
     // Only render pages here, never logout, downloads, or action endpoints.
     const navigationPages = new Set([
         ...popupPages, ...adminPages, 'dashboard.php', 'records.php', 'messengerial.php',
@@ -49,8 +49,10 @@
         dialog.setAttribute('aria-label', title);
         const close = document.createElement('button');
         close.type = 'button';
-        close.className = 'btn secondary system-window-close';
-        close.textContent = 'Close window';
+        close.className = 'system-window-close window-close-control';
+        close.textContent = 'X';
+        close.setAttribute('aria-label', 'Close window');
+        close.title = 'Close window';
         const frame = document.createElement('iframe');
         frame.className = 'system-window-frame';
         frame.title = title;
@@ -81,7 +83,7 @@
                 const childLink = childEvent.target.closest('a[href]');
                 if (!childLink || childEvent.defaultPrevented || childEvent.button !== 0
                     || childEvent.ctrlKey || childEvent.metaKey || childEvent.shiftKey || childEvent.altKey) return;
-                if (childLink.matches('.modal-close, .record-cancel-action')
+                if (childLink.matches('.modal-close, .window-close-control, .record-cancel-action')
                     || /^(Cancel|Close|Back to Record|Back to Committees)$/i.test(childLink.textContent.trim())) {
                     childEvent.preventDefault();
                     childEvent.stopImmediatePropagation();
@@ -97,7 +99,7 @@
         });
         dialog.addEventListener('close', () => {
             dialog.remove();
-            link.focus();
+            link.focus({preventScroll: true});
             if (updated) {
                 document.dispatchEvent(new Event('system-window-updated'));
                 // Never reload a parent containing a draft or selected files.

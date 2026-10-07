@@ -382,6 +382,9 @@ require __DIR__ . '/../app/partials/header.php';
             <?php if (($record['approved_resolution_number'] ?? '') !== ''): ?>
                 <div><strong>Resolution Number</strong><br><?= e($record['approved_resolution_number']) ?></div>
             <?php endif; ?>
+            <?php if (!empty($record['published_on'])): ?>
+                <div><strong>Date Published</strong><br><?= e($record['published_on']) ?></div>
+            <?php endif; ?>
             <?php if (($record['plenary_approved_date'] ?? '') !== ''): ?>
                 <div><strong>Date Approved</strong><br><span class="approved-date-highlight"><?= e(display_date($record['plenary_approved_date'])) ?></span></div>
             <?php endif; ?>

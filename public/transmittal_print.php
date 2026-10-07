@@ -47,7 +47,7 @@ $approvedDate = trim((string) ($record['plenary_approved_date'] ?? ''));
         <h1>TRANSMITTAL</h1>
         <p class="center"><?= e(display_date(date('Y-m-d'))) ?></p>
         <p>Respectfully forwarded to <strong><?= e($recipientName) ?>, <?= e($recipient['position']) ?></strong>,
-        <?= nl2br(e($recipient['address'])) ?>, the herein copy of <strong><?= e($documentLabel) ?></strong><?php if ($approvedDate !== ''): ?>, passed by the City Council of Cagayan de Oro City on <strong><?= e(display_date($approvedDate)) ?></strong><?php endif; ?>, to wit:</p>
+        <?php if (!empty($recipient['office'])): ?><?= e($recipient['office']) ?>, <?php endif; ?><?= nl2br(e($recipient['address'])) ?>, the herein copy of <strong><?= e($documentLabel) ?></strong><?php if ($approvedDate !== ''): ?>, passed by the City Council of Cagayan de Oro City on <strong><?= e(display_date($approvedDate)) ?></strong><?php endif; ?>, to wit:</p>
         <div class="document-title"><?= nl2br(e(display_record_title($record['title']))) ?></div>
         <p class="information">For your information.</p>
         <div class="signature"><strong data-signatory-name>RODERICO V. DUMAU, JR.</strong><br><span data-signatory-position>Chief Administrative Officer</span></div>
@@ -57,7 +57,8 @@ $approvedDate = trim((string) ($record['plenary_approved_date'] ?? ''));
         <div class="receipt-box">
             <p class="date-line">Date: ____ / ____ / ______ &nbsp; Time: __________</p>
             <h2>ACKNOWLEDGMENT RECEIPT</h2>
-            <p>Office / Organization: <strong><?= e($recipientName) ?></strong><br>
+            <p>Name: <strong><?= e($recipientName) ?></strong><br>
+            Office / Organization: <strong><?= e($recipient['office'] ?? '') ?></strong><br>
             Position: <strong><?= e($recipient['position']) ?></strong><br>
             Address: <strong><?= nl2br(e($recipient['address'])) ?></strong></p>
             <p>I, ________________________________________, hereby acknowledge that I have received the copy of <strong><?= e($documentLabel) ?></strong> from the Office of the City Council of Cagayan de Oro City.</p>
@@ -69,7 +70,8 @@ $approvedDate = trim((string) ($record['plenary_approved_date'] ?? ''));
         <section class="delivery-slip">
             <p><strong><?= e($copy) ?></strong></p>
             <p>Date: ____ / ____ / ______ &nbsp; Time: __________</p>
-            <p>Office / Organization: <strong><?= e($recipientName) ?></strong><br>
+            <p>Name: <strong><?= e($recipientName) ?></strong><br>
+            Office / Organization: <strong><?= e($recipient['office'] ?? '') ?></strong><br>
             Position: <strong><?= e($recipient['position']) ?></strong><br>
             Address: <strong><?= nl2br(e($recipient['address'])) ?></strong><br>
             Document: <strong><?= e($documentLabel) ?></strong></p>

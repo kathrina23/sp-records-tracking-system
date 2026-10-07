@@ -81,7 +81,7 @@ $copies = $isACommunication
 <body class="communication-qr-print-page" data-print-copy="both">
     <div class="qr-print-toolbar actions">
         <button class="btn" type="button" onclick="printQrCopy('<?= $isACommunication ? 'attachment' : 'both' ?>')">Print QR</button>
-        <button class="btn danger" type="button" onclick="window.close()">Close</button>
+        <button class="window-close-control" type="button" onclick="window.close()" aria-label="Close window">X</button>
     </div>
 
     <main class="qr-print-pages">

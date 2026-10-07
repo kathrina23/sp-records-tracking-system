@@ -11,7 +11,7 @@ if (!$record) { http_response_code(404); exit('Record not found.'); }
 if (!can_manage_transmittal_recipients($record)) {
     http_response_code(403); exit('You are not allowed to manage recipients for this record.');
 }
-$rows = [['name' => '', 'position' => '', 'address' => '']];
+$rows = [['name' => '', 'position' => '', 'office' => '', 'address' => '']];
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
@@ -42,21 +42,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flash($deleted ? 'Recipient deleted successfully.' : 'Recipient not found or already deleted.', $deleted ? 'success' : 'error');
         redirect('/record_recipients.php?record_id=' . $recordId);
     }
-    $submitted = $_POST['recipients'] ?? [];
+    $submitted = isset($_POST['recipients_json'])
+        ? (is_string($_POST['recipients_json']) ? json_decode($_POST['recipients_json'], true) : null)
+        : ($_POST['recipients'] ?? []);
     $rows = [];
-    if (!is_array($submitted) || count($submitted) < 1 || count($submitted) > 50) {
-        $error = 'Please add between 1 and 50 recipients at a time.';
+    if (!is_array($submitted) || count($submitted) < 1) {
+        $error = 'Please add at least one recipient.';
     } else {
         foreach ($submitted as $row) {
             $clean = [];
-            foreach (['name', 'position', 'address'] as $field) {
+            foreach (['name', 'position', 'office', 'address'] as $field) {
                 $clean[$field] = is_array($row) && is_string($row[$field] ?? null) ? trim($row[$field]) : '';
             }
             $rows[] = $clean;
             if (in_array('', $clean, true)) {
-                $error = 'Please complete the name, position, and address for every recipient.';
-            } elseif (strlen($clean['name']) > 180 || strlen($clean['position']) > 180 || strlen($clean['address']) > 5000) {
-                $error = 'Names and positions must be at most 180 bytes, and addresses at most 5,000 bytes.';
+                $error = 'Please complete the name, position, office, and address for every recipient.';
+            } elseif (strlen($clean['name']) > 180 || strlen($clean['position']) > 180 || strlen($clean['office']) > 180 || strlen($clean['address']) > 5000) {
+                $error = 'Names, positions, and offices must be at most 180 bytes, and addresses at most 5,000 bytes.';
             }
         }
     }
@@ -72,9 +74,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 flash('This record is no longer available for recipient changes.', 'error');
                 redirect('/messengerial.php');
             }
-            $insert = $pdo->prepare('INSERT INTO record_recipients (record_id, name, position, address, created_by) VALUES (?, ?, ?, ?, ?)');
+            $insert = $pdo->prepare('INSERT INTO record_recipients (record_id, name, position, office, address, created_by) VALUES (?, ?, ?, ?, ?, ?)');
             foreach ($rows as $row) {
-                $insert->execute([$recordId, $row['name'], $row['position'], $row['address'], current_user()['id']]);
+                $insert->execute([$recordId, $row['name'], $row['position'], $row['office'], $row['address'], current_user()['id']]);
             }
             audit_log('record_recipient_add', 'Added ' . count($rows) . ' recipients to record ' . $record['control_number'] . '.', 'record', $recordId);
             $pdo->commit();
@@ -86,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('/record_recipients.php?record_id=' . $recordId);
     }
 }
-if (!$rows) { $rows = [['name' => '', 'position' => '', 'address' => '']]; }
+if (!$rows) { $rows = [['name' => '', 'position' => '', 'office' => '', 'address' => '']]; }
 $recipientsStmt = db()->prepare('SELECT * FROM record_recipients WHERE record_id = ? ORDER BY id ASC');
 $recipientsStmt->execute([$recordId]);
 $recipients = $recipientsStmt->fetchAll();
@@ -99,7 +101,7 @@ require __DIR__ . '/../app/partials/header.php';
 
     </div>
 </div>
-<section class="panel"><h2><?= e(display_record_title($record['title'])) ?></h2><p>Add each recipient's name, position, and address. Each recipient receives a separate transmittal and receipt sheet.</p></section>
+<section class="panel"><h2><?= e(display_record_title($record['title'])) ?></h2><p>Add each recipient's name, position, office, and address. Each recipient receives a separate transmittal and receipt sheet.</p></section>
 <?php if ($error !== ''): ?><div class="flash error" role="alert"><?= e($error) ?></div><?php endif; ?>
 <form method="post" class="panel" style="margin-top:16px">
     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
@@ -110,6 +112,7 @@ require __DIR__ . '/../app/partials/header.php';
             <legend>Recipient</legend>
             <label>Name<input name="recipients[<?= $index ?>][name]" maxlength="180" required value="<?= e($row['name']) ?>" placeholder="Include title, if applicable"></label>
             <label>Position<input name="recipients[<?= $index ?>][position]" maxlength="180" required value="<?= e($row['position']) ?>"></label>
+            <label>Office<input name="recipients[<?= $index ?>][office]" maxlength="180" required value="<?= e($row['office']) ?>"></label>
             <label class="full">Address<textarea name="recipients[<?= $index ?>][address]" maxlength="5000" rows="3" required><?= e($row['address']) ?></textarea></label>
             <div class="recipient-entry-actions full"><button type="button" class="btn secondary remove-recipient">Remove Recipient</button></div>
         </fieldset>
@@ -119,9 +122,9 @@ require __DIR__ . '/../app/partials/header.php';
 </form>
 <section class="panel" style="margin-top:16px">
     <div class="panel-title-row" style="flex-wrap:wrap;gap:12px"><h2>Saved Recipients (<?= count($recipients) ?>)</h2><?php if ($recipients): ?><a class="btn" target="_blank" rel="noopener" href="<?= url('/transmittal_print.php?record_id=') ?><?= $recordId ?>">Print Transmittal</a><?php endif; ?></div><p class="muted">Print Transmittal includes all saved recipients in one continuous Folio (8.5 &times; 13 inches) document.</p>
-    <div class="table-wrap"><table><thead><tr><th>Name</th><th>Position</th><th>Address</th><th>Action</th></tr></thead><tbody>
+    <div class="table-wrap"><table><thead><tr><th>Name</th><th>Position</th><th>Office</th><th>Address</th><th>Action</th></tr></thead><tbody>
     <?php foreach ($recipients as $recipient): ?>
-        <tr><td><?= e(trim(($recipient['title'] ?? '') . ' ' . $recipient['name'])) ?></td><td><?= e($recipient['position']) ?></td><td><?= nl2br(e($recipient['address'])) ?></td>
+        <tr><td><?= e(trim(($recipient['title'] ?? '') . ' ' . $recipient['name'])) ?></td><td><?= e($recipient['position']) ?></td><td><?= e($recipient['office'] ?? '') ?></td><td><?= nl2br(e($recipient['address'])) ?></td>
         <td>
             <form method="post" class="recipient-delete-form">
                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
@@ -133,7 +136,7 @@ require __DIR__ . '/../app/partials/header.php';
         </td>
         </tr>
     <?php endforeach; ?>
-    <?php if (!$recipients): ?><tr><td colspan="4">No recipients added yet.</td></tr><?php endif; ?>
+    <?php if (!$recipients): ?><tr><td colspan="5">No recipients added yet.</td></tr><?php endif; ?>
     </tbody></table></div>
 </section>
 <script>
@@ -149,10 +152,8 @@ require __DIR__ . '/../app/partials/header.php';
             entry.querySelector('.remove-recipient').disabled = entries.length === 1;
         });
         entries[entries.length - 1].querySelector('.recipient-entry-actions').append(formActions);
-        add.disabled = entries.length >= 50;
     };
     add.addEventListener('click', () => {
-        if (rows.children.length >= 50) return;
         const entry = rows.firstElementChild.cloneNode(true);
         entry.querySelector('.recipient-form-actions')?.remove();
         entry.querySelectorAll('input, textarea').forEach(field => {
@@ -170,6 +171,18 @@ require __DIR__ . '/../app/partials/header.php';
             update();
             add.focus();
         }
+    });
+    // A single JSON field prevents PHP max_input_vars from truncating large lists.
+    add.closest('form').addEventListener('submit', event => {
+        const payload = Array.from(rows.querySelectorAll('.recipient-entry'), entry =>
+            Object.fromEntries(Array.from(entry.querySelectorAll('input, textarea'), field =>
+                [field.name.match(/\[([^\]]+)\]$/)[1], field.value])));
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'recipients_json';
+        input.value = JSON.stringify(payload);
+        event.target.append(input);
+        rows.querySelectorAll('input, textarea').forEach(field => { field.disabled = true; });
     });
     update();
 })();

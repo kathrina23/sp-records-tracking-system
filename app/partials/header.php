@@ -12,6 +12,8 @@ $dashboardActive = in_array($currentPage, ['dashboard.php', 'messengerial.php'],
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="<?= url('/assets/scroll-position.js?v=') ?><?= (int) filemtime(__DIR__ . '/../../public/assets/scroll-position.js') ?>"></script>
+    <script src="<?= url('/assets/scroll-position.js?v=') ?><?= (int) filemtime(__DIR__ . '/../../public/assets/scroll-position.js') ?>"></script>
     <title><?= e(APP_NAME) ?></title>
     <script>
     // Apply before painting, including after form submissions inside the window.
@@ -21,7 +23,7 @@ $dashboardActive = in_array($currentPage, ['dashboard.php', 'messengerial.php'],
     </script>
     <link rel="stylesheet" href="<?= url('/assets/styles.css?v=') ?><?= (int) filemtime(__DIR__ . '/../../public/assets/styles.css') ?>">
 </head>
-<body<?= !empty($publicLanding) ? ' class="public-landing-page"' : (!empty($loginBackground) ? ' class="login-background-page"' : '') ?>>
+<body<?= !empty($publicLanding) ? ' class="public-landing-page"' : (!empty($loginBackground) ? ' class="login-background-page"' : (!empty($legislationBackground) ? ' class="legislation-background-page"' : '')) ?>>
 <?php if ($user): ?>
 <?php $dashboardActionRequiredCount = dashboard_action_required_count(); ?>
 <aside class="sidebar">
@@ -37,6 +39,11 @@ $dashboardActive = in_array($currentPage, ['dashboard.php', 'messengerial.php'],
             <?php endif; ?>
         </a>
         <a href="<?= url('/records.php') ?>"<?= $recordsActive ? ' class="active" aria-current="page"' : '' ?>>Records</a>
+        <?php if (($user['role'] ?? '') === 'lmis_data_entry'): ?>
+            <a href="<?= url('/elibrary.php') ?>"<?= $navCurrent(array_merge(['elibrary.php', 'elibrary_form.php'], empty($historical) ? ['elibrary_review.php'] : [])) ?>>E-Library Posting</a>
+            <a href="<?= url('/e-library_old.php') ?>"<?= $navCurrent(array_merge(['e-library_old.php'], !empty($historical) ? ['elibrary_review.php'] : [])) ?>>Ordinances &amp; Resolutions</a>
+        <?php endif; ?>
+        <a href="<?= url('/legislation.php') ?>"<?= $navCurrent(['legislation.php']) ?>>Search Legislation</a>
         <?php if (can_create_records()): ?>
             <a href="<?= url('/record_form.php') ?>"<?= $navCurrent(['record_form.php']) ?>>New Record</a>
         <?php endif; ?>
@@ -49,6 +56,7 @@ $dashboardActive = in_array($currentPage, ['dashboard.php', 'messengerial.php'],
                     'secretariat',
                     'division_staff',
                     'administrative_support',
+                    'lmis_data_entry',
                     'messengerial_support',
                     'others',
                     'server_maintenance_staff',
@@ -64,19 +72,29 @@ $dashboardActive = in_array($currentPage, ['dashboard.php', 'messengerial.php'],
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
-        <?php if (can_access_management_pages() || can_manage_assignments() || can_manage_division_chief_assignments() || can_manage_users()): ?>
+        <?php if (can_view_terms() || can_access_management_pages() || can_manage_elibrary_data()): ?>
+            <div class="nav-section">
+                <span>Legislative Setup</span>
+                <?php if (can_view_terms()): ?>
+                    <a href="<?= url('/terms.php') ?>"<?= $navCurrent(['terms.php']) ?>>Terms</a>
+                <?php endif; ?>
+                <?php if (can_access_management_pages()): ?>
+                    <a href="<?= url('/councilors.php') ?>"<?= $navCurrent(['councilors.php']) ?>>City Councilors</a>
+                    <a href="<?= url('/committees.php') ?>"<?= $navCurrent(['committees.php']) ?>>Standing Committees</a>
+                <?php endif; ?>
+                <?php if (can_manage_elibrary_data()): ?>
+                    <a href="<?= url('/elibrary_categories.php') ?>"<?= $navCurrent(['elibrary_categories.php']) ?>>E-Library Data Entry</a>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+        <?php if (can_manage_assignments() || can_manage_division_chief_assignments() || can_manage_users()): ?>
             <div class="nav-section">
                 <span>Management</span>
-                <?php if (can_access_management_pages()): ?>
-                    <a href="<?= url('/committees.php') ?>"<?= $navCurrent(['committees.php']) ?>>Committees</a>
-                    <a href="<?= url('/terms.php') ?>"<?= $navCurrent(['terms.php']) ?>>Terms</a>
-                    <a href="<?= url('/officials.php') ?>"<?= $navCurrent(['officials.php']) ?>>Officials Assignment</a>
-                <?php endif; ?>
                 <?php if (can_manage_assignments()): ?>
                     <a href="<?= url('/secretariat_assignments.php') ?>"<?= $navCurrent(['secretariat_assignments.php']) ?>>Secretariat Assignments</a>
                 <?php endif; ?>
                 <?php if (can_manage_division_chief_assignments()): ?>
-                    <a href="<?= url('/division_chief_assignments.php') ?>"<?= $navCurrent(['division_chief_assignments.php']) ?>>Committee Assignment</a>
+                    <a href="<?= url('/division_chief_assignments.php') ?>"<?= $navCurrent(['division_chief_assignments.php']) ?>>Staff Committee Assignment</a>
                 <?php endif; ?>
                 <?php if (can_manage_users()): ?>
                     <a href="<?= url('/users.php') ?>"<?= $navCurrent(['users.php']) ?>>User Creation</a>

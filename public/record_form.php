@@ -185,6 +185,11 @@ $recordFormDocumentTypes = $documentTypes;
 $recordFormStatusOptions = is_administrative_document_type($record['document_type'] ?? '')
     ? administrative_statuses()
     : referral_statuses();
+$recordFormStatusOptions = array_values(array_filter(
+    $recordFormStatusOptions,
+    static fn (string $status): bool => !in_array($status, publication_statuses(), true)
+        || $status === ($record['status'] ?? '')
+));
 if (!can_manage_plenary_scheduling()) {
     $recordFormStatusOptions = array_values(array_filter(
         $recordFormStatusOptions,

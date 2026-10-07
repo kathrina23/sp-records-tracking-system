@@ -69,7 +69,7 @@ function setup() {
 for (const page of ['record_attachments_view.php', 'record_attachments_manage.php',
     'record_view.php', 'record_form.php?id=2', 'record_update.php', 'record_update_edit.php',
     'plenary_number_form.php', 'committee_roster.php', 'log_history.php', 'record_recipients.php',
-    'users.php?edit=1', 'officials.php?edit=1', 'committees.php?edit=1', 'terms.php?edit=1']) {
+    'users.php?edit=1', 'councilors.php?edit=1', 'committees.php?edit=1', 'terms.php?edit=1', 'legislation_detail.php?id=1']) {
     const app = setup();
     app.fields[0].value = 'Draft title';
     app.fields[1].value = 'Unfinished remarks';
