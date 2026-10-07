@@ -4,6 +4,15 @@ $stmt = db()->prepare('SELECT * FROM legislation_publications WHERE id=?');
 $stmt->execute([(int) ($_GET['id'] ?? 0)]);
 $entry = $stmt->fetch();
 if (!$entry) { http_response_code(404); exit('Published legislation not found.'); }
+$trackHistory = [];
+if (!empty($entry['record_id'])) {
+    $historyStmt = db()->prepare('SELECT created_at, to_status FROM record_movements WHERE record_id=? ORDER BY created_at ASC, id ASC');
+    $historyStmt->execute([(int) $entry['record_id']]);
+    $trackHistory = $historyStmt->fetchAll();
+}
+if (!$trackHistory && !empty($entry['approved_date'])) {
+    $trackHistory[] = ['created_at' => $entry['approved_date'], 'to_status' => 'Approved in the Plenary'];
+}
 $termName = '';
 if ($entry['term_id']) {
     $termStmt = db()->prepare('SELECT name FROM committee_terms WHERE id=?');
@@ -40,6 +49,18 @@ require __DIR__ . '/../app/partials/header.php';
         <?php if ($termName): ?><h2 class="legislation-detail-label">Term:</h2><p><?= e($termName) ?></p><?php endif; ?>
         <?php if ($entry['committee_names']): ?><h2 class="legislation-detail-label">Committee(s):</h2><p><?= e($entry['committee_names']) ?></p><?php endif; ?>
         <h2 class="legislation-detail-label">Legislative Status:</h2><p>Approved in the Plenary · <?= e(display_date($entry['approved_date'] ?? '')) ?></p>
+        <h2 class="legislation-detail-label">Track History</h2>
+        <div class="table-wrap">
+            <table class="legislation-track-history">
+                <thead><tr><th scope="col">Date</th><th scope="col">Status</th></tr></thead>
+                <tbody>
+                    <?php foreach ($trackHistory as $movement): ?>
+                        <tr><td><?= e(display_date($movement['created_at'] ?? '')) ?></td><td><?= e($movement['to_status'] ?? '') ?></td></tr>
+                    <?php endforeach; ?>
+                    <?php if (!$trackHistory): ?><tr><td colspan="2">No tracking history is available.</td></tr><?php endif; ?>
+                </tbody>
+            </table>
+        </div>
         <?php $renderDocument(); ?>
     </div>
     <div role="tabpanel" id="panel-information" aria-labelledby="tab-information" tabindex="0" hidden>

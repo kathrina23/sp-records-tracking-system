@@ -190,6 +190,26 @@ try {
     check(!in_array($tag . ' Managed', legislation_categories('resolution'), true), 'Category leaked across legislation types');
     [$status, $body] = request('/elibrary_categories.php', $categoryData);
     check($status === 200 && str_contains($body, 'already exists'), 'Duplicate category accepted');
+    $categoryLookup = db()->prepare('SELECT id FROM legislation_categories WHERE kind=? AND name=?');
+    $categoryLookup->execute(['ordinance', $tag . ' Managed']);
+    $managedCategoryId = (int) $categoryLookup->fetchColumn();
+    [$status, $body] = request('/elibrary_categories.php?edit=' . $managedCategoryId);
+    check($status === 200 && str_contains($body, 'Save Category') && str_contains($body, $tag . ' Managed'), 'Category edit form failed');
+    $updateCategory = ['csrf_token' => token($body), 'action' => 'update', 'category_id' => $managedCategoryId, 'name' => $tag . ' Public Services'];
+    [$status, $body] = request('/elibrary_categories.php', $updateCategory);
+    check($status === 200 && str_contains($body, 'already exists'), 'Duplicate category rename accepted');
+    [$status] = request('/elibrary_categories.php', array_replace($updateCategory, ['csrf_token' => 'invalid']));
+    check($status === 419, 'Category edit missing CSRF protection');
+    [$status] = request('/elibrary_categories.php', array_replace($updateCategory, ['name' => $tag . ' Renamed', 'kind' => 'resolution']));
+    check($status === 302 && in_array($tag . ' Renamed', legislation_categories('ordinance'), true), 'Category rename failed');
+    check(!in_array($tag . ' Renamed', legislation_categories('resolution'), true), 'Category edit changed its legislation type');
+    $deleteCategory = ['csrf_token' => $categoryData['csrf_token'], 'action' => 'delete', 'category_id' => $managedCategoryId];
+    [$status] = request('/elibrary_categories.php', array_replace($deleteCategory, ['csrf_token' => 'invalid']));
+    check($status === 419, 'Category deletion missing CSRF protection');
+    [$status] = request('/elibrary_categories.php', $deleteCategory);
+    check($status === 302 && !in_array($tag . ' Renamed', legislation_categories('ordinance'), true), 'Category deletion failed');
+    [$status] = request('/elibrary_categories.php', $deleteCategory);
+    check($status === 404, 'Missing category deletion accepted');
     foreach (['city_secretary', 'records_officer', 'secretariat'] as $accessRole) {
         db()->prepare('UPDATE users SET role=? WHERE id=?')->execute([$accessRole, $userId]);
         request('/logout.php');
@@ -197,6 +217,12 @@ try {
         request('/login.php', ['csrf_token' => token($html), 'email' => $tag . '@example.invalid', 'password' => $tag]);
         [$status, $html] = request('/elibrary_categories.php');
         check($status === ($accessRole === 'secretariat' ? 403 : 200), 'Incorrect data entry access for ' . $accessRole);
+        if ($accessRole === 'secretariat') {
+            [$status] = request('/elibrary_categories.php', $deleteCategory);
+            check($status === 403, 'Unauthorized category deletion accepted');
+            [$status] = request('/elibrary_categories.php', $updateCategory);
+            check($status === 403, 'Unauthorized category edit accepted');
+        }
         [$status, $html] = request('/dashboard.php');
         check(str_contains($html, 'href="/elibrary_categories.php"') === ($accessRole !== 'secretariat'), 'Incorrect sidebar visibility for ' . $accessRole);
     }
@@ -208,7 +234,7 @@ try {
     check($status === 403, 'LMIS Records Staff can post with the wrong role');
     echo "PASS: Staff dashboard, both legislation types, PDF upload, draft privacy, review, stale revision, posting, public keyword search, signed download, edit isolation, reposting, CSRF, and role restrictions.\n";
 } finally {
-    db()->prepare('DELETE FROM legislation_categories WHERE name IN (?,?,?)')->execute([$tag . ' Public Services', $tag . ' Updated Category', $tag . ' Managed']);
+    db()->prepare('DELETE FROM legislation_categories WHERE name IN (?,?,?,?)')->execute([$tag . ' Public Services', $tag . ' Updated Category', $tag . ' Managed', $tag . ' Renamed']);
     if ($recordId) {
         foreach (['legislation_drafts', 'legislation_publications'] as $table) {
             db()->prepare("DELETE FROM $table WHERE record_id=?")->execute([$recordId]);
