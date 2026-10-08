@@ -56,8 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } catch (Throwable $error) {
         if (db()->inTransaction()) { db()->rollBack(); }
-        $errors = [$error instanceof InvalidArgumentException ? $error->getMessage() : 'Unable to import entries. No entries were saved. Check for duplicate numbers and try again.'];
-        error_log('Legislation import: ' . $error->getMessage());
+        $errors = [$error instanceof InvalidArgumentException ? $error->getMessage() : legislation_import_failure_message($error)];
+        error_log('Legislation import: ' . get_class($error) . ': ' . $error->getMessage() . ' in ' . $error->getFile() . ':' . $error->getLine());
     }
 }
 require __DIR__ . '/../app/partials/header.php';
