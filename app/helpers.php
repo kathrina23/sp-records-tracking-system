@@ -1157,9 +1157,14 @@ function can_view_record_attachments(array $record): bool
     return can_view_record_materials($record);
 }
 
+function can_edit_record_attachments(): bool
+{
+    return in_array($_SESSION['user']['role'] ?? '', ['admin', 'city_secretary'], true);
+}
+
 function can_manage_plenary_record_attachments(array $record): bool
 {
-    if (($_SESSION['user']['role'] ?? '') === 'admin') {
+    if (can_edit_record_attachments()) {
         return true;
     }
 

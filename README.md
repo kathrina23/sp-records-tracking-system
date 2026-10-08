@@ -52,6 +52,17 @@ Change this account after installation.
 
 ## Updating an Existing Installation
 
+City Secretary and Administrator users can open **Edit / Unmerge Records** from a
+record's detail page to restore merged records or edit merged attachment titles.
+New merges save the original details and attachment ownership. Restoring a merge
+preserves its workflow and history and reuses its number only if still available.
+Older merges require manually selecting attachments to separate, because the old
+merge process deleted the source record without saving a restorable copy.
+
+The merge-history table is created automatically when this feature is used. For
+deployments without schema-creation permissions, import
+`database/migration_record_merges.sql` before deploying the updated PHP files.
+
 Run `php scripts/migrate_term_months.php` to enable start and end month/year for terms. Edit each existing term in **Terms** to specify its months; existing year-only values are preserved until then. E-Library entry, bulk import and public term filters use the configured month boundaries, including both entire boundary months.
 
 Run `php scripts/migrate_city_official_district.php` to add the City Councilors District field (District 1, District 2, or Ex Officio). Existing officials remain unclassified until edited.

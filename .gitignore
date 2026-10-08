@@ -5,3 +5,6 @@ web.config
 storage/
 tmp/
 storage/
+
+# Generated runtime logs
+*.log

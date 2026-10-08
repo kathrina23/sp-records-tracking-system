@@ -30,7 +30,7 @@ if (!$record) {
 
 if (!can_manage_plenary_record_attachments($record)) {
     http_response_code(403);
-    exit('Only the Laws and Rules Secretariat can manage Attachments on File for plenary records.');
+    exit('You are not allowed to manage attachments for this record.');
 }
 
 $attachmentStmt = db()->prepare("SELECT a.*, COALESCE(NULLIF(u.nickname, ''), u.name) uploaded_by_name,
@@ -106,6 +106,9 @@ require __DIR__ . '/../app/partials/header.php';
                                     on <?= e(display_datetime($attachment['created_at'] ?? '')) ?>
                                 </span>
                             </div>
+                            <?php if (can_edit_record_attachments()): ?>
+                                <a class="btn secondary" href="<?= e(url('/record_attachment_edit.php?record_id=' . $recordId . '&id=' . (int) $attachment['id'])) ?>">Edit Title / Replace File</a>
+                            <?php endif; ?>
                         </article>
                     <?php endforeach; ?>
                 </div>
@@ -129,7 +132,7 @@ require __DIR__ . '/../app/partials/header.php';
                 <div class="attachment-manager-new-row">
                     <label>
                         Attachment title
-                        <input type="text" name="attachment_titles[]" maxlength="255" required>
+                        <input type="text" name="attachment_titles[]" maxlength="255">
                     </label>
                     <label>
                         Attach file <span class="muted">(Optional)</span>

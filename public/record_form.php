@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../app/auth.php';
 require_login();
+require_once __DIR__ . '/../app/record_merges.php';
 reject_oversized_attachment_request();
 ensure_plenary_number_schema();
 
@@ -19,7 +20,7 @@ function pending_existing_record_target(?string $remarks): string
         return '';
     }
 
-    if (preg_match('/Tagged as update to existing Communication Number\s+([A-Z]-\d{5}-\d{4})/i', $remarks, $matches)) {
+    if (preg_match('/(?:^|\R)Tagged as update to existing Communication Number\s+([A-Z]-\d{5}-\d{4})\.\s*Pending SP Secretary review\./i', $remarks, $matches)) {
         return strtoupper($matches[1]);
     }
 
@@ -535,9 +536,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             trim($data['remarks'] ?? '') !== '' ? 'Remarks: ' . trim($data['remarks']) : '',
         ])));
 
+        ensure_record_merge_schema();
         $pdo = db();
         $pdo->beginTransaction();
         try {
+            capture_record_merge($id, (int) $targetRecord['id'], $data);
             $moveHistory = $pdo->prepare('UPDATE record_movements SET record_id = ? WHERE record_id = ?');
             $moveHistory->execute([(int) $targetRecord['id'], $id]);
 
@@ -580,8 +583,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('Record tagged as existing and merged into Communication Number ' . $targetRecord['control_number'] . '.');
             redirect($isPopup ? $popupCloseUrl : '/record_view.php?id=' . (int) $targetRecord['id']);
         } catch (Throwable $error) {
-            $pdo->rollBack();
-            flash('Unable to merge the record. Please try again.', 'error');
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            error_log('Record merge failed: ' . $error->getMessage());
+            flash($error instanceof RuntimeException && !($error instanceof PDOException) ? $error->getMessage() : 'Unable to merge the record. Please try again.', 'error');
             redirect($recordFormUrl);
         }
     }
