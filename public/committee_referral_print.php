@@ -278,7 +278,7 @@ $publicStatusUrl = public_record_status_url((int) $record['id']);
             $committeeName = $item['committee_name'];
             $sequenceNo = (int) $item['sequence_no'];
             $groupNote = $totalReferrals > 1
-                ? $groupLabel . ' ' . $sequenceNo . ' of ' . $totalReferrals
+                ? $groupLabel . ' Committee ' . $sequenceNo . ' of ' . $totalReferrals
                 : '';
         ?>
         <section class="<?= e(implode(' ', $documentClasses)) ?>">
