@@ -784,6 +784,27 @@ if ($usesCitySecretaryTabbedDashboard) {
         $citySecretaryDashboard['for_plenary'] = for_plenary_results($plenaryDateFilter);
     }
 
+    if ($isFullDashboard) {
+        $postPlenaryStatuses = array_merge(['Approved in the Plenary'], post_plenary_statuses());
+        $postPlenaryPlaceholders = implode(',', array_fill(0, count($postPlenaryStatuses), '?'));
+        $postPlenaryStmt = db()->prepare("SELECT r.*, m.created_at movement_updated_at,
+                m.to_status latest_update_status, m.notes latest_update_notes,
+                u.name latest_update_user
+            FROM records r
+            LEFT JOIN record_movements m ON m.id = (
+                SELECT latest.id FROM record_movements latest
+                WHERE latest.record_id = r.id AND latest.to_status IN ($postPlenaryPlaceholders)
+                ORDER BY latest.created_at DESC, latest.id DESC LIMIT 1
+            )
+            LEFT JOIN users u ON u.id = m.updated_by
+            WHERE r.document_type IN ('Committee Referrals', 'Certified Urgent')
+                AND (r.status IN ($postPlenaryPlaceholders)
+                    OR r.plenary_approved_date IS NOT NULL
+                    OR COALESCE(NULLIF(r.approved_ordinance_number, ''), NULLIF(r.approved_resolution_number, '')) IS NOT NULL)
+            ORDER BY COALESCE(m.created_at, r.updated_at) DESC, r.id DESC");
+        $postPlenaryStmt->execute(array_merge($postPlenaryStatuses, $postPlenaryStatuses));
+        $citySecretaryDashboard['post_plenary_updates'] = $postPlenaryStmt->fetchAll();
+    }
     $approvedPlenaryWhere = [
         "r.document_type IN ('Committee Referrals', 'Certified Urgent')",
         "(r.status = 'Approved in the Plenary' OR r.plenary_approved_date IS NOT NULL OR COALESCE(NULLIF(r.approved_ordinance_number, ''), NULLIF(r.approved_resolution_number, '')) IS NOT NULL)",
@@ -1669,6 +1690,7 @@ if ($isDashboardMonitor) {
                 </button>
             <?php endif; ?>
             <?php if (!$usesAdministrativeSupportDashboard): ?>
+                <button type="button" data-division-tab="post-plenary-updates">Post-Plenary Updates</button>
                 <button type="button" data-division-tab="recent">Recently Updated</button>
                 <button type="button" data-division-tab="logs">Logs</button>
             <?php endif; ?>
@@ -2059,9 +2081,9 @@ if ($isDashboardMonitor) {
                     <thead>
                         <tr>
                             <th><?= $usesAdministrativeSupportDashboard ? 'Ordinance / Resolution Number' : 'Communication No.' ?></th>
+                            <th><?= $usesAdministrativeSupportDashboard ? 'Communication No.' : 'Ordinance / Resolution No.' ?></th>
                             <th class="title-column">Title</th>
                             <th>Committee</th>
-                            <th><?= $usesAdministrativeSupportDashboard ? 'Communication No.' : 'Ordinance / Resolution No.' ?></th>
                             <th>Date Approved</th>
                             <th class="updated-column">Updated</th>
                             <th>Action</th>
@@ -2090,8 +2112,6 @@ if ($isDashboardMonitor) {
                                     <span class="muted">Not set</span>
                                 <?php endif; ?>
                             </td><?php else: ?><td><?= control_number_link($record) ?></td><?php endif; ?>
-                            <td><?= e(display_record_title(record_title_for_current_user($record))) ?></td>
-                            <td><?= e($committeeNamesForRecord) ?></td>
                             <?php if (!$usesAdministrativeSupportDashboard): ?><td>
                                 <?php if ($approvedNumber !== ''): ?>
                                     <strong><?= e($approvedNumberLabel) ?>:</strong> <?= e($approvedNumber) ?>
@@ -2099,6 +2119,8 @@ if ($isDashboardMonitor) {
                                     <span class="muted">Not set</span>
                                 <?php endif; ?>
                             </td><?php else: ?><td><?= control_number_link($record) ?></td><?php endif; ?>
+                            <td><?= e(display_record_title(record_title_for_current_user($record))) ?></td>
+                            <td><?= e($committeeNamesForRecord) ?></td>
                             <td><?= e(display_date($record['plenary_approved_date'] ?? '')) ?><br>
                                 <span class="badge <?= e(status_class($record['status'])) ?>"><?= e($record['status']) ?></span>
                                 <?php if (!empty($record['published_on'])): ?><br><span>Date Published: <?= e($record['published_on']) ?></span><?php endif; ?>
@@ -2138,6 +2160,46 @@ if ($isDashboardMonitor) {
             </div>
         </div>
 
+        <?php if ($isFullDashboard): ?>
+        <div class="division-tab-panel" data-division-panel="post-plenary-updates">
+            <h2>Post-Plenary Updates</h2>
+            <p class="muted">Latest updates to approved ordinances and resolutions. Open a record to view its full movement history.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Communication No.</th><th class="title-column">Title</th><th>Ordinance / Resolution No.</th><th class="status-column">Current Status</th><th>Current Office</th><th>Latest Workflow Update</th><th>Updated By</th><th class="updated-column">Updated</th><th>Remarks</th><th>Action</th></tr></thead>
+                    <tbody>
+                    <?php foreach ($citySecretaryDashboard['post_plenary_updates'] as $record): ?>
+                        <tr>
+                            <td><?= control_number_link($record) ?></td>
+                            <td><?= e(display_record_title(record_title_for_current_user($record))) ?></td>
+                            <td>
+                                <?php if (trim((string) ($record['approved_ordinance_number'] ?? '')) !== ''): ?>
+                                    <div>Ordinance: <?= e($record['approved_ordinance_number']) ?></div>
+                                <?php endif; ?>
+                                <?php if (trim((string) ($record['approved_resolution_number'] ?? '')) !== ''): ?>
+                                    <div>Resolution: <?= e($record['approved_resolution_number']) ?></div>
+                                <?php endif; ?>
+                            </td>
+                            <td><span class="badge <?= e(status_class($record['status'])) ?>"><?= e($record['status']) ?></span></td>
+                            <td><?= e($record['current_location'] ?? '') ?></td>
+                            <td><?= e($record['latest_update_status'] ?? 'No post-plenary movement recorded') ?></td>
+                            <td><?= e($record['latest_update_user'] ?? '—') ?></td>
+                            <td><?= e(display_datetime($record['movement_updated_at'] ?? $record['updated_at'] ?? '')) ?></td>
+                            <td><?= nl2br(e($record['latest_update_notes'] ?? '')) ?></td>
+                            <td><a class="print-link small-action-link record-view-action" href="<?= url('/record_view.php?') ?><?= e(http_build_query([
+                                'id' => (int) $record['id'],
+                                'popup' => 1,
+                                'return' => 'dashboard',
+                                'return_url' => '/dashboard.php?city_tab=post-plenary-updates',
+                            ])) ?>">View Record / History</a></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <?php if (!$citySecretaryDashboard['post_plenary_updates']): ?><tr><td colspan="10">No post-plenary records found.</td></tr><?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <?php endif; ?>
         <div class="division-tab-panel" data-division-panel="recent">
             <h2>Recently Updated Committee Referrals</h2>
             <div class="table-wrap">
@@ -2696,7 +2758,7 @@ if ($isDashboardMonitor) {
 const divisionTabButtons = document.querySelectorAll('[data-division-tab]');
 const divisionTabPanels = document.querySelectorAll('[data-division-panel]');
 const dashboardGlobalFilters = document.querySelectorAll('.dashboard-global-filters');
-const tabsWithoutGlobalFilters = new Set(['notes', 'for-plenary', 'approved-plenary']);
+const tabsWithoutGlobalFilters = new Set(['notes', 'for-plenary', 'approved-plenary', 'post-plenary-updates']);
 const updateDashboardFilterVisibility = (tabName) => {
     dashboardGlobalFilters.forEach((filter) => {
         filter.hidden = tabsWithoutGlobalFilters.has(tabName);
@@ -3064,7 +3126,7 @@ showDivisionTab('search');
 showDivisionTab('staff-updates');
 <?php elseif (in_array($_GET['division_tab'] ?? '', ['new-referrals', 'staff-updates', 'committees', 'staff', 'notes', 'for-plenary', 'search'], true)): ?>
 showDivisionTab('<?= e($_GET['division_tab']) ?>');
-<?php elseif (in_array($_GET['city_tab'] ?? '', ['review', 'committee-referrals', 'certified-urgent', 'administrative-documents', 'memoranda', 'transmittals', 'for-plenary', 'approved-plenary', 'recent', 'logs', 'committees', 'search', 'notes'], true)): ?>
+<?php elseif (in_array($_GET['city_tab'] ?? '', ['review', 'committee-referrals', 'certified-urgent', 'administrative-documents', 'memoranda', 'transmittals', 'for-plenary', 'approved-plenary', 'post-plenary-updates', 'recent', 'logs', 'committees', 'search', 'notes'], true)): ?>
 showDivisionTab('<?= e($_GET['city_tab']) ?>');
 <?php endif; ?>
 </script>

@@ -1235,7 +1235,7 @@ require __DIR__ . '/../app/partials/header.php';
         </label>
     <?php else: ?>
         <label class="legislative-field">Status
-            <input id="status_display" value="<?= e(($record['status'] ?? '') === 'Received' ? 'Received - For SP Secretary Review' : (!empty($record['committee_id']) ? 'Pending to the Committee' : $record['status'])) ?>" readonly>
+            <input id="status_display" value="<?= e(($record['status'] ?? '') === 'Received' ? 'Received - For SP Secretary Review' : (!empty($record['committee_id']) ? 'Submitted to the Committee' : $record['status'])) ?>" readonly>
             <input type="hidden" name="status" value="<?= e($record['status']) ?>">
         </label>
     <?php endif; ?>
@@ -1451,7 +1451,7 @@ const syncAssignedChief = () => {
             statusDisplay.value = 'Received - Correction Required';
         } else {
             statusDisplay.value = committeeValues.length
-                ? (canFinalizeCommitteeAssignment ? 'Pending to the Committee' : 'Received - For SP Secretary Review')
+                ? (canFinalizeCommitteeAssignment ? 'Submitted to the Committee' : 'Received - For SP Secretary Review')
                 : '<?= e($record['status']) ?>';
         }
     }

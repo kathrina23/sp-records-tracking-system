@@ -7418,12 +7418,15 @@ input[type="radio"] {
 .legislation-row-actions .muted { font-size: 13px; margin: 12px 0 0; }
 .legislation-extra-details { padding-top: 16px; }
 .legislation-extra-details[hidden] { display: none; }
-.legislation-detail-page { max-width: 1250px; margin: 24px auto; padding: 32px; border: 1px solid #cfddf5; border-radius: 12px; background: #fff; color: #26364c; }
+/* Anchor the detail card when switching between tabs of different heights. */
+html:has(.legislation-detail-page) { scrollbar-gutter: stable; }
+.auth-main:has(> .legislation-detail-page) { align-items: start; }
+.legislation-detail-page { width: 100%; max-width: 1250px; margin: 24px auto; padding: 32px; border: 1px solid #cfddf5; border-radius: 12px; background: #fff; color: #26364c; }
 .legislation-detail-header h1 { font-size: 18px; font-weight: 800; line-height: 1.4; margin: 0 0 12px; overflow-wrap: anywhere; }
 .legislation-detail-meta { display: flex; flex-wrap: wrap; gap: 12px 24px; color: #1752ed; font-size: 14px; }
 .legislation-detail-meta strong { color: #26364c; }
 .legislation-detail-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 32px 0; border-bottom: 1px solid #d5e2ff; }
-.legislation-detail-tabs button { padding: 12px 16px; background: #eff5ff; color: #144be2; font: inherit; border: 0; border-radius: 8px 8px 0 0; cursor: pointer; }
+.legislation-detail-tabs button { padding: 12px 16px; background: #eff5ff; color: #144be2; font: inherit; font-weight: 600; border: 0; border-radius: 8px 8px 0 0; cursor: pointer; }
 .legislation-detail-tabs button[aria-selected="true"] { background: #2440b4; color: #fff; font-weight: 600; }
 .legislation-detail-page [role="tabpanel"][hidden] { display: none; }
 .legislation-detail-page [role="tabpanel"] p { line-height: 1.7; overflow-wrap: anywhere; }

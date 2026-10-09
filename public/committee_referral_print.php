@@ -107,6 +107,9 @@ $floorLeaders = array_values(array_filter($exOfficioMembers, fn ($person) => in_
 $viceMayors = array_values(array_filter($exOfficioMembers, fn ($person) => ($person['position'] ?? '') === 'Vice Mayor'));
 
 $committeeRows = record_committee_rows($id, (int) $record['committee_id']);
+// Group labels describe the full referral, even when only one committee is printed.
+$totalReferrals = max(1, count($committeeRows));
+$groupLabel = $totalReferrals > 1 ? referral_group_label($totalReferrals) : '';
 $recordCommitteeIds = array_map(fn ($row) => (int) $row['committee_id'], $committeeRows);
 $reportMovementByCommittee = [];
 if ($recordCommitteeIds) {
@@ -147,9 +150,13 @@ foreach ($committeeRows as $committeeRow) {
     }
 }
 $currentPrintCommitteeId = 0;
-// Receiving Section prints the full referral set. Secretariat and other
-// role-specific views retain the current-committee referral selection.
-$limitPrintToCurrentCommittee = (current_user()['role'] ?? '') !== 'receiving_clerk';
+// Involved secretariats can open every committee's shared referral. A print
+// link for a specific update still selects the committee that made that update.
+$canViewSharedReferrals = (current_user()['role'] ?? '') === 'secretariat'
+    && $totalReferrals > 1
+    && (bool) array_intersect(secretariat_committee_ids(), $recordCommitteeIds);
+$limitPrintToCurrentCommittee = (current_user()['role'] ?? '') !== 'receiving_clerk'
+    && !($canViewSharedReferrals && $movementId === 0);
 $movementUpdaterId = (int) ($reportMovement['updated_by'] ?? 0);
 $movementUpdaterRole = (string) ($reportMovement['updated_by_role'] ?? '');
 if ($movementId > 0 && $movementUpdaterId > 0) {
@@ -214,8 +221,6 @@ if ($committeeRows) {
         $committeeCodes = [];
     }
 }
-$totalReferrals = max(1, count($committeeRows));
-$groupLabel = $totalReferrals > 1 ? referral_group_label($totalReferrals) : '';
 $printItems = [];
 $maxRosterCount = 0;
 foreach ($committeeRows as $index => $committeeRow) {

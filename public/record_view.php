@@ -572,11 +572,12 @@ if (can_city_secretary_action()) {
                         'Physical copy of the record attachments received by Division Staff'
                     );
                     $isPendingCommitteeUpdate = (string) ($movement['to_status'] ?? '') === 'Pending to the Committee';
+                    $movementStatusLabel = $isPendingCommitteeUpdate ? 'Submitted to the Committee' : (string) $movement['to_status'];
                     $statusAction = $isDivisionReceipt
                         ? 'Physical Copy Received'
                         : ($movement['from_status']
-                        ? (string) $movement['to_status']
-                        : 'Created record with status ' . $movement['to_status']);
+                        ? $movementStatusLabel
+                        : 'Created record with status ' . $movementStatusLabel);
                     if (
                         in_array(
                             (string) ($movement['to_status'] ?? ''),

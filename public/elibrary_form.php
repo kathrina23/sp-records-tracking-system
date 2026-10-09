@@ -85,14 +85,13 @@ require __DIR__ . '/../app/partials/header.php';
 ?>
 <section class="panel">
     <div class="page-head"><div><h1>Post on E-Library</h1><p><?= e(ucfirst($kind) . ' ' . legislation_number($record, $kind)) ?></p></div><a class="btn secondary" href="<?= url('/dashboard.php?city_tab=approved-plenary') ?>">Back to Plenary</a></div>
-    <p><?= e($record['title']) ?></p>
     <?php if (count($kinds) > 1): ?><div class="actions"><?php foreach ($kinds as $option): ?><a class="btn secondary" href="<?= url('/elibrary_form.php?') . e(http_build_query(['record_id' => $recordId, 'kind' => $option])) ?>"><?= e(ucfirst($option)) ?></a><?php endforeach; ?></div><?php endif; ?>
     <?php if ($error): ?><div class="flash error" role="alert"><?= e($error) ?></div><?php endif; ?>
     <p class="muted">Save your details, review them, and confirm posting to make this legislation publicly searchable. Co-Author and Folder Code are optional.</p>
     <form method="post" enctype="multipart/form-data" class="form-grid">
         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
         <input type="hidden" name="revision" value="<?= (int) ($draft['revision'] ?? 0) ?>">
-        <label class="full">Title / Subject<textarea name="title" rows="3" maxlength="20000" required><?= e($values['title']) ?></textarea>
+        <label class="full">Title / Subject<textarea name="title" rows="10" style="min-height:240px;resize:vertical;" maxlength="20000" required><?= e($values['title']) ?></textarea>
             <span class="muted">This title is used for the E-Library posting. The tracked record title stays unchanged.</span>
         </label>
         <label>Keywords<input name="keywords" value="<?= e($values['keywords'] ?? '') ?>" maxlength="1000" placeholder="Example: health, public services, transport" required>
