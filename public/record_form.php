@@ -623,7 +623,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $assignedChief = null;
             if (count(current_term_committees($postedCommitteeIds)) !== count($postedCommitteeIds)) {
-                flash('Please select only committees with membership in the current term.', 'error');
+                flash('Please select only committees assigned to the current term.', 'error');
                 redirect($recordFormUrl);
             }
             foreach ($postedCommitteeIds as $committeeId) {

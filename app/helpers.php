@@ -308,7 +308,7 @@ function record_assignment_names(int $recordId, ?int $fallbackCommitteeId = null
 function current_term_committee_sql(string $alias = 'c'): string
 {
     return "EXISTS (
-        SELECT 1 FROM committee_members active_member
+        SELECT 1 FROM committee_term_assignments active_member
         WHERE active_member.committee_id = $alias.id
         AND active_member.term_id = (
             SELECT active_term.id FROM committee_terms active_term

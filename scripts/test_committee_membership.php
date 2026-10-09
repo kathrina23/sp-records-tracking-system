@@ -23,7 +23,7 @@ function membership_token(string $body): string {
 }
 $tag = 'MEMBERSHIP-TEST-' . bin2hex(random_bytes(5));
 $cookie = tempnam(sys_get_temp_dir(), 'membership-cookie');
-$userId = $committeeId = 0;
+$userId = $committeeId = $newCommitteeId = 0;
 $termIds = [];
 try {
     $stmt = db()->prepare("INSERT INTO users(name,email,password_hash,role) VALUES(?,?,?,'admin')");
@@ -34,6 +34,10 @@ try {
     foreach ([2020, 2023] as $year) {
         db()->prepare('INSERT INTO committee_terms(name,start_year,end_year,is_current) VALUES(?,?,?,0)')->execute([$tag . '-' . $year, $year, $year + 3]);
         $termIds[] = (int) db()->lastInsertId();
+    }
+    // Legacy fixtures already belonging to both terms stay readable.
+    foreach ($termIds as $termId) {
+        db()->prepare('INSERT INTO committee_term_assignments (committee_id,term_id) VALUES(?,?)')->execute([$committeeId, $termId]);
     }
     [$status, $body] = membership_request('/login.php');
     [$status] = membership_request('/login.php', ['csrf_token' => membership_token($body), 'email' => $tag . '@example.invalid', 'password' => $tag]);
@@ -88,11 +92,15 @@ try {
         $path = '/committee_roster.php?committee_id=' . $committeeId . '&term_id=' . $termId;
         [$status, $body] = membership_request($path);
         check_membership($status === 200 && str_contains($body, 'Save Committee Membership'), 'Membership form unavailable');
+        check_membership(!str_contains($body, '<select name="term_id"') && str_contains($body, 'readonly'), 'Membership term is still editable');
+        [$wrongStatus] = membership_request($path, ['csrf_token' => membership_token($body), 'committee_id' => $committeeId, 'term_id' => $termIds[1 - $index], 'chairperson' => 'Wrong term']);
+        check_membership($wrongStatus === 400, 'Changing the term within the membership window was accepted');
         [$status] = membership_request($path, ['csrf_token' => membership_token($body), 'committee_id' => $committeeId, 'term_id' => $termId, 'chairperson' => $tag . ' Chair ' . $index, 'vice_chairperson' => $tag . ' Vice ' . $index, 'members' => [$tag . ' Member ' . $index]]);
         check_membership($status === 302, 'Membership save failed');
     }
     [$status, $body] = membership_request('/committees.php');
-    check_membership($status === 200 && str_contains($body, 'Add Committee Membership'), 'Membership entry action missing');
+    check_membership($status === 200 && str_contains($body, 'Add Committee'), 'Committee entry action missing');
+    check_membership(!str_contains($body, 'Select committee'), 'Cross-term committee reuse dropdown remains');
     foreach ($termIds as $index => $termId) {
         [$status, $body] = membership_request('/committees.php?term_id=' . $termId);
         check_membership($status === 200 && str_contains($body, '<h1>Standing Committees</h1>'), 'Standing Committees title missing');
@@ -104,11 +112,37 @@ try {
         $stmt->execute([$committeeId, $termId, 'Chairperson']);
         check_membership($stmt->fetchColumn() === $tag . ' Chair ' . $index, 'Membership save affected another term');
     }
+    [$status, $body] = membership_request('/committees.php?term_id=' . $termIds[0]);
+    check_membership(!str_contains($body, '<select name="term_id"'), 'Term window has an editable term dropdown');
+    [$status] = membership_request('/committees.php?term_id=' . $termIds[0], [
+        'csrf_token' => membership_token($body), 'action' => 'save', 'id' => 0,
+        'term_id' => $termIds[0], 'name' => $tag . ' New Committee', 'committee_code' => 'TEST', 'description' => '',
+    ]);
+    $stmt = db()->prepare('SELECT id FROM committees WHERE name=?');
+    $stmt->execute([$tag . ' New Committee']);
+    $newCommitteeId = (int) $stmt->fetchColumn();
+    check_membership($status === 302 && $newCommitteeId > 0, 'Adding a committee in the term window failed');
+    foreach ($termIds as $index => $termId) {
+        [$status, $body] = membership_request('/committees.php?term_id=' . $termId);
+        $shown = str_contains($body, '<td>' . $tag . ' New Committee</td>');
+        check_membership($shown === ($index === 0), 'New committee appeared under the wrong term');
+    }
+    [$status] = membership_request('/committee_roster.php?committee_id=' . $newCommitteeId . '&term_id=' . $termIds[1]);
+    check_membership($status === 404, 'Opening a committee under another term was accepted');
+    [$status, $body] = membership_request('/committee_roster.php?committee_id=' . $newCommitteeId . '&term_id=' . $termIds[0]);
+    [$status] = membership_request('/committee_roster.php?committee_id=' . $newCommitteeId . '&term_id=' . $termIds[1], [
+        'csrf_token' => membership_token($body), 'committee_id' => $newCommitteeId, 'term_id' => $termIds[1], 'chairperson' => 'Copied chair',
+    ]);
+    check_membership($status === 404, 'Posting a committee into another term was accepted');
+    $stmt = db()->prepare('SELECT COUNT(*) FROM committee_term_assignments WHERE committee_id=?');
+    $stmt->execute([$newCommitteeId]);
+    check_membership((int) $stmt->fetchColumn() === 1, 'Committee carried into another term');
     [$status, $body] = membership_request('/committees.php?term_id=999999999');
     check_membership($status === 200, 'Invalid term did not fall back to an available tab');
-    echo "PASS: Membership creation, term tabs, selected summary, term-specific links, and isolation between terms.\n";
+    echo "PASS: Term-bound committee creation, locked term fields, membership saving, and isolation between terms.\n";
 } finally {
     if ($committeeId) { db()->prepare('DELETE FROM committees WHERE id=?')->execute([$committeeId]); }
+    if ($newCommitteeId) { db()->prepare('DELETE FROM committees WHERE id=?')->execute([$newCommitteeId]); }
     foreach ($termIds as $termId) { db()->prepare('DELETE FROM committee_terms WHERE id=?')->execute([$termId]); }
     if ($userId) {
         db()->prepare('DELETE FROM audit_logs WHERE user_id=?')->execute([$userId]);

@@ -172,7 +172,7 @@ if (in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified 
     } elseif ($newStatus === 'Recommending Approval') {
         $recommendedCommitteeId = (int) ($_POST['recommended_committee_id'] ?? 0);
         if (!current_term_committees([$recommendedCommitteeId])) {
-            flash('Please select a recommended committee with membership in the current term.', 'error');
+            flash('Please select a recommended committee assigned to the current term.', 'error');
             redirect($updateFormUrl);
         }
         $recommendationDate = trim($_POST['recommending_approval_date'] ?? '');
@@ -219,7 +219,7 @@ if (in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified 
         $referredBackCommitteeId = (int) ($_POST['referred_back_committee_id'] ?? 0);
         if ($referredBackCommitteeId > 0) {
             if (!current_term_committees([$referredBackCommitteeId])) {
-                flash('Please select a committee with membership in the current term.', 'error');
+                flash('Please select a committee assigned to the current term.', 'error');
                 redirect($updateFormUrl);
             }
             $committeeStmt = db()->prepare('SELECT id, name FROM committees WHERE id = ?');

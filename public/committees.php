@@ -42,6 +42,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     $committeeCode = normalize_committee_code($_POST['committee_code'] ?? '');
     $description = trim($_POST['description'] ?? '');
+    $saveTermId = (int) ($_GET['term_id'] ?? $_POST['term_id'] ?? 0);
+    if (!$id) {
+        $termCheck = db()->prepare('SELECT id FROM committee_terms WHERE id = ?');
+        $termCheck->execute([$saveTermId]);
+        if (!$termCheck->fetchColumn()) {
+            flash('Select a term before adding a committee.', 'error');
+            redirect('/committees.php');
+        }
+    }
 
     if ($id) {
         $stmt = db()->prepare('UPDATE committees SET name=?, committee_code=?, description=? WHERE id=?');
@@ -51,10 +60,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $stmt = db()->prepare('INSERT INTO committees (name, committee_code, description) VALUES (?, ?, ?)');
         $stmt->execute([$name, $committeeCode, $description]);
-        audit_log('committee_create', 'Created committee ' . $name . '.', 'committee', (int) db()->lastInsertId());
-        flash('Committee added. You can now add its term roster.');
+        $newCommitteeId = (int) db()->lastInsertId();
+        $assignment = db()->prepare('INSERT INTO committee_term_assignments (committee_id, term_id) VALUES (?, ?)');
+        $assignment->execute([$newCommitteeId, $saveTermId]);
+        audit_log('committee_create', 'Created committee ' . $name . ' for term #' . $saveTermId . '.', 'committee', $newCommitteeId);
+        flash('Committee added to this term. You can now add its roster.');
+        redirect('/committee_roster.php?committee_id=' . $newCommitteeId . '&term_id=' . $saveTermId);
     }
-    redirect('/committees.php');
+    redirect('/committees.php?term_id=' . $saveTermId);
 }
 
 $edit = null;
@@ -101,7 +114,8 @@ if ($termsReady) {
             MAX(CASE WHEN m.position = 'Vice Chairperson' THEN m.name END) vice_chairperson_name,
             COUNT(DISTINCT CASE WHEN m.position = 'Member' THEN m.id END) member_count
         FROM committees c
-        CROSS JOIN committee_terms t
+        INNER JOIN committee_term_assignments term_assignment ON term_assignment.committee_id = c.id
+        INNER JOIN committee_terms t ON t.id = term_assignment.term_id
         LEFT JOIN records r ON r.committee_id = c.id
         LEFT JOIN committee_members m ON m.committee_id = c.id AND m.term_id = t.id
         $committeeFilter
@@ -132,10 +146,6 @@ if ($termsReady) {
     }
 }
 
-$committeeOptions = [];
-foreach ($committees as $committee) {
-    $committeeOptions[(int) $committee['id']] = $committee;
-}
 if (!$termsReady) {
     $termGroups = [['term' => null, 'committees' => $committees]];
 }
@@ -157,23 +167,16 @@ require __DIR__ . '/../app/partials/header.php';
     <?php endif; ?>
 </div>
 
-<?php if ($termsReady && is_admin()): ?>
-<section class="panel" style="margin-bottom:16px;">
-    <h2>Add Committee Membership</h2>
-    <?php if ($terms && $committeeOptions): ?>
-    <form method="get" action="<?= url('/committee_roster.php') ?>" class="form-grid">
-        <label>Term<select name="term_id" required>
-            <?php foreach ($terms as $term): ?><option value="<?= (int) $term['id'] ?>" <?= (int) $term['id'] === $selectedTermId ? 'selected' : '' ?>><?= e($term['name']) ?></option><?php endforeach; ?>
-        </select></label>
-        <label>Committee<select name="committee_id" required>
-            <option value="">Select committee</option>
-            <?php foreach ($committeeOptions as $committee): ?><option value="<?= (int) $committee['id'] ?>"><?= e($committee['name']) ?></option><?php endforeach; ?>
-        </select></label>
-        <p class="muted full">Choose a term and committee, then select the chairperson, vice chairperson, and members. Existing memberships can be updated in the same form.</p>
-        <div class="actions full"><button class="btn" type="submit">Add Committee Membership</button></div>
-    </form>
-    <?php else: ?><p class="muted">Create a term and committee first to add committee membership.</p><?php endif; ?>
-</section>
+<?php if ($termsReady && $terms): ?>
+<nav class="dashboard-tabs" aria-label="Membership summary by term">
+    <?php foreach ($terms as $term): ?>
+        <a href="<?= url('/committees.php?term_id=') . (int) $term['id'] ?>"<?= (int) $term['id'] === $selectedTermId ? ' class="active" aria-current="page"' : '' ?>><?= e($term['name']) ?><?= (int) $term['is_current'] === 1 ? ' (Current)' : '' ?></a>
+    <?php endforeach; ?>
+</nav>
+<?php endif; ?>
+<?php if ($termsReady && isset($termGroups[$selectedTermId])): ?>
+<section class="panel" aria-label="Selected term committees">
+<h2><?= e($termGroups[$selectedTermId]['term']['name']) ?></h2>
 <?php endif; ?>
 
 <?php if (!$termsReady): ?>
@@ -190,6 +193,8 @@ require __DIR__ . '/../app/partials/header.php';
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="id" value="<?= (int) ($edit['id'] ?? 0) ?>">
+            <input type="hidden" name="term_id" value="<?= $selectedTermId ?>">
+            <label class="full">Term<input value="<?= e($termGroups[$selectedTermId]['term']['name'] ?? '') ?>" readonly></label>
             <label class="full">Committee Name
                 <input name="name" required value="<?= e($edit['name'] ?? '') ?>">
             </label>
@@ -201,7 +206,7 @@ require __DIR__ . '/../app/partials/header.php';
             </label>
             <div class="actions full">
                 <button class="btn" type="submit">Save Committee</button>
-                <?php if ($edit): ?><a class="btn secondary" href="<?= url('/committees.php') ?>">Cancel</a><?php endif; ?>
+                <?php if ($edit): ?><a class="btn secondary" href="<?= url('/committees.php?term_id=') . $selectedTermId ?>">Cancel</a><?php endif; ?>
             </div>
         </form>
     <?php else: ?>
@@ -210,13 +215,6 @@ require __DIR__ . '/../app/partials/header.php';
     <?php endif; ?>
 </section>
 
-<?php if ($termsReady && $terms): ?>
-<nav class="dashboard-tabs" aria-label="Membership summary by term">
-    <?php foreach ($terms as $term): ?>
-        <a href="<?= url('/committees.php?') . e(http_build_query(['term_id' => (int) $term['id']] + ($edit ? ['edit' => (int) $edit['id']] : []))) ?>"<?= (int) $term['id'] === $selectedTermId ? ' class="active" aria-current="page"' : '' ?>><?= e($term['name']) ?><?= (int) $term['is_current'] === 1 ? ' (Current)' : '' ?></a>
-    <?php endforeach; ?>
-</nav>
-<?php endif; ?>
 <?php foreach ($displayGroups as $group): $membershipTerm = $group['term']; ?>
 <section class="panel table-wrap" style="margin-bottom:16px;">
     <h2><?= $membershipTerm ? e($membershipTerm['name']) . ((int) $membershipTerm['is_current'] === 1 ? ' — Current Term' : '') : 'Committee List' ?></h2>
@@ -253,4 +251,5 @@ require __DIR__ . '/../app/partials/header.php';
 </section>
 <?php endforeach; ?>
 <?php if ($termsReady && !$terms): ?><section class="panel"><p>No terms have been added yet.</p></section><?php endif; ?>
+<?php if ($termsReady && isset($termGroups[$selectedTermId])): ?></section><?php endif; ?>
 <?php require __DIR__ . '/../app/partials/footer.php'; ?>

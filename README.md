@@ -52,6 +52,11 @@ Change this account after installation.
 
 ## Updating an Existing Installation
 
+Run `php scripts/migrate_committee_term_assignments.php` to associate committees
+with their actual terms. Existing roster memberships are retained. Add committees
+inside the selected Standing Committees term; the membership editor keeps that
+term fixed. Operational committee choices use the current term's assignments.
+
 City Secretary and Administrator users can open **Edit / Unmerge Records** from a
 record's detail page to restore merged records or edit merged attachment titles.
 New merges save the original details and attachment ownership. Restoring a merge

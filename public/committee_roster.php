@@ -20,6 +20,12 @@ try {
 
 $committeeId = (int) ($_GET['committee_id'] ?? $_POST['committee_id'] ?? 0);
 $termId = (int) ($_GET['term_id'] ?? $_POST['term_id'] ?? 0);
+if ($_SERVER['REQUEST_METHOD'] === 'POST'
+    && isset($_GET['term_id'])
+    && (int) ($_POST['term_id'] ?? 0) !== $termId) {
+    http_response_code(400);
+    exit('The membership term cannot be changed from this window.');
+}
 $isPopup = ($_GET['popup'] ?? $_POST['popup'] ?? '') === '1';
 $returnTarget = ($_GET['return'] ?? $_POST['return'] ?? '') === 'dashboard' ? 'dashboard' : 'committees';
 $divisionTab = $_GET['division_tab'] ?? $_POST['division_tab'] ?? '';
@@ -50,6 +56,13 @@ $term = $termStmt->fetch();
 if (!$term) {
     flash('Please create a term before adding committee rosters.', 'error');
     redirect('/terms.php');
+}
+
+$termAssignment = db()->prepare('SELECT 1 FROM committee_term_assignments WHERE committee_id = ? AND term_id = ?');
+$termAssignment->execute([$committeeId, $termId]);
+if (!$termAssignment->fetchColumn()) {
+    http_response_code(404);
+    exit('This committee does not belong to the selected term. Add a new committee in that term window.');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -110,7 +123,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect('/committee_roster.php?committee_id=' . $committeeId . '&term_id=' . $termId);
 }
 
-$terms = db()->query('SELECT id, name FROM committee_terms ORDER BY start_year DESC, id DESC')->fetchAll();
 $officials = [];
 if ($officialsReady) {
     $officialStmt = db()->prepare('SELECT name, position, officer_role FROM city_officials WHERE term_id = ? ORDER BY name, sort_order');
@@ -194,22 +206,11 @@ function official_select(string $name, string $currentValue, array $officials, s
 </div>
 
 <section class="panel" style="margin-bottom:16px;">
-    <form method="get" class="filters" style="grid-template-columns: 1fr 1fr auto;">
-        <input type="hidden" name="committee_id" value="<?= (int) $committeeId ?>">
-        <label>Term
-            <select name="term_id">
-                <?php foreach ($terms as $item): ?>
-                    <option value="<?= (int) $item['id'] ?>" <?= (int) $item['id'] === $termId ? 'selected' : '' ?>><?= e($item['name']) ?></option>
-                <?php endforeach; ?>
-            </select>
-        </label>
-        <span></span>
-        <button class="btn secondary" type="submit">View Term</button>
-    </form>
+    <label>Term<input value="<?= e($term['name']) ?>" readonly></label>
 </section>
 
 <?php if (is_admin()): ?>
-    <form method="post" class="panel form-grid">
+    <form method="post" action="<?= url('/committee_roster.php?committee_id=' . $committeeId . '&term_id=' . $termId) ?>" class="panel form-grid">
         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
         <input type="hidden" name="action" value="save_roster">
         <input type="hidden" name="committee_id" value="<?= (int) $committeeId ?>">

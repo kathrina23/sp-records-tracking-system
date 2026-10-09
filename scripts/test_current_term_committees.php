@@ -7,9 +7,11 @@ $pdo = db();
 $pdo->exec('CREATE TEMPORARY TABLE committees (id INT PRIMARY KEY, name VARCHAR(100))');
 $pdo->exec('CREATE TEMPORARY TABLE committee_terms (id INT PRIMARY KEY, is_current INT)');
 $pdo->exec('CREATE TEMPORARY TABLE committee_members (committee_id INT, term_id INT)');
+$pdo->exec('CREATE TEMPORARY TABLE committee_term_assignments (committee_id INT, term_id INT)');
 $pdo->exec("INSERT INTO committees VALUES (1, 'Current'), (2, 'Older term'), (3, 'No membership'), (4, 'Both terms')");
 $pdo->exec('INSERT INTO committee_terms VALUES (1, 0), (2, 1)');
 $pdo->exec('INSERT INTO committee_members VALUES (1, 2), (1, 2), (2, 1), (4, 1), (4, 2)');
+$pdo->exec('INSERT INTO committee_term_assignments SELECT DISTINCT committee_id, term_id FROM committee_members');
 function check_current_committees(?array $scope, array $expected): void {
     $actual = array_map('intval', array_column(current_term_committees($scope), 'id'));
     sort($actual);

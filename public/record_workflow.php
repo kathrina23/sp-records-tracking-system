@@ -61,7 +61,7 @@ if ($action === 'assign_committee') {
     }
 
     if (count(current_term_committees($committeeIds)) !== count($committeeIds)) {
-        flash('Please select only committees with membership in the current term.', 'error');
+        flash('Please select only committees assigned to the current term.', 'error');
         redirect('/record_view.php?id=' . $id);
     }
     $committeeStmt = db()->prepare('SELECT name FROM committees WHERE id = ?');
