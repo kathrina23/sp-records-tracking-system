@@ -305,6 +305,34 @@ function record_assignment_names(int $recordId, ?int $fallbackCommitteeId = null
     ];
 }
 
+function current_term_committee_sql(string $alias = 'c'): string
+{
+    return "EXISTS (
+        SELECT 1 FROM committee_members active_member
+        WHERE active_member.committee_id = $alias.id
+        AND active_member.term_id = (
+            SELECT active_term.id FROM committee_terms active_term
+            WHERE active_term.is_current = 1 ORDER BY active_term.id DESC LIMIT 1
+        )
+    )";
+}
+
+function current_term_committees(?array $committeeIds = null): array
+{
+    if ($committeeIds === []) {
+        return [];
+    }
+    $where = current_term_committee_sql();
+    $params = [];
+    if ($committeeIds !== null) {
+        $params = array_values(array_unique(array_map('intval', $committeeIds)));
+        $where .= ' AND c.id IN (' . implode(',', array_fill(0, count($params), '?')) . ')';
+    }
+    $stmt = db()->prepare("SELECT c.id, c.name FROM committees c WHERE $where ORDER BY c.name");
+    $stmt->execute($params);
+    return $stmt->fetchAll();
+}
+
 function record_committee_rows(int $recordId, ?int $fallbackCommitteeId = null): array
 {
     try {

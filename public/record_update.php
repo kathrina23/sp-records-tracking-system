@@ -77,7 +77,7 @@ if (can_manage_record_publication($record)) {
 } else {
     $statuses = array_values(array_diff($statuses, publication_statuses()));
 }
-$committees = db()->query('SELECT id, name FROM committees ORDER BY name')->fetchAll();
+$committees = current_term_committees();
 $committeeRows = ($record['document_type'] ?? '') === 'Committee Referrals'
     ? record_committee_rows((int) $record['id'], !empty($record['committee_id']) ? (int) $record['committee_id'] : null)
     : [];

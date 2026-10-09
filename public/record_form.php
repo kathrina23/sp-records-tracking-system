@@ -622,6 +622,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $assignedChief = null;
+            if (count(current_term_committees($postedCommitteeIds)) !== count($postedCommitteeIds)) {
+                flash('Please select only committees with membership in the current term.', 'error');
+                redirect($recordFormUrl);
+            }
             foreach ($postedCommitteeIds as $committeeId) {
                 $chief = division_chief_for_committee((int) $committeeId);
                 if (!$chief) {
@@ -946,7 +950,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect($isPopup ? $popupCloseUrl : '/record_view.php?id=' . $id);
 }
 
-$committees = db()->query('SELECT id, name FROM committees ORDER BY name')->fetchAll();
+$committees = current_term_committees();
 $selectedCommitteeIds = $id
     ? array_map(fn ($row) => (int) $row['committee_id'], record_committee_rows((int) $id, !empty($record['committee_id']) ? (int) $record['committee_id'] : null))
     : (!empty($record['committee_id']) ? [(int) $record['committee_id']] : []);

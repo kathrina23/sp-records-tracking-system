@@ -252,15 +252,12 @@ unset($recordItem);
 if (in_array($userRole, ['division_chief', 'secretariat', 'division_staff'], true)) {
     $assignedCommitteeIds = scoped_committee_ids_for_current_user();
     if ($assignedCommitteeIds) {
-        $placeholders = implode(',', array_fill(0, count($assignedCommitteeIds), '?'));
-        $committeeStmt = db()->prepare("SELECT id, name FROM committees WHERE id IN ($placeholders) ORDER BY name");
-        $committeeStmt->execute($assignedCommitteeIds);
-        $committees = $committeeStmt->fetchAll();
+        $committees = current_term_committees($assignedCommitteeIds);
     } else {
         $committees = [];
     }
 } else {
-    $committees = db()->query('SELECT id, name FROM committees ORDER BY name')->fetchAll();
+    $committees = current_term_committees();
 }
 $statuses = match ($activeTab) {
     'committee' => referral_statuses(),

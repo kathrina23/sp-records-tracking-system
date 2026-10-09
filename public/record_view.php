@@ -195,7 +195,7 @@ $printedStmt = db()->prepare("SELECT COUNT(*) FROM record_movements WHERE record
 $printedStmt->execute([$id]);
 $committeeReferralPrinted = (int) $printedStmt->fetchColumn() > 0;
 $statuses = is_administrative_document_type($record['document_type'] ?? '') ? administrative_statuses() : referral_statuses();
-$committees = db()->query('SELECT id, name FROM committees ORDER BY name')->fetchAll();
+$committees = current_term_committees();
 $committeeRows = $record['document_type'] === 'Committee Referrals'
     ? record_committee_rows((int) $record['id'], !empty($record['committee_id']) ? (int) $record['committee_id'] : null)
     : [];

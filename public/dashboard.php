@@ -619,15 +619,12 @@ if ($showTransmittals) {
 if (in_array($userRole, ['division_chief', 'secretariat', 'division_staff'], true)) {
     $filterCommitteeIds = scoped_committee_ids_for_current_user();
     if ($filterCommitteeIds) {
-        $filterPlaceholders = implode(',', array_fill(0, count($filterCommitteeIds), '?'));
-        $filterCommitteeStmt = db()->prepare("SELECT id, name FROM committees WHERE id IN ($filterPlaceholders) ORDER BY name");
-        $filterCommitteeStmt->execute($filterCommitteeIds);
-        $committees = $filterCommitteeStmt->fetchAll();
+        $committees = current_term_committees($filterCommitteeIds);
     } else {
         $committees = [];
     }
 } else {
-    $committees = db()->query('SELECT id, name FROM committees ORDER BY name')->fetchAll();
+    $committees = current_term_committees();
 }
 $statuses = match ($activeTab) {
     'documents', 'memoranda' => administrative_statuses(),
@@ -714,6 +711,7 @@ if ($usesCitySecretaryTabbedDashboard) {
                     AND rc_count.committee_id = c.id
                 )
             )
+        WHERE " . current_term_committee_sql() . "
         GROUP BY c.id, c.name
         ORDER BY c.name");
     $citySecretaryDashboard['committees'] = $cityCommitteeStmt->fetchAll();
@@ -901,7 +899,7 @@ if ($userRole === 'division_chief') {
                         AND rc_count.committee_id = c.id
                     )
                 )
-            WHERE c.id IN ($placeholders)
+            WHERE c.id IN ($placeholders) AND " . current_term_committee_sql() . "
             GROUP BY c.id, c.name
             ORDER BY c.name");
         $committeeStmt->execute($chiefCommitteeIds);
@@ -1160,7 +1158,7 @@ if ($userRole === 'division_chief') {
                         AND rc_count.committee_id = c.id
                     )
                 )
-            WHERE cs.user_id = ?
+            WHERE cs.user_id = ? AND " . current_term_committee_sql() . "
             GROUP BY c.id, c.name
             ORDER BY c.name");
         $committeeStmt->execute([$secretariatId]);
