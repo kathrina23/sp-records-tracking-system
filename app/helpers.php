@@ -305,8 +305,27 @@ function record_assignment_names(int $recordId, ?int $fallbackCommitteeId = null
     ];
 }
 
+function ensure_committee_term_assignments_schema(): void
+{
+    static $ready = false;
+    if ($ready) {
+        return;
+    }
+    try {
+        db()->query('SELECT 1 FROM committee_term_assignments LIMIT 1');
+    } catch (PDOException $error) {
+        if ((int) ($error->errorInfo[1] ?? 0) !== 1146) {
+            throw $error;
+        }
+        // Existing deployments need the new association table on first use.
+        db()->exec(file_get_contents(__DIR__ . '/../database/migration_committee_term_assignments.sql'));
+    }
+    $ready = true;
+}
+
 function current_term_committee_sql(string $alias = 'c'): string
 {
+    ensure_committee_term_assignments_schema();
     return "EXISTS (
         SELECT 1 FROM committee_term_assignments active_member
         WHERE active_member.committee_id = $alias.id

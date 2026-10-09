@@ -4,6 +4,7 @@ require_once __DIR__ . '/../app/auth.php';
 require_login();
 require_management_access();
 ensure_committee_reporting_schema();
+ensure_committee_term_assignments_schema();
 
 function committee_terms_ready(): bool
 {

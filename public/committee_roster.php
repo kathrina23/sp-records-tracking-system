@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../app/auth.php';
 require_login();
+ensure_committee_term_assignments_schema();
 
 try {
     db()->query('SELECT 1 FROM committee_terms LIMIT 1');
