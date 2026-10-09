@@ -4,25 +4,128 @@ require_once __DIR__ . '/elibrary.php';
 
 function legislation_excel_rows(string $path, string $extension): array
 {
-    $python = getenv('SP_RECORDS_PYTHON') ?: '';
-    if ($python === '') {
-        $bundled = (getenv('USERPROFILE') ?: '') . '/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe';
-        $python = is_file($bundled) ? $bundled : (PHP_OS_FAMILY === 'Windows' ? 'python' : 'python3');
+    // Read in PHP so imports do not depend on a Python runtime being installed on the web server.
+    $unreadable = 'Unable to read this workbook. Upload an .xlsx or UTF-8 CSV file.';
+    if ($extension === 'csv') {
+        $data = file_get_contents($path);
+        if ($data === false) { throw new InvalidArgumentException($unreadable); }
+        if (!mb_check_encoding($data, 'UTF-8')) { throw new InvalidArgumentException('Save the file as "CSV UTF-8 (Comma delimited)" in Excel, then upload it again.'); }
+        $source = fopen('php://temp', 'w+');
+        fwrite($source, str_starts_with($data, "\xEF\xBB\xBF") ? substr($data, 3) : $data);
+        rewind($source);
+        $rows = [];
+        while (($row = fgetcsv($source, null, ',', '"', '')) !== false) {
+            $rows[] = $row === [null] ? [] : $row;
+            if (count($rows) > 1001) { fclose($source); throw new InvalidArgumentException('Limit each upload to 1,000 entries.'); }
+        }
+        fclose($source);
+        return $rows;
     }
-    $process = proc_open([$python, dirname(__DIR__) . '/scripts/read_legislation_excel.py', $path, $extension],
-        [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
-    if (!is_resource($process)) { throw new RuntimeException('Unable to start the Excel reader.'); }
-    fclose($pipes[0]);
-    $output = stream_get_contents($pipes[1]);
-    $errors = stream_get_contents($pipes[2]);
-    fclose($pipes[1]); fclose($pipes[2]);
-    $code = proc_close($process);
-    $result = json_decode($output, true);
-    if ($code !== 0 || !isset($result['rows'])) {
-        error_log('Excel import: ' . $errors);
-        throw new InvalidArgumentException($result['error'] ?? 'Unable to read this workbook. Upload an .xlsx or UTF-8 CSV file.');
+    if (!class_exists('ZipArchive') || !class_exists('XMLReader')) { throw new RuntimeException('The PHP zip and xmlreader extensions are required to read .xlsx files.'); }
+    $main = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+    $archive = new ZipArchive();
+    if ($archive->open($path) !== true) { throw new InvalidArgumentException($unreadable); }
+    $previous = libxml_use_internal_errors(true);
+    try {
+        $expanded = 0;
+        for ($index = 0; $index < $archive->numFiles; $index++) { $expanded += (int) ($archive->statIndex($index)['size'] ?? 0); }
+        if ($expanded > 30 * 1024 * 1024) { throw new InvalidArgumentException('The expanded workbook exceeds 30 MB.'); }
+        $part = function (string $name) use ($archive, $unreadable): string {
+            $data = $archive->getFromName($name);
+            if ($data === false) { throw new InvalidArgumentException($unreadable); }
+            if (stripos($data, '<!DOCTYPE') !== false || stripos($data, '<!ENTITY') !== false) { throw new InvalidArgumentException('Unsupported XML declarations in workbook.'); }
+            return $data;
+        };
+        $document = function (string $name) use ($part, $unreadable): DOMDocument {
+            $xml = new DOMDocument();
+            if (!$xml->loadXML($part($name), LIBXML_NONET)) { throw new InvalidArgumentException($unreadable); }
+            return $xml;
+        };
+        // Stream the large parts so a big worksheet cannot exhaust PHP memory.
+        $elements = function (string $name, string $tag) use ($part, $main, $unreadable): Generator {
+            $reader = new XMLReader();
+            libxml_clear_errors();
+            if (!$reader->XML($part($name), null, LIBXML_NONET)) { throw new InvalidArgumentException($unreadable); }
+            while ($reader->read()) {
+                if ($reader->nodeType === XMLReader::ELEMENT && $reader->localName === $tag && $reader->namespaceURI === $main) {
+                    $node = $reader->expand();
+                    if (!$node instanceof DOMElement) { break; }
+                    yield $node;
+                }
+            }
+            $reader->close();
+            if (libxml_get_last_error()) { throw new InvalidArgumentException($unreadable); }
+        };
+        $children = fn (DOMElement $parent, string $tag): array => array_values(array_filter(iterator_to_array($parent->childNodes),
+            fn ($node) => $node instanceof DOMElement && $node->localName === $tag && $node->namespaceURI === $main));
+
+        $workbook = new DOMXPath($document('xl/workbook.xml'));
+        $workbook->registerNamespace('s', $main);
+        $properties = $workbook->query('/s:workbook/s:workbookPr')->item(0);
+        if ($properties instanceof DOMElement && in_array($properties->getAttribute('date1904'), ['1', 'true'], true)) { throw new InvalidArgumentException('Use the standard Excel 1900 date system or ISO date text.'); }
+        $sheet = null;
+        foreach ($workbook->query('/s:workbook/s:sheets/s:sheet') as $item) {
+            if ($item instanceof DOMElement && ($item->getAttribute('state') ?: 'visible') === 'visible') { $sheet = $item; break; }
+        }
+        if (!$sheet) { throw new InvalidArgumentException('No visible worksheet found.'); }
+        $relationId = $sheet->getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id');
+        $target = null;
+        foreach ($document('xl/_rels/workbook.xml.rels')->documentElement->childNodes as $relation) {
+            if (!$relation instanceof DOMElement || $relation->getAttribute('Id') !== $relationId) { continue; }
+            $target = $relation->getAttribute('Target');
+            if ($relation->getAttribute('TargetMode') === 'External' || str_contains($target, '..')) { throw new InvalidArgumentException('Unsupported worksheet reference.'); }
+            break;
+        }
+        if ($target === null) { throw new InvalidArgumentException($unreadable); }
+        $target = str_starts_with($target, '/') ? ltrim($target, '/') : 'xl/' . $target;
+        $shared = [];
+        if ($archive->locateName('xl/sharedStrings.xml') !== false) {
+            foreach ($elements('xl/sharedStrings.xml', 'si') as $item) { $shared[] = $item->textContent; }
+        }
+        $rows = [];
+        foreach ($elements($target, 'row') as $row) {
+            $values = array_fill(0, 32, '');
+            foreach ($children($row, 'c') as $cell) {
+                $address = $cell->getAttribute('r');
+                $column = 0;
+                for ($i = 0; $i < strlen($address) && ctype_alpha($address[$i]); $i++) {
+                    $column = $column * 26 + ord(strtoupper($address[$i])) - 64;
+                    if ($column > 32) { break; }
+                }
+                if ($column < 1 || $column > 32) { throw new InvalidArgumentException('Use at most 32 columns in the worksheet.'); }
+                if ($children($cell, 'f')) { throw new InvalidArgumentException('Cell ' . $address . ' contains a formula. Paste values before importing.'); }
+                $value = ($children($cell, 'v')[0] ?? null)?->textContent ?? '';
+                $type = $cell->getAttribute('t');
+                if ($type === 's') {
+                    if (!ctype_digit($value) || !isset($shared[(int) $value])) { throw new InvalidArgumentException($unreadable); }
+                    $value = $shared[(int) $value];
+                } elseif ($type === 'inlineStr') {
+                    $value = ($children($cell, 'is')[0] ?? null)?->textContent ?? '';
+                } elseif ($type === 'e') {
+                    throw new InvalidArgumentException('Cell ' . $address . ' contains an Excel error.');
+                }
+                $values[$column - 1] = $value;
+            }
+            // Retain gaps so validation reports the actual worksheet row.
+            $rowNumber = (int) ($row->getAttribute('r') ?: count($rows) + 1);
+            if ($rowNumber > 1001) { throw new InvalidArgumentException('Limit each upload to 1,000 entries starting at row 2.'); }
+            while (count($rows) < $rowNumber - 1) { $rows[] = []; }
+            $rows[] = $values;
+        }
+        return $rows;
+    } finally {
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+        $archive->close();
     }
-    return $result['rows'];
+}
+
+function legislation_import_failure_message(Throwable $error): string
+{
+    $state = $error instanceof PDOException ? (string) ($error->errorInfo[0] ?? $error->getCode()) : '';
+    if ($state === '23000') { return 'Unable to import entries. No entries were saved. A type and number in this file already exists for the term; check for duplicate numbers and try again.'; }
+    if (in_array($state, ['42S02', '42S22'], true)) { return 'Unable to import entries. No entries were saved. The E-Library database tables are not up to date; ask the system administrator to run the E-Library database migrations.'; }
+    return 'Unable to import entries. No entries were saved. Ask the system administrator to check the server error log.';
 }
 
 function legislation_import_validate(array $rows, array $term): array

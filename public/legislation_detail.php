@@ -6,9 +6,18 @@ $entry = $stmt->fetch();
 if (!$entry) { http_response_code(404); exit('Published legislation not found.'); }
 $trackHistory = [];
 if (!empty($entry['record_id'])) {
-    $historyStmt = db()->prepare('SELECT created_at, to_status FROM record_movements WHERE record_id=? ORDER BY created_at ASC, id ASC');
+    $historyStmt = db()->prepare('SELECT created_at, to_status FROM record_movements WHERE record_id=? AND (from_status IS NULL OR from_status <> to_status) ORDER BY created_at ASC, id ASC');
     $historyStmt->execute([(int) $entry['record_id']]);
-    $trackHistory = $historyStmt->fetchAll();
+    // Show status changes only; other movement logs remain in the audit history.
+    $previousStatus = null;
+    foreach ($historyStmt->fetchAll() as $movement) {
+        $status = trim((string) ($movement['to_status'] ?? ''));
+        if ($status === '' || $status === $previousStatus) {
+            continue;
+        }
+        $trackHistory[] = $movement;
+        $previousStatus = $status;
+    }
 }
 if (!$trackHistory && !empty($entry['approved_date'])) {
     $trackHistory[] = ['created_at' => $entry['approved_date'], 'to_status' => 'Approved in the Plenary'];
