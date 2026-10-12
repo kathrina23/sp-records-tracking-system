@@ -2165,13 +2165,13 @@ if ($isDashboardMonitor) {
             <h2>Post-Plenary Updates</h2>
             <p class="muted">Latest updates to approved ordinances and resolutions. Open a record to view its full movement history.</p>
             <div class="table-wrap">
-                <table>
+                <table class="post-plenary-table">
                     <thead><tr><th>Communication No.</th><th class="title-column">Title</th><th>Ordinance / Resolution No.</th><th class="status-column">Current Status</th><th>Current Office</th><th>Latest Workflow Update</th><th>Updated By</th><th class="updated-column">Updated</th><th>Remarks</th><th>Action</th></tr></thead>
                     <tbody>
                     <?php foreach ($citySecretaryDashboard['post_plenary_updates'] as $record): ?>
                         <tr>
                             <td><?= control_number_link($record) ?></td>
-                            <td><?= e(display_record_title(record_title_for_current_user($record))) ?></td>
+                            <td><div class="post-plenary-text" title="<?= e(display_record_title(record_title_for_current_user($record))) ?>"><?= e(display_record_title(record_title_for_current_user($record))) ?></div></td>
                             <td>
                                 <?php if (trim((string) ($record['approved_ordinance_number'] ?? '')) !== ''): ?>
                                     <div>Ordinance: <?= e($record['approved_ordinance_number']) ?></div>
@@ -2185,13 +2185,13 @@ if ($isDashboardMonitor) {
                             <td><?= e($record['latest_update_status'] ?? 'No post-plenary movement recorded') ?></td>
                             <td><?= e($record['latest_update_user'] ?? '—') ?></td>
                             <td><?= e(display_datetime($record['movement_updated_at'] ?? $record['updated_at'] ?? '')) ?></td>
-                            <td><?= nl2br(e($record['latest_update_notes'] ?? '')) ?></td>
+                            <td><div class="post-plenary-text" title="<?= e($record['latest_update_notes'] ?? '') ?>"><?= nl2br(e($record['latest_update_notes'] ?? '')) ?></div></td>
                             <td><a class="print-link small-action-link record-view-action" href="<?= url('/record_view.php?') ?><?= e(http_build_query([
                                 'id' => (int) $record['id'],
                                 'popup' => 1,
                                 'return' => 'dashboard',
                                 'return_url' => '/dashboard.php?city_tab=post-plenary-updates',
-                            ])) ?>">View Record / History</a></td>
+                            ])) ?>">View History</a></td>
                         </tr>
                     <?php endforeach; ?>
                     <?php if (!$citySecretaryDashboard['post_plenary_updates']): ?><tr><td colspan="10">No post-plenary records found.</td></tr><?php endif; ?>

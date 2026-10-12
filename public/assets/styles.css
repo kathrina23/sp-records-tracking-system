@@ -5209,6 +5209,48 @@ body.dashboard-page .division-tab-panel .table-wrap .badge {
 }
 
 
+/* Compact Post-Plenary Updates table. */
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap {
+    overflow-x: auto;
+}
+
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap .post-plenary-table {
+    min-width: 1120px;
+    table-layout: fixed;
+}
+
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap :is(th, td) {
+    padding: 5px 6px;
+    line-height: 1.25;
+    vertical-align: top;
+}
+
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap th {
+    font-size: 10px;
+}
+
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap td {
+    font-size: 11px;
+}
+
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap th:nth-child(1) { width: 9%; }
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap .post-plenary-table th.title-column { width: 22%; }
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap th:nth-child(3) { width: 10%; }
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap th.status-column { width: 9%; }
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap th:nth-child(5) { width: 9%; }
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap th:nth-child(6) { width: 10%; }
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap th:nth-child(7) { width: 7%; }
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap th.updated-column { width: 8%; }
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap th:nth-child(9) { width: 10%; }
+body.dashboard-page .division-tab-panel[data-division-panel="post-plenary-updates"] .table-wrap th:nth-child(10) { width: 6%; }
+
+.post-plenary-table .post-plenary-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+}
+
 /* Compact client IP display in the dashboard Logs tab. */
 .division-tab-panel[data-division-panel="logs"] .log-ip-address,
 .log-history-modal .log-ip-address {
