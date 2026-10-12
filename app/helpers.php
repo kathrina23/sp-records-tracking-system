@@ -358,7 +358,7 @@ function record_committee_rows(int $recordId, ?int $fallbackCommitteeId = null):
         $stmt = db()->prepare("SELECT rc.committee_id, rc.sequence_no, c.name committee_name
             FROM record_committees rc
             INNER JOIN committees c ON c.id = rc.committee_id
-            WHERE rc.record_id = ?
+            WHERE rc.record_id = ? AND rc.sequence_no > 0
             ORDER BY rc.sequence_no, c.name");
         $stmt->execute([$recordId]);
         $rows = $stmt->fetchAll();
@@ -389,19 +389,31 @@ function save_record_committees(int $recordId, array $committeeIds): void
 
     try {
         $pdo = db();
-        $delete = $pdo->prepare('DELETE FROM record_committees WHERE record_id = ?');
+        // Editing reviewed assignments must not discard workflow recipients.
+        $delete = $pdo->prepare('DELETE FROM record_committees WHERE record_id = ? AND sequence_no > 0');
         $delete->execute([$recordId]);
         if (!$committeeIds) {
             return;
         }
 
-        $insert = $pdo->prepare('INSERT INTO record_committees (record_id, committee_id, sequence_no) VALUES (?, ?, ?)');
+        $insert = $pdo->prepare('INSERT INTO record_committees (record_id, committee_id, sequence_no) VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE sequence_no = VALUES(sequence_no)');
         foreach ($committeeIds as $index => $committeeId) {
             $insert->execute([$recordId, $committeeId, $index + 1]);
         }
     } catch (Throwable $error) {
         // Do not block existing single-committee workflow on older databases.
     }
+}
+
+function save_record_committee_route(int $recordId, int $committeeId): void
+{
+    // Sequence zero is a workflow recipient, not a City Secretary-reviewed
+    // referral committee. Keep existing reviewed assignments unchanged.
+    $stmt = db()->prepare('INSERT INTO record_committees (record_id, committee_id, sequence_no)
+        VALUES (?, ?, 0)
+        ON DUPLICATE KEY UPDATE committee_id = VALUES(committee_id)');
+    $stmt->execute([$recordId, $committeeId]);
 }
 
 function lead_committee_name_from_rows(array $committeeRows): string
@@ -454,6 +466,19 @@ function can_access_record_committees(array $record): bool
         if (can_access_committee((int) $row['committee_id'])) {
             return true;
         }
+    }
+
+    // Routing grants the recipient access without making the referral joint.
+    try {
+        $stmt = db()->prepare('SELECT committee_id FROM record_committees WHERE record_id = ? AND sequence_no = 0');
+        $stmt->execute([(int) ($record['id'] ?? 0)]);
+        foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $committeeId) {
+            if (can_access_committee((int) $committeeId)) {
+                return true;
+            }
+        }
+    } catch (Throwable $error) {
+        // Older installs can still use the reviewed assignment above.
     }
 
     return false;

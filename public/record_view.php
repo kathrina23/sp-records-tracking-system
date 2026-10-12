@@ -312,6 +312,9 @@ require __DIR__ . '/../app/partials/header.php';
                 <div><strong>Client Email</strong><br><?= e($record['client_email']) ?></div>
             <?php endif; ?>
             <div><strong>Committee</strong><br><?= ($record['status'] ?? '') === 'Received' && !empty($record['committee_id']) ? '<span class="badge for-review">Proposed: ' . e($committeeNames) . '</span>' : e($committeeNames) ?></div>
+            <?php if (($record['status'] ?? '') !== 'Received' && count($committeeRows) > 1): ?>
+                <div><strong>Referral Group</strong><br><?= e(referral_group_label(count($committeeRows))) ?> (<?= count($committeeRows) ?> committees)</div>
+            <?php endif; ?>
             <?php if ($leadCommitteeName !== ''): ?>
                 <div><strong>Lead Committee</strong><br><?= e($leadCommitteeName) ?></div>
             <?php endif; ?>
@@ -587,6 +590,13 @@ if (can_city_secretary_action()) {
                         && $committeeNames !== ''
                     ) {
                         $statusAction .= ': ' . $committeeNames;
+                    }
+                    if (
+                        (string) ($movement['to_status'] ?? '') === 'Recommending Approval'
+                        && preg_match('/(?:^|\R)Recommended Committee:\s*([^\r\n]+)/', (string) ($movement['notes'] ?? ''), $recommendedCommitteeMatch)
+                    ) {
+                        $recommendedCommitteeName = trim((string) preg_replace('/\s+-\s+\d{4}-\d{2}-\d{2}$/', '', $recommendedCommitteeMatch[1]));
+                        $statusAction .= ': Recommended to the Committee on ' . $recommendedCommitteeName;
                     }
                     $inputDetails = [];
                     $movementTitle = trim((string) ($movement['record_title'] ?? ''));

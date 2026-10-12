@@ -52,6 +52,15 @@ Change this account after installation.
 
 ## Updating an Existing Installation
 
+Committee recommendations and referrals back to a committee are workflow routing,
+and do not make the original referral joint. In `record_committees`, positive
+`sequence_no` values identify the reviewed referral committees; zero identifies
+a workflow recipient. Only committees selected during receiving/reviewing or an
+authorized assignment correction determine the joint referral label. Deploy
+`app/helpers.php` and `public/status_update.php` together. Earlier automatically
+added committees need an individual data correction after checking their review
+history; do not remove genuine City Secretary-reviewed joint assignments.
+
 Run `php scripts/migrate_committee_term_assignments.php` to associate committees
 with their actual terms. Existing roster memberships are retained. Add committees
 inside the selected Standing Committees term; the membership editor keeps that

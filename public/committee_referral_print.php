@@ -208,6 +208,14 @@ if ($limitPrintToCurrentCommittee && $currentPrintCommitteeId > 0) {
         $committeeRows = $currentCommitteeRows;
     }
 }
+// Shared printouts start with the viewer's committee. Keep reviewed sequence
+// numbers and the remaining committees' order unchanged.
+if ($canViewSharedReferrals && $movementId === 0 && $currentPrintCommitteeId > 0) {
+    $committeeRows = array_merge(
+        array_values(array_filter($committeeRows, fn ($row) => (int) $row['committee_id'] === $currentPrintCommitteeId)),
+        array_values(array_filter($committeeRows, fn ($row) => (int) $row['committee_id'] !== $currentPrintCommitteeId))
+    );
+}
 if ($committeeRows) {
     $committeeIds = array_map(fn ($row) => (int) $row['committee_id'], $committeeRows);
     $codePlaceholders = implode(',', array_fill(0, count($committeeIds), '?'));

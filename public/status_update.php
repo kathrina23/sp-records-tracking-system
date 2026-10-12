@@ -327,30 +327,15 @@ try {
     }
 
     if ($newStatus === 'Recommending Approval' && $recommendation) {
-        $committeeRows = record_committee_rows((int) $record['id'], !empty($record['committee_id']) ? (int) $record['committee_id'] : null);
-        $committeeIds = array_map(fn ($row) => (int) $row['committee_id'], $committeeRows);
-        $committeeIds[] = (int) $recommendation['committee_id'];
-        $committeeIds = array_values(array_unique(array_filter($committeeIds)));
-
         $oldRemarks = trim(
             $combinedNotes . "\n" .
-            'Recommended committee added under the same Communication Number: ' . $record['control_number'] . '.'
+            'Routed to the recommended committee under Communication Number: ' . $record['control_number'] . '.'
         );
 
         $update = $pdo->prepare('UPDATE records SET status = ?, remarks = TRIM(CONCAT(COALESCE(NULLIF(remarks, ""), ""), CASE WHEN COALESCE(NULLIF(remarks, ""), "") <> "" THEN CONCAT(CHAR(10), CHAR(10)) ELSE "" END, ?)), updated_by = ? WHERE id = ?');
         $update->execute([$newStatus, $oldRemarks, current_user()['id'], $id]);
-        save_record_committees($id, $committeeIds);
+        save_record_committee_route($id, (int) $recommendation['committee_id']);
     } elseif ($newStatus === 'Referred Back to Committee' && $referredBackCommitteeId > 0) {
-        $committeeRows = record_committee_rows(
-            (int) $record['id'],
-            !empty($record['committee_id']) ? (int) $record['committee_id'] : null
-        );
-        $committeeIds = array_map(fn ($row) => (int) $row['committee_id'], $committeeRows);
-        $committeeIds = array_values(array_unique(array_merge(
-            [$referredBackCommitteeId],
-            array_values(array_diff($committeeIds, [$referredBackCommitteeId]))
-        )));
-
         $update = $pdo->prepare('UPDATE records SET status = ?, committee_id = ?, assigned_user_id = ?, plenary_session_date = NULL, remarks = CASE WHEN ? <> "" THEN ? ELSE remarks END, updated_by = ? WHERE id = ?');
         $update->execute([
             $newStatus,
@@ -361,7 +346,7 @@ try {
             current_user()['id'],
             $id,
         ]);
-        save_record_committees($id, $committeeIds);
+        save_record_committee_route($id, $referredBackCommitteeId);
     } elseif ($newStatus === 'For Plenary Session') {
         $update = $pdo->prepare('UPDATE records SET status = ?, plenary_session_date = NULL, remarks = CASE WHEN ? <> "" THEN ? ELSE remarks END, updated_by = ? WHERE id = ?');
         $update->execute([$newStatus, $combinedNotes, $combinedNotes, current_user()['id'], $id]);
@@ -402,8 +387,8 @@ try {
         audit_log('record_title_update', 'Changed record title from "' . $previousTitleForMovement . '" to "' . $recordTitleForMovement . '" during the ' . $newStatus . ' update.', 'record', $id);
     }
     if ($newStatus === 'Recommending Approval' && $recommendation) {
-        audit_log('recommended_approval_committee_added', 'Added recommended committee ' . $recommendation['committee_name'] . ' to Communication Number ' . $record['control_number'] . '.', 'record', $id);
-        flash('Status saved. The recommended committee was grouped under the same Communication Number ' . $record['control_number'] . '.');
+        audit_log('recommended_approval_routed', 'Routed Communication Number ' . $record['control_number'] . ' to recommended committee ' . $recommendation['committee_name'] . ' without changing the reviewed referral committees.', 'record', $id);
+        flash('Recommendation to ' . $recommendation['committee_name'] . ' saved as a new tracking update under Communication Number ' . $record['control_number'] . '.');
         redirect($returnTarget === 'dashboard' ? $dashboardReturnUrl : '/record_view.php?id=' . $id);
     }
     if ($newStatus === 'Referred Back to Committee') {

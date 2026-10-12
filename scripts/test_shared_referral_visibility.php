@@ -52,7 +52,7 @@ foreach ([1, 2, 3, 4, 11] as $count) {
             $committeeRows = $referralCommittees;
             $recordCommitteeIds = array_column($committeeRows, 'committee_id');
             $totalReferrals = $count;
-            $currentPrintCommitteeId = $movementId > 0 ? $count : 1;
+            $currentPrintCommitteeId = $movementId > 0 ? $count : ($involved ? $assignedId : 1);
             eval($selectionCode);
             if ($canViewSharedReferrals !== ($involved && $count > 1)) {
                 throw new RuntimeException('Shared view exception leaked outside involved secretariats');
@@ -64,6 +64,17 @@ foreach ([1, 2, 3, 4, 11] as $count) {
             }
             if ($movementId > 0 && (int) $committeeRows[0]['committee_id'] !== $count) {
                 throw new RuntimeException('Specific update lost its committee selection');
+            }
+            if ($canViewSharedReferrals && $movementId === 0) {
+                $expectedIds = array_merge([$assignedId], array_values(array_diff(range(1, $count), [$assignedId])));
+                if (array_column($committeeRows, 'committee_id') !== $expectedIds) {
+                    throw new RuntimeException('Shared printout did not start with the viewer committee');
+                }
+                foreach ($committeeRows as $row) {
+                    if ($row['sequence_no'] !== $row['committee_id']) {
+                        throw new RuntimeException('Print ordering changed reviewed committee numbering');
+                    }
+                }
             }
             $checks++;
         }
