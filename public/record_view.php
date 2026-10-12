@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../app/auth.php';
+require_once __DIR__ . '/../app/tracking_history.php';
 require_login();
 ensure_plenary_number_schema();
 
@@ -581,15 +582,16 @@ if (can_city_secretary_action()) {
                         : ($movement['from_status']
                         ? $movementStatusLabel
                         : 'Created record with status ' . $movementStatusLabel);
+                    $historicalCommitteeNames = tracking_submission_committee_names($movement, $movements, $committeeNames);
                     if (
                         in_array(
                             (string) ($movement['to_status'] ?? ''),
                             ['Assigned to the Committee', 'Pending to the Committee'],
                             true
                         )
-                        && $committeeNames !== ''
+                        && $historicalCommitteeNames !== ''
                     ) {
-                        $statusAction .= ': ' . $committeeNames;
+                        $statusAction .= ': ' . $historicalCommitteeNames;
                     }
                     if (
                         (string) ($movement['to_status'] ?? '') === 'Recommending Approval'

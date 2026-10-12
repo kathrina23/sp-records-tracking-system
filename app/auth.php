@@ -13,6 +13,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/recommendation_history_repair.php';
 
 function current_user(): ?array
 {
@@ -28,6 +29,11 @@ function require_login(): void
         && !maintenance_request_is_allowed($_SERVER['REQUEST_METHOD'] ?? 'GET', $_SERVER['SCRIPT_FILENAME'] ?? '')) {
         http_response_code(403);
         exit('Server Maintenance Staff can only view information and download database backups.');
+    }
+    static $recommendationsChecked = false;
+    if (!$recommendationsChecked) {
+        automatically_repair_recommendation_history(db(), dirname(__DIR__) . '/storage/recommendation-history-backups');
+        $recommendationsChecked = true;
     }
 }
 

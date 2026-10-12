@@ -855,6 +855,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif ($plenaryPrintTitleChanged) {
                 $movementNotes = trim('Laws and Rules title updated for plenary. The previous committee title remains in the tracking history.' . ($movementNotes !== '' ? "\n" . $movementNotes : ''));
             }
+            if ($data['document_type'] === 'Committee Referrals'
+                && in_array($data['status'], ['Assigned to the Committee', 'Pending to the Committee'], true)) {
+                $assignmentNames = [];
+                $nameStmt = db()->prepare('SELECT name FROM committees WHERE id = ?');
+                foreach ($postedCommitteeIds as $committeeIdForHistory) {
+                    $nameStmt->execute([$committeeIdForHistory]);
+                    $name = $nameStmt->fetchColumn();
+                    if ($name !== false) $assignmentNames[] = $name;
+                }
+                if ($assignmentNames) $movementNotes = trim($movementNotes . "\nCommittee: " . implode('; ', $assignmentNames));
+            }
             $movementTitle = $plenaryPrintTitleChanged
                 ? (string) $data['plenary_print_title']
                 : (string) $data['title'];

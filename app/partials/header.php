@@ -2,7 +2,7 @@
 $user = current_user();
 $currentPage = basename((string) parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH));
 $navCurrent = static fn (array $pages): string => in_array($currentPage, $pages, true) ? ' class="active" aria-current="page"' : '';
-$recordsPages = ['records.php', 'record_view.php', 'record_update.php', 'record_attachments_view.php', 'record_attachments_manage.php'];
+$recordsPages = ['records.php', 'record_view.php', 'record_update.php', 'record_attachments_view.php', 'record_attachments_manage.php', 'recommendation_history_repair.php'];
 $recordsActive = in_array($currentPage, $recordsPages, true);
 $activeMonitorRole = trim((string) ($_GET['monitor_role'] ?? ''));
 $dashboardActive = in_array($currentPage, ['dashboard.php', 'messengerial.php'], true) && $activeMonitorRole === '';
