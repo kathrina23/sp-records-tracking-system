@@ -1390,6 +1390,7 @@ if ($isDashboardMonitor) {
                 </table>
             </div>
 
+            <?php if ($userRole === 'division_chief'): ?>
             <h2 style="margin-top:18px;">Newly Updated Records</h2>
             <div class="record-list">
                 <?php foreach ($divisionChiefDashboard['newly_updated_records'] as $record): ?>
@@ -1435,6 +1436,7 @@ if ($isDashboardMonitor) {
                     <article class="record-card">No newly updated records from your division yet.</article>
                 <?php endif; ?>
             </div>
+            <?php endif; ?>
         </div>
 
         <div class="division-tab-panel" data-division-panel="staff-updates">
