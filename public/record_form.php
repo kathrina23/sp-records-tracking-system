@@ -1005,7 +1005,8 @@ if ($id
 $mergeCandidateRecords = [];
 $mergeCandidateCommitteeMap = [];
 if ($canTagAsNewOrExisting) {
-    $candidateStmt = db()->prepare('SELECT id, control_number, title, document_type, committee_id FROM records WHERE ' . ($id ? 'id <> ? AND ' : '') . 'control_number <> "" ORDER BY updated_at DESC, id DESC LIMIT 200');
+    // Older records must remain selectable as existing-record tagging targets.
+    $candidateStmt = db()->prepare('SELECT id, control_number, title, document_type, committee_id FROM records WHERE ' . ($id ? 'id <> ? AND ' : '') . 'control_number <> "" ORDER BY updated_at DESC, id DESC');
     $candidateStmt->execute($id ? [$id] : []);
     $mergeCandidateRecords = $candidateStmt->fetchAll();
     foreach ($mergeCandidateRecords as $candidate) {
