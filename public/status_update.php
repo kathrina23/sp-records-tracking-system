@@ -159,10 +159,10 @@ if (in_array($record['document_type'] ?? '', ['Committee Referrals', 'Certified 
         $detailValue = $record['receiving_clerk_name'] ?? '';
     } elseif ($newStatus === 'Assigned to the Committee') {
         $detailLabel = 'Committee';
-        $detailValue = $record['committee_name'] ?? '';
+        $detailValue = implode('; ', array_column(record_committee_rows($id, !empty($record['committee_id']) ? (int) $record['committee_id'] : null), 'committee_name'));
     } elseif ($newStatus === 'Pending to the Committee') {
         $detailLabel = 'Committee';
-        $detailValue = $record['committee_name'] ?? '';
+        $detailValue = implode('; ', array_column(record_committee_rows($id, !empty($record['committee_id']) ? (int) $record['committee_id'] : null), 'committee_name'));
     } elseif ($newStatus === 'For Meeting') {
         $detailLabel = 'Date of Meeting';
         $detailValue = trim($_POST['meeting_date'] ?? '');

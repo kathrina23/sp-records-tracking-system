@@ -58,8 +58,31 @@ and do not make the original referral joint. In `record_committees`, positive
 a workflow recipient. Only committees selected during receiving/reviewing or an
 authorized assignment correction determine the joint referral label. Deploy
 `app/helpers.php` and `public/status_update.php` together. Earlier automatically
-added committees need an individual data correction after checking their review
-history; do not remove genuine City Secretary-reviewed joint assignments.
+added committees are corrected automatically on the first authenticated page
+load after deployment. The repair uses the old committee-addition audit entries
+and matching recommendation history to convert additional committees to workflow
+recipients. The lead committee and committees recorded in an earlier genuine
+reviewed assignment remain referral members. Corrections apply even when an
+affected record has already advanced beyond Recommending Approval.
+
+Deploy `app/auth.php` and `app/recommendation_history_repair.php` together with
+the routing fix above. No SQL import or manual record save is required. The
+Joint classification and original-submission history display update immediately,
+while recommendation entries, timestamps, authors, notes, current status and
+recipient access remain intact. Before-correction JSON backups are required in
+`storage/recommendation-history-backups/` and a system correction audit is saved
+in the same transaction. This directory must be writable by PHP. Repeated page
+loads do not repeat a completed correction. Administrators and City Secretaries
+can view the optional correction report at
+`public/recommendation_history_repair.php`.
+
+Deploy `app/tracking_history.php` with `public/record_view.php` for historical
+committee labels. Saved assignment notes, including earlier assignment entries,
+take precedence over the current committee list. A missing current assignment
+is not displayed as a historical "Submitted to the Committee: Unassigned".
+Where neither the notes nor the reviewed list contain a name, the submission
+event remains visible without an invented committee. `public/record_form.php`
+and `public/status_update.php` now save committee names in new assignment updates.
 
 Run `php scripts/migrate_committee_term_assignments.php` to associate committees
 with their actual terms. Existing roster memberships are retained. Add committees
