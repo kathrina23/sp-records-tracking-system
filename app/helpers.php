@@ -484,6 +484,36 @@ function can_access_record_committees(array $record): bool
     return false;
 }
 
+function record_workflow_committee_rows(int $recordId): array
+{
+    $stmt = db()->prepare('SELECT rc.committee_id, c.name committee_name, 1 sequence_no
+        FROM record_committees rc INNER JOIN committees c ON c.id = rc.committee_id
+        WHERE rc.record_id = ? AND rc.sequence_no = 0 ORDER BY c.name');
+    $stmt->execute([$recordId]);
+    return $stmt->fetchAll();
+}
+
+function recommendation_print_committee(array $movement, array $committeeRows): ?array
+{
+    if (($movement['to_status'] ?? '') !== 'Recommending Approval'
+        || !preg_match('/(?:^|\R)Recommended Committee: ([^\r\n]+) - \d{4}-\d{2}-\d{2}(?:\R|$)/', (string) ($movement['notes'] ?? ''), $match)) {
+        return null;
+    }
+    foreach ($committeeRows as $row) {
+        if (trim((string) $row['committee_name']) === trim($match[1])) return $row;
+    }
+    return null;
+}
+
+function can_print_routed_record_update(array $record, array $movement, array $committeeRows): bool
+{
+    $committee = recommendation_print_committee($movement, $committeeRows);
+    return $committee !== null
+        && in_array($_SESSION['user']['role'] ?? '', ['admin', 'division_chief', 'secretariat'], true)
+        && can_view_record_materials($record)
+        && can_access_committee((int) $committee['committee_id']);
+}
+
 function can_print_record_update(array $record, array $movement): bool
 {
     if (($record['document_type'] ?? '') !== 'Committee Referrals' || empty($record['committee_id'])) {

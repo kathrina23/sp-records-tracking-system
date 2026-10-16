@@ -132,6 +132,7 @@ if (!can_view_record($record)) {
 $history = db()->prepare("SELECT m.*, COALESCE(NULLIF(u.nickname, ''), u.name) updated_by_name, u.role updated_by_role FROM record_movements m LEFT JOIN users u ON u.id = m.updated_by WHERE m.record_id = ? ORDER BY m.created_at DESC");
 $history->execute([$id]);
 $movements = $history->fetchAll();
+$workflowPrintCommittees = record_workflow_committee_rows($id);
 $movements = array_values(array_filter($movements, function ($movement) {
     $notes = (string) ($movement['notes'] ?? '');
     if (strpos($notes, 'Committee Referral print') === 0 && ($movement['updated_by_role'] ?? '') !== 'receiving_clerk') {
@@ -613,6 +614,10 @@ if (can_city_secretary_action()) {
                                 <p<?= $isPrintedForwardedDetail ? ' class="printed-forwarded-detail"' : '' ?>><?= render_tracking_detail($detail) ?></p>
                             <?php endforeach; ?>
                         </div>
+                    <?php endif; ?>
+                    <?php if (can_print_routed_record_update($record, $movement, $workflowPrintCommittees)): ?>
+                        <?php $printDestination = recommendation_print_committee($movement, $workflowPrintCommittees); ?>
+                        <p><a class="print-link" href="<?= url('/committee_referral_print.php?id=') ?><?= (int) $record['id'] ?>&amp;movement_id=<?= (int) $movement['id'] ?>&amp;committee_id=<?= (int) $printDestination['committee_id'] ?>">Print <?= e($printDestination['committee_name']) ?> Referral</a></p>
                     <?php endif; ?>
                     <?php if (can_print_record_update($record, $movement)): ?>
                         <p>

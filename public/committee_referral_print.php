@@ -107,6 +107,31 @@ $floorLeaders = array_values(array_filter($exOfficioMembers, fn ($person) => in_
 $viceMayors = array_values(array_filter($exOfficioMembers, fn ($person) => ($person['position'] ?? '') === 'Vice Mayor'));
 
 $committeeRows = record_committee_rows($id, (int) $record['committee_id']);
+$workflowCommitteeRows = record_workflow_committee_rows($id);
+$requestedCommitteeId = (int) ($_GET['committee_id'] ?? 0);
+if ($requestedCommitteeId > 0) {
+    // A destination print belongs to this recommendation, never an arbitrary
+    // committee supplied in the URL or an expansion of the original referral.
+    $destination = recommendation_print_committee($reportMovement ?? [], $workflowCommitteeRows);
+    if (!$destination || (int) $destination['committee_id'] !== $requestedCommitteeId
+        || !can_print_routed_record_update($record, $reportMovement, $workflowCommitteeRows)) {
+        http_response_code(403);
+        exit('You are not allowed to print this recommended committee referral.');
+    }
+    $committeeRows = [$destination];
+} elseif ($workflowCommitteeRows) {
+    // Later updates made by a routed committee, and its general Print action,
+    // must also use that committee rather than fall back to the origin.
+    $printUserId = (int) ($reportMovement['updated_by'] ?? current_user()['id']);
+    $printRole = (string) ($reportMovement['updated_by_role'] ?? current_user()['role']);
+    $printUserCommittees = $printRole === 'secretariat' ? secretariat_committee_ids($printUserId)
+        : ($printRole === 'division_chief' ? division_chief_committee_ids($printUserId) : []);
+    $reviewedIds = array_map('intval', array_column($committeeRows, 'committee_id'));
+    $routedPrintRows = array_values(array_filter($workflowCommitteeRows, static fn ($row) =>
+        in_array((int) $row['committee_id'], $printUserCommittees, true)
+        && !in_array((int) $row['committee_id'], $reviewedIds, true)));
+    if ($routedPrintRows) $committeeRows = [$routedPrintRows[0]];
+}
 // Group labels describe the full referral, even when only one committee is printed.
 $totalReferrals = max(1, count($committeeRows));
 $groupLabel = $totalReferrals > 1 ? referral_group_label($totalReferrals) : '';
