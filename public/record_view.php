@@ -294,6 +294,13 @@ require __DIR__ . '/../app/partials/header.php';
     </div>
 </div>
 
+<div class="record-view-tabs-layout" data-record-tabs>
+    <div class="legislation-detail-tabs record-detail-tabs" role="tablist" aria-label="Record information">
+        <?php foreach (['details' => 'Details', 'tracking' => 'Status Tracking', 'attachments' => 'Attachments'] as $key => $label): ?>
+            <button type="button" role="tab" id="record-tab-<?= e($key) ?>" aria-controls="record-panel-<?= e($key) ?>" aria-selected="<?= $key === 'details' ? 'true' : 'false' ?>" tabindex="<?= $key === 'details' ? '0' : '-1' ?>"><?= e($label) ?></button>
+        <?php endforeach; ?>
+    </div>
+    <div role="tabpanel" id="record-panel-details" aria-labelledby="record-tab-details" tabindex="0">
 <section class="panel">
     <div class="panel-title-row">
         <h2>Record Details</h2>
@@ -415,35 +422,6 @@ if (can_city_secretary_action()) {
     }
 }
 ?>
-<?php if (can_view_record_attachments($record)): ?>
-    <section class="panel" style="margin-top:16px;">
-        <div class="panel-title-row">
-            <h2>Attachments</h2>
-            <?php if (can_manage_plenary_record_attachments($record)): ?>
-                <a class="btn secondary" href="<?= e($attachmentManageUrl) ?>">Attachments on File</a>
-            <?php endif; ?>
-        </div>
-        <?php if (can_upload_record_attachment($record) && !can_manage_plenary_record_attachments($record)): ?>
-            <form method="post" action="<?= url('/record_attachment.php') ?>" enctype="multipart/form-data" class="attachment-form">
-                <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-                <input type="hidden" name="record_id" value="<?= (int) $record['id'] ?>">
-                <label>Attach PDF / Images
-                    <input type="file" name="attachments[]" accept="application/pdf,image/*" multiple required>
-                </label>
-                <button class="btn secondary" type="submit">Upload Attachments</button>
-            </form>
-            <p class="muted">Select up to 10 files. Allowed: PDF, JPG, PNG, GIF, and WEBP. Maximum 10 MB per file and 35 MB combined.</p>
-        <?php endif; ?>
-        <?php if ($attachments): ?>
-            <div class="actions attachment-view-all-action">
-                <a class="btn secondary record-document-action" href="<?= e($attachmentViewUrl) ?>">View All Documents</a>
-            </div>
-        <?php else: ?>
-            <p class="muted">No attachments uploaded yet.</p>
-        <?php endif; ?>
-    </section>
-<?php endif; ?>
-
 <?php if (can_assign_referral_committee($record) && ($record['document_type'] ?? '') === 'Committee Referrals' && ($record['status'] ?? '') === 'Received'): ?>
     <section class="panel" style="margin-top:16px;">
         <h2>City Secretary: Review Record</h2>
@@ -562,6 +540,8 @@ if (can_city_secretary_action()) {
     </section>
 <?php endif; ?>
 
+</div>
+<div role="tabpanel" id="record-panel-tracking" aria-labelledby="record-tab-tracking" tabindex="0" hidden>
 <?php if (can_view_record_history($record)): ?>
     <section class="panel" style="margin-top:16px;">
         <h2>Status Tracking History</h2>
@@ -664,7 +644,42 @@ if (can_city_secretary_action()) {
     </section>
 <?php endif; ?>
 </div>
+<div role="tabpanel" id="record-panel-attachments" aria-labelledby="record-tab-attachments" tabindex="0" hidden>
+<?php if (can_view_record_attachments($record)): ?>
+    <section class="panel" style="margin-top:16px;">
+        <div class="panel-title-row">
+            <h2>Attachments</h2>
+            <?php if (can_manage_plenary_record_attachments($record)): ?>
+                <a class="btn secondary" href="<?= e($attachmentManageUrl) ?>">Attachments on File</a>
+            <?php endif; ?>
+        </div>
+        <?php if (can_upload_record_attachment($record) && !can_manage_plenary_record_attachments($record)): ?>
+            <form method="post" action="<?= url('/record_attachment.php') ?>" enctype="multipart/form-data" class="attachment-form">
+                <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                <input type="hidden" name="record_id" value="<?= (int) $record['id'] ?>">
+                <label>Attach PDF / Images
+                    <input type="file" name="attachments[]" accept="application/pdf,image/*" multiple required>
+                </label>
+                <button class="btn secondary" type="submit">Upload Attachments</button>
+            </form>
+            <p class="muted">Select up to 10 files. Allowed: PDF, JPG, PNG, GIF, and WEBP. Maximum 10 MB per file and 35 MB combined.</p>
+        <?php endif; ?>
+        <?php if ($attachments): ?>
+            <div class="actions attachment-view-all-action">
+                <a class="btn secondary record-document-action" href="<?= e($attachmentViewUrl) ?>">View All Documents</a>
+            </div>
+        <?php else: ?>
+            <p class="muted">No attachments uploaded yet.</p>
+        <?php endif; ?>
+    </section>
+<?php endif; ?>
+
+<?php if (!can_view_record_attachments($record)): ?><section class="panel"><h2>Attachments</h2><p class="muted">You do not have permission to view attachments for this record.</p></section><?php endif; ?>
+</div>
+</div>
+</div>
 <?php if ($isPopup): ?></div><?php endif; ?>
 <script src="<?= url('/assets/vendor/qrcode-generator.js') ?>"></script>
 <script src="<?= url('/assets/communication-qr.js') ?>"></script>
+<script src="<?= url('/assets/record-view-tabs.js?v=') . (int) filemtime(__DIR__ . '/assets/record-view-tabs.js') ?>"></script>
 <?php require __DIR__ . '/../app/partials/footer.php'; ?>
